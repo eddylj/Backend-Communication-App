@@ -5,78 +5,58 @@ from error import InputError
 # ASSERT VALUES TO BE CHANGED ACCORDINGLY
 
 # BASE TEST
-def test_auth_register_simple():
-    assert auth.auth_register('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest') == {
-        'u_id': 1,
-        'token': '12345',
-    } # Should pass. 
+def test_auth_register_valid():
+    valid_user = {'u_id': 1, 'token': '12345'}
+    assert auth.auth_register('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest') == valid_user
+
+    '''
+    Style?
+    assert auth.auth_register('validemail@gmail.com',
+                              '123abc!@#',
+                              'Hayden',
+                              'Everest') == valid_user
+    '''
 
 # INVALID EMAIL
 def test_auth_register_invalid_email():
-    assert auth.auth_register('invalidemail.com', '123abc!@#', 'Hayden', 'Everest') == {
-        'u_id': 1,
-        'token': '12345',
-    } # Should fail. 
-
-    # Exception method
-    '''
     with pytest.raises(InputError):
         auth.auth_register('invalidemail.com', '123abc!@#', 'Hayden', 'Everest')
-    '''
 
 # EMAIL ALREADY IN USE
-def test_auth_register_taken():
+def test_auth_register_email_taken():
     auth.auth_register('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    assert auth.auth_register('validemail@gmail.com', '123abc!@#', 'Everest', 'Hayden') == {
-        'u_id': 1,
-        'token': '12345',
-    } # Should fail. 
-
-    # Exception method
-    '''
     with pytest.raises(InputError):
-        auth.auth_register('validemail@gmail.com', '123abc!@#', 'Everest', 'Hayden')
-    '''
+        auth.auth_register('validemail@gmail.com', '123abc!@#',
+                           'Everest', 'Hayden')
 
 # INVALID PASSWORD
 def test_auth_register_invalid_pw():
-    assert auth.auth_register('validemail@gmail.com', '12345', 'Hayden', 'Everest') == {
-        'u_id': 1,
-        'token': '12345',
-    } # Should fail. 
-
-    # EMPTY PASSWORD
-    assert auth.auth_register('validemail@gmail.com', '', 'Hayden', 'Everest') == {
-        'u_id': 1,
-        'token': '12345',
-    } # Should fail. 
-
-    # Exception method
-    '''
     with pytest.raises(InputError):
+        # Too short
         auth.auth_register('validemail@gmail.com', '12345', 'Hayden', 'Everest')
+
+        # Empty
         auth.auth_register('validemail@gmail.com', '', 'Hayden', 'Everest')
-    '''
 
 # INVALID NAME
 def test_auth_register_invalid_name():
-    # EMPTY NAME
-    assert auth.auth_register('validemail@gmail.com', '123abc!@#', '', '') == {
-        'u_id': 1,
-        'token': '12345',
-    } # Should fail. 
-
-    # Names > 50 characters
-
-    # Exception method
-    '''
     with pytest.raises(InputError):
+        # No names entered
         auth.auth_register('validemail@gmail.com', '123abc!@#', '', '')
-        auth.auth_register('validemail@gmail.com', '123abc!@#', 'Haaaaaaaaaaaaaaaaa\
-                                                                 aaaaaaaaaaaaaaaaaa\
-                                                                 aaaaaaaaaaaaaaaaaa\
-                                                                 aaaaaaaaaaaaaayden', 'Everest')
-    '''
+
+        # First name > 50 characters
+        auth.auth_register('validemail@gmail.com', '123abc!@#',
+                           'Haaaaaaaaaaaaaaaaa\
+                            aaaaaaaaaaaaaaaaaa\
+                            aaaaaaaaaaaaaaaaaa\
+                            aaaaaaaaaaaaaayden', 'Everest')
+                            
+        # Last name > 50 characters
+        auth.auth_register('validemail@gmail.com', '123abc!@#', 'Hayden',
+                           'Eveeeeeeeeeeeeeeee\
+                            eeeeeeeeeeeeeeeeee\
+                            eeeeeeeeeeeeeeeeee\
+                            eeeeeeeeeeeeeerest')
 
 def test_auth_logout_success(): 
 #	assert auth.auth_logout(None) == False
