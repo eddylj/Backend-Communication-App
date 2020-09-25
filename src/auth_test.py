@@ -8,16 +8,16 @@ from error import InputError
 
 # BASE TEST - Valid user registration
 def test_auth_register_valid():
-    valid_user = {'u_id': 'haydeneverest', 'token': '12345'}
+    passed = {'u_id': 'haydeneverest', 'token': 'validemail@gmail.com'}
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    assert auth.auth_register(*user) == valid_user
+    assert auth.auth_register(*user) == passed
 
     '''
     Style?
     assert auth.auth_register('validemail@gmail.com',
                               '123abc!@#',
                               'Hayden',
-                              'Everest') == valid_user
+                              'Everest') == passed
 
     OR 
 
@@ -25,7 +25,7 @@ def test_auth_register_valid():
     password = '123abc!@#'
     first_name = 'Hayden'
     last_name = 'Everest'
-    auth.auth_register(email, password, first_name, last_name)
+    assert auth.auth_register(email, password, first_name, last_name) == passed
     '''
 
 # INVALID EMAIL

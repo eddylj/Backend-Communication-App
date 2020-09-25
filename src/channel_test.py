@@ -66,3 +66,67 @@ def test_channel_messages_no_access():
 # START > NON-ZERO NUMBER OF MESSAGES IN CHANNEL
 # CHECKING IF RETURNED START/END IS CORRECT
 # CHECKING RETURNED MESSAGES ATTRIBUTES
+
+# CHANNEL_LEAVE TESTS
+
+# BASE TEST
+def test_channel_leave_valid():
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user1)
+    token1 = user1[0] # May change to auth_register().get
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Heydan', 'Everest')
+    auth.auth_register(*user2)
+    token2 = user2[0] # May change to auth_register().get
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel.get('channel_id')
+    channel.channel_join(token2, channel_id)
+    channel.channel_leave(token2, channel_id)
+
+    passed = {
+        'name': 'test channel',
+        'owner_members': [
+            {
+                'u_id': 'haydeneverest',
+                'name_first': 'Hayden',
+                'name_last': 'Everest',
+            }
+        ],
+        'all_members': [
+            {
+                'u_id': 'haydeneverest',
+                'name_first': 'Hayden',
+                'name_last': 'Everest',
+            }
+        ],
+    }
+
+    assert channel.channel_details(token1, channel_id) == passed
+
+# INVALID CHANNEL
+def test_channel_leave_invalid_channel():
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+    token1 = user[0] # May change to auth_register().get
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel.get('channel_id') + 1 # Does this work?
+    with pytest.raises(InputError):
+        channel.channel_leave(token1, channel_id)
+
+# TRYING TO LEAVE A CHANNEL WHICH USER IS NOT IN
+def test_channel_leave_not_member():
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user1)
+    token1 = user1[0] # May change to auth_register().get
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Heydan', 'Everest')
+    auth.auth_register(*user2)
+    token2 = user2[0] # May change to auth_register().get
+
+    new_channel = channels.channels_create(token1, 'test channel', False)
+    channel_id = new_channel.get('channel_id')
+    
+    with pytest.raises(AccessError):
+        channel.channel_leave(token2, channel_id)
