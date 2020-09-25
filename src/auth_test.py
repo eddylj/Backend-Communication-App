@@ -37,7 +37,7 @@ def test_auth_register_invalid_email():
 # EMAIL ALREADY IN USE
 def test_auth_register_email_taken():
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    user2 = ('validemail@gmail.com', '123abc!@#', 'Heydan', 'Everest')
+    user2 = ('validemail@gmail.com', '123abc!@#', 'Andras', 'Arato')
     auth.auth_register(*user1)
     with pytest.raises(InputError):
         auth.auth_register(*user2)

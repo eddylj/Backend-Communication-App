@@ -8,7 +8,8 @@
 
 ## Channel
 ### channel_details()
-- Name = name of the channel, not members
+- Name = name of the channel, not members.
+- Members are ordered by joining date.
 ### channel_messages()
 - Negative start parameters are treated as invalid.
 ### channel_leave()
@@ -17,4 +18,6 @@
 
 ## Channels
 ### channels_create()
+**NEEDS REVISION**
 - Creator of a channel automatically joins that channel.
+- Creator of a channel is automatically an admin in that channel.
