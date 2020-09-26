@@ -2,6 +2,7 @@ import auth
 import pytest
 from error import InputError
 
+<<<<<<< HEAD
 # ASSERT VALUES TO BE CHANGED ACCORDINGLY
 
 # AUTH_REGISTER TESTS
