@@ -81,3 +81,10 @@ def test_auth_logout_success():
 
 def test_auth_logout_fail():
 	assert auth.auth_logout("online") == {'is_success': True,}
+
+
+def test_auth_login_invalid_email():
+    invalid_email = ('invalidemail.com', '123abc!@#')
+    with pytest.raises(InputError)
+        auth.auth_login(invalid_email)
+
