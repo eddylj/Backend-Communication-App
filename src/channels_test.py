@@ -4,6 +4,8 @@ from error import InputError, AccessError
 
 # Base Case
 def channels_create_success():
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
     token = user[0]
     name = "Channel 1"
     channel_id = channels_create(token, name, True) 
