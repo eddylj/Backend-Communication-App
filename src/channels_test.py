@@ -1,4 +1,4 @@
-import channels
+import auth, channel, channels
 import pytest
 from error import InputError, AccessError
 
@@ -50,7 +50,41 @@ def channels_listall_base():
         }
     ]
     
-    assert channels_listall(token) == channel_list
+    assert channels.channels_listall(token) == channel_list
 
+def channels_list_base():
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    {u_id1, token1} = auth.auth_register(*user1)
+
+    user2 = ('goodemail@gmail.com', '123abc!@#', 'LeBron', 'James')
+    {u_id2, token2} = auth.auth_register(*user2)
+
+    empty_channels_list = [
+        {
+        }
+    ]
+
+    # Assert no channels listed right now
+    assert channels.channels_list(token1) == empty_channels_list
+    assert channels.channels_list(token2) == empty_channels_list
+
+    # Create a channel with user1
+    channel_id = channels.channels_create(token1, "Test Channel", True)
+
+    channel_list = [
+        {
+            "id" = channel_id
+            "name" = "Test Channel"
+        }
+    ]
+
+    # Assert only user 1 can see the channel
+    assert channels.channels_list(token2) == channel_list
+    assert channels.channels_list(token2) == empty_channels_list
     
+    # Invite user 2
+    channel.channel_invite(token1, channel_id, u_id2)
 
+    # Assert both users can see the channel
+    assert channels.channels_list(token2) == channel_list
+    assert channels.channels_list(token2) == channel_list
