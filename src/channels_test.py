@@ -13,6 +13,8 @@ def channels_create_success():
 
 # Will fail, because name is longer than 20 characters
 def channels_create_fail():
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
     token = user[0]
     name = "Channel 1234567890abcdef"
     with pytest.raises(InputError):
@@ -20,6 +22,8 @@ def channels_create_fail():
 
 # Base Case for channels_listall
 def channels_listall_base():
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
     token = users[0]
 
     name1 = "Channel 1"
