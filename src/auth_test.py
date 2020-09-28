@@ -9,7 +9,7 @@ def test_auth_login_user_email():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
 
-    passed = {'u_id': 'haydeneverest', 'token': 'validemail@gmail.com'}
+    passed = {'u_id': '1', 'token': 'validemail@gmail.com'}
     user_email = ('validemail@gmail.com', '123abc!@#')
     assert auth.auth_login(*user_email) == passed
 
