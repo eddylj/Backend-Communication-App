@@ -55,6 +55,7 @@ def channels_listall_base():
 def channels_list_base():
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     {u_id1, token1} = auth.auth_register(*user1)
+    
 
     user2 = ('goodemail@gmail.com', '123abc!@#', 'LeBron', 'James')
     {u_id2, token2} = auth.auth_register(*user2)
