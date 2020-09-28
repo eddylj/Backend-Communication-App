@@ -1,33 +1,49 @@
-import channel 
-import pytest
-
-def test_channel_invite_base():
-    invite = {'token': '', 'channel_id': '', 'u_id': ''}
-    channel_inv = {'token': '', 'channel_id': '', 'u_id': ''}
-    assert channel.channel_invite(*invite) == channel.channel_invite(*channel_inv)
-
-def test_channel_invite_valid():
-    invite = {'token': '123456', "channel_id": '1', 'u_id': '1'}
-    channel_inv = {'token': '12345', 'channel_id': '1', 'u_id': '1'}
-    assert channel.channel_invite(*channel_inv) == channel.channel_invite(*invite)
-
-# assuming that the channel id aand u_id is a number
-
-def test_channel_invite_invalid():
-    invite = {'token': '123456', "channel_id": '1', 'u_id': '1'}
-    channel_inv = {'token': '12341', 'channel_id': 'asv', 'u_id': 'nasd'}
-    assert channel.channel_invite(*invite) == channel.channel_invite(*channel_inv)
-
-   
-# auth user is not already in channel 
-
-def test_channel_invite_access_error():
- 
-    pass
 
 import auth, channel, channels
 import pytest
 from error import InputError, AccessError
+
+# CHANNEL_INVITE TESTS
+
+def test_channel_invite_valid():
+    valid_invite = channel.channel_invite('123456', '1', '1')
+    user_invite = channel.channel_invite('123456', '1', '1')
+    assert channel.channel_invite(*user_invite) == valid_invite
+
+# assuming that the channel id aand u_id is a number
+
+def test_channel_invite_channel_invalid():
+    valid_invite = channel.channel_invite('123456', '1', '1')
+    token = valid_invite[0]
+    channel_id = 132
+
+    with pytest.raises(InputError):
+        channel.channel_invite(token, channel_id, u_id)
+
+def test_channel_invite_user_id_invalid():
+    valid_invite = channel.channel_invite('123456', '1', '1')
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+    token = user[0]
+    u_id = 123
+
+    with pytest.raises(InputError):
+        channel.channel_invite(token, channel_id, u_id)
+
+
+# auth user is not already in channel 
+
+def test_channel_invite_access_error():
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+    token = user[0]
+
+    new_channel = channels.channels_create(token, 'test channel', True)
+    member = new_channel.get('all_members')
+
+    assert user == member #if the user is already a member of channel
+    with pytest.raises(AccessError):
+         channel.channel_invite(token, channel_id, u_id) 
 
 # CHANNEL_MESSAGES TESTS
 
