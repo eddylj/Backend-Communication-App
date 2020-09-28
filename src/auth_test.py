@@ -2,6 +2,41 @@ import auth
 import pytest
 from error import InputError
 
+#AUTH_LOGIN TESTS
+
+#VALID EMAIL
+def test_auth_login_user_email():
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+
+    passed = {'u_id': '1', 'token': 'validemail@gmail.com'}
+    user_email = ('validemail@gmail.com', '123abc!@#')
+    assert auth.auth_login(*user_email) == passed
+
+#INVALID EMAIL
+def test_auth_login_invalid_email():
+    invalid_email = ('invalidemail.com', '123abc!@#')
+    with pytest.raises(InputError)
+        auth.auth_login(*invalid_email)
+
+#NON USER EMAIL
+def test_auth_login_non_user_email():
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+
+    non_user_email = ('nonuseremail@gmail.com', '123abc!@#')
+    with pytest.raises(InputError)
+        auth.auth_login(*non_user_email)
+
+#WRONG PASSWORD
+def test_auth_login_wrong_password():
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+
+    wrong_password = ('validemail@gmail.com', 'wrongpassword')
+    with pytest.raises(InputError)
+        auth.auth_login(*wrong_password)
+
 # ASSERT VALUES TO BE CHANGED ACCORDINGLY
 
 # AUTH_REGISTER TESTS
