@@ -1,6 +1,8 @@
 import auth
 import pytest
 from error import InputError
+from other import clear
+from data import data
 
 # ASSERT VALUES TO BE CHANGED ACCORDINGLY
 
@@ -8,10 +10,13 @@ from error import InputError
 
 # BASE TEST - Valid user registration
 def test_auth_register_valid():
-    passed = {'u_id': 'haydeneverest', 'token': 'validemail@gmail.com'}
+    passed = {'u_id': 1, 'token': '12345'}
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     assert auth.auth_register(*user) == passed
-
+    
+    print(data['users']) 
+    clear()
+    print(data['users']) 
     '''
     Style?
     assert auth.auth_register('validemail@gmail.com',
@@ -33,14 +38,18 @@ def test_auth_register_invalid_email():
     invalid_email = ('invalidemail.com', '123abc!@#', 'Hayden', 'Everest')
     with pytest.raises(InputError):
         auth.auth_register(*invalid_email)
+    clear()
+    print(data['users'])
 
 # EMAIL ALREADY IN USE
 def test_auth_register_email_taken():
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    user2 = ('validemail@gmail.com', '123abc!@#', 'Andras', 'Arato')
+    user1 = ('asdf@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    user2 = ('asdf@gmail.com', '123abc!@#', 'Andras', 'Arato')
     auth.auth_register(*user1)
     with pytest.raises(InputError):
         auth.auth_register(*user2)
+    clear()
+    print(data['users'])
 
 # INVALID PASSWORD
 def test_auth_register_invalid_pw():
@@ -50,6 +59,8 @@ def test_auth_register_invalid_pw():
     with pytest.raises(InputError):
         auth.auth_register(*short_pw)
         auth.auth_register(*empty_pw)
+    clear()
+    print(data['users'])
 
 # INVALID NAME
 def test_auth_register_invalid_name():
@@ -72,6 +83,7 @@ def test_auth_register_invalid_name():
                             eeeeeeeeeeeeeeeeee\
                             eeeeeeeeeeeeeeeeee\
                             eeeeeeeeeeeeeerest')
+    clear()
 
 def test_auth_logout_success(): 
 #	assert auth.auth_logout(None) == False

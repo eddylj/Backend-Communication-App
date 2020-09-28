@@ -1,5 +1,6 @@
+from data import data
 def clear():
-    pass
+    data['users'].clear()
 
 def users_all(token):
     return {
