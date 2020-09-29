@@ -1,6 +1,18 @@
 from data import data
 def clear():
     data['users'].clear()
+    data['channels'].clear()
+    data['tokens'].clear()
+
+'''
+Loops through list of active tokens checking if provided token is already
+active. If not, adds the token to the list.
+'''
+def activate_token(token):
+    for active_token in data['tokens']:
+        if token == active_token:
+            return
+    data['tokens'].append(token)
 
 def users_all(token):
     return {

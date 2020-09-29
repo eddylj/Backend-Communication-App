@@ -31,8 +31,10 @@ def test_auth_register_valid():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     # assert auth.auth_register(*user) == passed
     account = auth.auth_register(*user)
+    print(account)
     token = account['token']
     email, password, *_ = user
+    print(auth.auth_login(email,password))
     assert auth.auth_login(email, password) == account
     assert auth.auth_logout(token) == {'is_success': True}
 
@@ -115,4 +117,3 @@ def test_auth_logout_success():
 def test_auth_logout_fail():
     clear()
     assert auth.auth_logout("online") == {'is_success': True,}
-    
