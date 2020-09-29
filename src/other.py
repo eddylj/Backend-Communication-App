@@ -6,7 +6,7 @@ def clear():
 
 '''
 Loops through list of active tokens checking if provided token is already
-active. If not, adds the token to the list.
+active.
 '''
 def is_active(token):
     for active_token in data['tokens']:
