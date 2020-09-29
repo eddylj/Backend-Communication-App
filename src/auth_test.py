@@ -8,9 +8,30 @@ from error import InputError
 
 # BASE TEST - Valid user registration
 def test_auth_register_valid():
-    passed = {'u_id': 'haydeneverest', 'token': 'validemail@gmail.com'}
+    '''
+    Because we can't guarantee other people's implementation is going to use the
+    same u_id and token system as us (not a black box test), I don't think we 
+    can explicitly assert auth_register against an expected value. 
+    
+    Proposed workaround is to assume that auth_logout and auth_login is 
+    guaranteed to work, so the return value of auth_login should match up with 
+    auth_register (checking if u_id & token is valid) and auth_logout should 
+    succeed (checking if token is valid).
+
+    Two glaring problems:
+        1. IDK if we *can* assume that auth_login/logout works in auth_test,
+           even though we're testing register here.
+        2. Token would probably change in later iterations, so generated tokens
+           for register and login would probably be different.
+    '''
+    # passed = {'u_id': 1, 'token': 'validemail@gmail.com'}
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    assert auth.auth_register(*user) == passed
+    # assert auth.auth_register(*user) == passed
+    account = auth.auth_register(*user)
+    token = account['token']
+    email, password, *_ = user
+    assert auth.auth_login(email, password) == account
+    assert auth.auth_logout(token) == {'is_success': True}
 
     '''
     Style?
