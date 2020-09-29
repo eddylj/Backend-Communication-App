@@ -28,9 +28,8 @@ def auth_register(email, password, name_first, name_last):
     for user in data['users']:
         if user['email'] == email:
             raise InputError
-
+    
     data['users'].append(new_user)
-
 
     return {
         'u_id': len(data['users']),
@@ -51,7 +50,7 @@ import re
   
 # Make a regular expression 
 # for validating an Email 
-regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
 # for custom mails use: '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$' 
       
 # Define a function for 
