@@ -15,6 +15,7 @@ def test_channel_messages_valid():
 
     passed = {'messages': [], 'start': 0, 'end': -1}
     assert channel.channel_messages(token, channel_id, 0) == passed
+    clear()
     
 # INVALID CHANNEL
 def test_channel_messages_invalid_channel():
@@ -25,6 +26,7 @@ def test_channel_messages_invalid_channel():
     channel_id = 123
     with pytest.raises(InputError):
         channel.channel_messages(token, channel_id, 0)
+    clear()
 
 # INVALID START PARAMETER
 def test_channel_messages_invalid_start():
@@ -41,6 +43,7 @@ def test_channel_messages_invalid_start():
         
         # Start < 0
         channel.channel_messages(token, channel_id, -1)
+    clear()
 
 # INACCESSBILE CHANNEL
 def test_channel_messages_no_access():
@@ -59,6 +62,7 @@ def test_channel_messages_no_access():
     assert channel.channel_messages(token1, channel_id, 0) == passed
     with pytest.raises(AccessError):
         channel.channel_messages(token2, channel_id, 0)
+    clear()
 
 # Can't implement other cases without messages_send(), which isn't in iter1?
 
@@ -96,6 +100,7 @@ def test_channel_leave_valid():
     }
 
     assert channel.channel_details(token1, channel_id) == passed
+    clear()
 
 # INVALID CHANNEL
 def test_channel_leave_invalid_channel():
@@ -107,6 +112,7 @@ def test_channel_leave_invalid_channel():
     channel_id = new_channel.get('channel_id') + 1 # Does this work?
     with pytest.raises(InputError):
         channel.channel_leave(token1, channel_id)
+    clear()
 
 # TRYING TO LEAVE A CHANNEL WHICH USER IS NOT IN
 def test_channel_leave_not_member():
@@ -123,6 +129,21 @@ def test_channel_leave_not_member():
     
     with pytest.raises(AccessError):
         channel.channel_leave(token2, channel_id)
+    
+    clear()
+
+
+# CHANNEL_DETAILS TEST
+def test_channel_details():
+
+    # -create user1 and user2
+    # -use user1 to create a channel
+    # - Try channel details, must show user1 as owner and also member
+    # - Invite user2, must show user1 as owner and both user1 and 2 as members
+    user1 = ()
+
+    clear()
+
 
 # CHANNEL_JOIN TESTS
 
@@ -203,3 +224,5 @@ def test_channel_join_valid():
     }
 
     assert channel.channel_details(token1, channel_id) == passed
+    
+    clear()
