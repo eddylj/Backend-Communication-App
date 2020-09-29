@@ -90,5 +90,9 @@ def test_auth_logout_success():
 
 	assert auth.auth_logout(None) == {'is_success': True,}
 
+    clear()
+
 def test_auth_logout_fail():
 	assert auth.auth_logout("online") == {'is_success': True,}
+    
+    clear()
