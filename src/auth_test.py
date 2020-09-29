@@ -26,6 +26,7 @@ def test_auth_register_valid():
         2. Token would probably change in later iterations, so generated tokens
            for register and login would probably be different.
     '''
+    clear()
     # passed = {'u_id': 1, 'token': 'validemail@gmail.com'}
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     # assert auth.auth_register(*user) == passed
@@ -53,21 +54,19 @@ def test_auth_register_valid():
 
 # INVALID EMAIL
 def test_auth_register_invalid_email():
+    clear()
     invalid_email = ('invalidemail.com', '123abc!@#', 'Hayden', 'Everest')
     with pytest.raises(InputError):
         auth.auth_register(*invalid_email)
-    clear()
-    print(data['users'])
 
 # EMAIL ALREADY IN USE
 def test_auth_register_email_taken():
+    clear()
     user1 = ('asdf@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     user2 = ('asdf@gmail.com', '123abc!@#', 'Andras', 'Arato')
     auth.auth_register(*user1)
     with pytest.raises(InputError):
         auth.auth_register(*user2)
-    clear()
-    print(data['users'])
 
 # INVALID PASSWORD
 def test_auth_register_invalid_pw():
@@ -110,14 +109,10 @@ def test_auth_register_invalid_name():
     clear()
 
 def test_auth_logout_success(): 
-#	assert auth.auth_logout(None) == False
-
+    clear()
     assert auth.auth_logout(None) == {'is_success': True,}
 
-    clear()
-
 def test_auth_logout_fail():
+    clear()
     assert auth.auth_logout("online") == {'is_success': True,}
     
-    clear()
-
