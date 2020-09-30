@@ -50,7 +50,6 @@ def auth_register(email, password, name_first, name_last):
     # Generates a new handle if there are repeated names
     if number != 0:
         new_user['handle'] = new_handle(new_user['handle'], number)
-    print(new_user['handle'])
 
     # Check if password is valid
     if len(new_user['password']) < 6:
@@ -91,26 +90,3 @@ def new_handle(handle, num):
         return handle + str(num)
     else:
         return str(num).join([handle[:20 - offset], handle[20:]])
-
-# user = ('validemail@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user)
-# user1 = ('asdfasd@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user1)
-# user2 = ('asdfasda@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user2)
-# user3 = ('asdfasdb@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user3)
-# user4 = ('asdfasdc@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user4)
-# user5 = ('asdfasde@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user5)
-# user6 = ('asdfasdf@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user6)
-# user7 = ('asdfasdg@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user7)
-# user8 = ('asdfasdga@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user8)
-# user9 = ('asdfasdgq@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user9)
-# user10 = ('asdfasdgb@gmail.com', '123abc!@#', 'Haydennnnnnnnnn', 'Everest')
-# auth_register(*user10)

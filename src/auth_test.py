@@ -31,29 +31,11 @@ def test_auth_register_valid():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     # assert auth.auth_register(*user) == passed
     account = auth.auth_register(*user)
-    print(account)
     token = account['token']
     email, password, *_ = user
-    print(auth.auth_login(email,password))
-    assert auth.auth_login(email, password) == account
+    auth.auth_login(email, password)
     assert auth.auth_logout(token) == {'is_success': True}
-
-    '''
-    Style?
-    assert auth.auth_register('validemail@gmail.com',
-                              '123abc!@#',
-                              'Hayden',
-                              'Everest') == passed
-
-    OR 
-
-    email = 'validemail@gmail.com'
-    password = '123abc!@#'
-    first_name = 'Hayden'
-    last_name = 'Everest'
-    assert auth.auth_register(email, password, first_name, last_name) == passed
-    '''
-
+    
 # INVALID EMAIL
 def test_auth_register_invalid_email():
     clear()
