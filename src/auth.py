@@ -35,10 +35,8 @@ def auth_register(email, password, name_first, name_last):
     if not is_valid(email):
         raise InputError
 
-    '''
-    Check if email is taken. Also checks for people with the same name to
-    create unique handles.
-    '''
+    # Check if email is taken. Also checks for people with the same name to
+    # create unique handles.
     number = 0
     for user in data['users']:
         if user['email'] == email:
