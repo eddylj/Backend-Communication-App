@@ -6,21 +6,19 @@ from other import is_active
 regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
 
 def auth_login(email, password):
-    index = 0
-    for user in data['users']:
-        index += 1
+    for (index, user) in enumerate(data['users']):
         if user['email'] == email and user['password'] == password:
             if not is_active(email):
                 data['tokens'].append(email)
             return {
-                'u_id': index,
+                'u_id': index + 1,
                 'token': email,
             }
     raise InputError
 
 def auth_logout(token):
-    for index in range(len(data['tokens'])):
-        if data['tokens'][index] == token:
+    for (index, active_token) in enumerate(data['tokens']):
+        if token == active_token:
             data['tokens'].pop(index)
             return {'is_success': True}
     return {'is_success': False}
