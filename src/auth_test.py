@@ -10,31 +10,35 @@ from data import data
 
 # BASE TEST - Valid user registration
 def test_auth_register_valid():
-    passed = {'u_id': 1, 'token': 'validemail@gmail.com'}
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    assert auth.auth_register(*user) == passed
+    '''
+    Because we can't guarantee other people's implementation is going to use the
+    same u_id and token system as us (not a black box test), I don't think we 
+    can explicitly assert auth_register against an expected value. 
     
-    print(data['users']) 
+    Proposed workaround is to assume that auth_logout and auth_login is 
+    guaranteed to work, so the return value of auth_login should match up with 
+    auth_register (checking if u_id & token is valid) and auth_logout should 
+    succeed (checking if token is valid).
+
+    Two glaring problems:
+        1. IDK if we *can* assume that auth_login/logout works in auth_test,
+           even though we're testing register here.
+        2. Token would probably change in later iterations, so generated tokens
+           for register and login would probably be different.
+    '''
     clear()
-    print(data['users']) 
-    '''
-    Style?
-    assert auth.auth_register('validemail@gmail.com',
-                              '123abc!@#',
-                              'Hayden',
-                              'Everest') == passed
-
-    OR 
-
-    email = 'validemail@gmail.com'
-    password = '123abc!@#'
-    first_name = 'Hayden'
-    last_name = 'Everest'
-    assert auth.auth_register(email, password, first_name, last_name) == passed
-    '''
-
+    # passed = {'u_id': 1, 'token': 'validemail@gmail.com'}
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    # assert auth.auth_register(*user) == passed
+    account = auth.auth_register(*user)
+    token = account['token']
+    email, password, *_ = user
+    auth.auth_login(email, password)
+    assert auth.auth_logout(token) == {'is_success': True}
+    
 # INVALID EMAIL
 def test_auth_register_invalid_email():
+    clear()
     invalid_email = ('invalidemail.com', '123abc!@#', 'Hayden', 'Everest')
     with pytest.raises(InputError):
         auth.auth_register(*invalid_email)
@@ -43,6 +47,7 @@ def test_auth_register_invalid_email():
 
 # EMAIL ALREADY IN USE
 def test_auth_register_email_taken():
+    clear()
     user1 = ('asdf@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     user2 = ('asdf@gmail.com', '123abc!@#', 'Andras', 'Arato')
     auth.auth_register(*user1)
@@ -53,31 +58,35 @@ def test_auth_register_email_taken():
 
 # INVALID PASSWORD
 def test_auth_register_invalid_pw():
+    clear()
     short_pw = ('validemail@gmail.com', '12345', 'Hayden', 'Everest')
     empty_pw = ('validemail@gmail.com', '', 'Hayden', 'Everest')
 
     with pytest.raises(InputError):
-        auth.auth_register(*short_pw)
         auth.auth_register(*empty_pw)
-    clear()
-    print(data['users'])
+    with pytest.raises(InputError):
+        auth.auth_register(*short_pw)
 
 # INVALID NAME
 def test_auth_register_invalid_name():
+    clear()
     email = 'validemail@gmail.com'
     password = '123abc!@#'
-    with pytest.raises(InputError):
-        # No names entered
-        auth.auth_register(email, password, '', '')
 
-        # First name > 50 characters
+    # No names entered
+    with pytest.raises(InputError):
+        auth.auth_register(email, password, '', '')
+    print(data)
+    # First name > 50 characters
+    with pytest.raises(InputError):
         auth.auth_register(email, password,
                            'Haaaaaaaaaaaaaaaaa\
                             aaaaaaaaaaaaaaaaaa\
                             aaaaaaaaaaaaaaaaaa\
                             aaaaaaaaaaaaaayden', 'Everest')
-                            
-        # Last name > 50 characters
+    print(data)
+    # Last name > 50 characters
+    with pytest.raises(InputError):
         auth.auth_register(email, password, 'Hayden',
                            'Eveeeeeeeeeeeeeeee\
                             eeeeeeeeeeeeeeeeee\
