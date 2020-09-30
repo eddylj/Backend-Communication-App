@@ -1,6 +1,8 @@
-import channels
+import auth, channel, channels
 import pytest
 from error import InputError, AccessError
+
+# CHANNELS_CREATE TESTS
 
 # Base Case
 def channels_create_success():
@@ -11,6 +13,8 @@ def channels_create_success():
     channel_id = channels.channels_create(token, name, True) 
     assert channels[0] == {"id" : channel_id, "name" : name,}
 
+    clear()
+
 # Will fail, because name is longer than 20 characters
 def channels_create_fail():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -20,7 +24,9 @@ def channels_create_fail():
     with pytest.raises(InputError):
         channels.channels_create(token, name, True)
 
-# Base Case for channels_listall
+    clear()
+
+# CHANNELS_LISTALL TEST
 def channels_listall_base():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
@@ -50,7 +56,51 @@ def channels_listall_base():
         }
     ]
     
-    assert channels_listall(token) == channel_list
+    assert channels.channels_listall(token) == channel_list
 
+    clear()
+
+# CHANNELS_LIST TEST
+
+def channels_list_base():
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user1)
+    token1 = user1[0]
+    u_id1 = 1
+
+    user2 = ('goodemail@gmail.com', '123abc!@#', 'LeBron', 'James')
+    auth.auth_register(*user2)
+    token2 = user2[0]
+    u_id2 = 2
+
+    empty_channels_list = [
+        {
+        }
+    ]
+
+    # Assert no channels listed right now
+    assert channels.channels_list(token1) == empty_channels_list
+    assert channels.channels_list(token2) == empty_channels_list
+
+    # Create a channel with user1
+    channel_id = channels.channels_create(token1, "Test Channel", True)
+
+    channel_list = [
+        {
+            "id" = channel_id
+            "name" = "Test Channel"
+        }
+    ]
+
+    # Assert only user 1 can see the channel
+    assert channels.channels_list(token1) == channel_list
+    assert channels.channels_list(token2) == empty_channels_list
     
+    # Invite user 2
+    channel.channel_invite(token1, channel_id, u_id2)
 
+    # Assert both users can see the channel
+    assert channels.channels_list(token1) == channel_list
+    assert channels.channels_list(token2) == channel_list
+
+    clear()
