@@ -9,8 +9,7 @@ from other import clear
 def test_channel_messages_valid():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0] # May change to auth_register().get
+    token = auth.auth_register(*user)['token']
     
     new_channel = channels.channels_create(token, 'test channel', True)
     channel_id = new_channel.get('channel_id')
@@ -22,8 +21,7 @@ def test_channel_messages_valid():
 def test_channel_messages_invalid_channel():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0] # May change to auth_register().get
+    token = auth.auth_register(*user)['token']
 
     channel_id = 123
     with pytest.raises(InputError):
@@ -33,8 +31,7 @@ def test_channel_messages_invalid_channel():
 def test_channel_messages_invalid_start():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0] # May change to auth_register().get
+    token = auth.auth_register(*user)['token']
 
     new_channel = channels.channels_create(token, 'test channel', True)
     channel_id = new_channel.get('channel_id')
@@ -50,15 +47,13 @@ def test_channel_messages_invalid_start():
 def test_channel_messages_no_access():
     clear()
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user1)
-    token1 = user1[0] # May change to auth_register().get
+    token1 = auth.auth_register(*user1)['token']
 
     new_channel = channels.channels_create(token1, 'test channel', False)
     channel_id = new_channel.get('channel_id')
 
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    auth.auth_register(*user2)
-    token2 = user2[0] # May change to auth_register().get
+    token2 = auth.auth_register(*user2)['token']
     
     passed = {'messages': [], 'start': 0, 'end': -1}
     assert channel.channel_messages(token1, channel_id, 0) == passed
@@ -78,12 +73,10 @@ def test_channel_messages_no_access():
 def test_channel_leave_valid():
     clear()
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user1)
-    token1 = user1[0] # May change to auth_register().get
+    token1 = auth.auth_register(*user1)['token']
 
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    auth.auth_register(*user2)
-    token2 = user2[0] # May change to auth_register().get
+    token2 = auth.auth_register(*user2)['token']
 
     new_channel = channels.channels_create(token1, 'test channel', True)
     channel_id = new_channel.get('channel_id')
@@ -91,7 +84,7 @@ def test_channel_leave_valid():
     channel.channel_leave(token2, channel_id)
 
     user1_details = {
-        'u_id': 'haydeneverest',
+        'u_id': '1',
         'name_first': 'Hayden',
         'name_last': 'Everest',
     }
@@ -107,24 +100,21 @@ def test_channel_leave_valid():
 def test_channel_leave_invalid_channel():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token1 = user[0] # May change to auth_register().get
+    token = auth.auth_register(*user)['token']
 
-    new_channel = channels.channels_create(token1, 'test channel', True)
+    new_channel = channels.channels_create(token, 'test channel', True)
     channel_id = new_channel.get('channel_id') + 1 # Does this work?
     with pytest.raises(InputError):
-        channel.channel_leave(token1, channel_id)
+        channel.channel_leave(token, channel_id)
 
 # TRYING TO LEAVE A CHANNEL WHICH USER IS NOT IN
 def test_channel_leave_not_member():
     clear()
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user1)
-    token1 = user1[0] # May change to auth_register().get
+    token1 = auth.auth_register(*user1)['token']
 
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    auth.auth_register(*user2)
-    token2 = user2[0] # May change to auth_register().get
+    token2 = auth.auth_register(*user2)['token']
 
     new_channel = channels.channels_create(token1, 'test channel', False)
     channel_id = new_channel.get('channel_id')
@@ -151,24 +141,22 @@ def test_channel_details():
 def test_channel_join_valid():
     clear()
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user1)
-    token1 = user1[0] # May change to auth_register().get
+    token1 = auth.auth_register(*user1)['token']
 
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    auth.auth_register(*user2)
-    token2 = user2[0] # May change to auth_register().get
+    token2 = auth.auth_register(*user2)['token']
 
     new_channel = channels.channels_create(token1, 'test channel', True)
     channel_id = new_channel.get('channel_id')
     channel.channel_join(token2, channel_id)
 
     user1_details = {
-        'u_id': 'haydeneverest',
+        'u_id': '1',
         'name_first': 'Hayden',
         'name_last': 'Everest'
     }
     user2_details = {
-        'u_id': 'andrasarato',
+        'u_id': '2',
         'name_first': 'Andras',
         'name_last': 'Arato'
     }
@@ -183,23 +171,21 @@ def test_channel_join_valid():
 # INVALID CHANNEL
 def test_channel_join_invalid_channel():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token1 = user[0] # May change to auth_register().get
+    token = auth.auth_register(*user)['token']
 
     channel_id = 123
     with pytest.raises(InputError):
-        channel.channel_join(token1, channel_id)
+        channel.channel_join(token, channel_id)
 
 # PRIVATE CHANNEL
 def test_channel_join_private_channel():
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user1)
-    token1 = user1[0] # May change to auth_register().get
+    token1 = auth.auth_register(*user1)['token']
 
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    auth.auth_register(*user2)
-    token2 = user2[0] # May change to auth_register().get
-    user2_u_id = 'andrasarato'
+    account = auth.auth_register(*user2)
+    token2 = account['token']
+    u_id2 = account['u_id']
 
     new_channel = channels.channels_create(token1, 'test channel', False)
     channel_id = new_channel.get('channel_id')
@@ -207,16 +193,16 @@ def test_channel_join_private_channel():
     with pytest.raises(AccessError):
         channel.channel_join(token2, channel_id)
     
-    channel.channel_addowner(token1, channel_id, user2_u_id)
+    channel.channel_addowner(token1, channel_id, u_id2)
     channel.channel_join(token2, channel_id)
 
     user1_details = {
-        'u_id': 'haydeneverest',
+        'u_id': '1',
         'name_first': 'Hayden',
         'name_last': 'Everest'
     }
     user2_details = {
-        'u_id': 'andrasarato',
+        'u_id': '2',
         'name_first': 'Andras',
         'name_last': 'Arato'
     }
