@@ -6,27 +6,53 @@ from error import InputError, AccessError
 # CHANNEL_INVITE TESTS
 
 def test_channel_invite_valid():
-    valid_invite = channel.channel_invite('123456', '1', '1')
-    user_invite = channel.channel_invite('123456', '1', '1')
-    assert channel.channel_invite(*user_invite) == valid_invite
+    
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token = auth.auth_register(*user)['token']
+    
+    valid_channel = channel.channel_create(token, 'test channel', True)
+    channel_id = valid_channel.get('channel_id')
+    
+    current_channel = channel.channel_details('validemail@gmail.com', channel_id)
+    u_id = current_channel.get('u_id')
+    
+    user_details = {
+        'u_id': u_id,
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+
+    }
+    
+    passed = {
+        'name': 'test channel',
+        'owner_members': [user_details],
+        'all_members': [user_details]
+    }   
+
+    assert channel.channel_details(token, channel_id) == passed
 
 # assuming that the channel id aand u_id is a number
 
 def test_channel_invite_channel_invalid():
-    valid_invite = channel.channel_invite('123456', '1', '1')
-    token = valid_invite[0]
-    channel_id = 132
-
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token = auth.auth_register(*user)['token']
+    
+    valid_channel = channel.channel_create(token, 'test channel', True)
+    channel_id = valid_channel.get('channel_id') + 1 #getting and invalid channel_id
+    
     with pytest.raises(InputError):
         channel.channel_invite(token, channel_id, u_id)
 
 def test_channel_invite_user_id_invalid():
-    valid_invite = channel.channel_invite('123456', '1', '1')
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0]
-    u_id = 123
-
+    token = auth.auth_register(*user)['token']
+   
+    valid_channel = channel.channel_create(token, 'test channel', True)
+    channel_id = valid_channel.get('channel_id')
+    
+    current_channel = channel.channel_details('validemail@gmail.com', channel_id)
+    u_id = current_channel.get('u_id') + 1 # following method in other tests for invalid id (need checking)
+    
     with pytest.raises(InputError):
         channel.channel_invite(token, channel_id, u_id)
 
@@ -35,15 +61,22 @@ def test_channel_invite_user_id_invalid():
 
 def test_channel_invite_access_error():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0]
+    token = auth.auth_register(*user)['token']
 
-    new_channel = channels.channels_create(token, 'test channel', True)
+    user2 = ('differentemail@gmail.com', 'asdkjans123', 'John', 'Smith')
+    token2 = auth.auth_register(*user2)['token']
+
+    new_channel = channels.channels_create(token, 'test channel', False)
+    channel_id = new_channel.get('channel_id')
+
+    current_channel = channel.channel_details(token, channel_id)
+    u_id = current_channel.get('u_id')
+
     member = new_channel.get('all_members')
 
-    assert user == member #if the user is already a member of channel
+    assert user or user2 == member #if the user is authorised member of channel
     with pytest.raises(AccessError):
-         channel.channel_invite(token, channel_id, u_id) 
+         channel.channel_invite(token2, channel_id, u_id) 
 
 # CHANNEL_MESSAGES TESTS
 
