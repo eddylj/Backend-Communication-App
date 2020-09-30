@@ -89,4 +89,6 @@ def new_handle(handle, num):
     if len(handle) <= (20 - offset):
         return handle + str(num)
     else:
+        # Workaround method to replace a substring inside a string from:
+        # https://stackoverflow.com/questions/49701989/python-replace-character-range-in-a-string-with-new-string/49702020
         return str(num).join([handle[:20 - offset], handle[20:]])
