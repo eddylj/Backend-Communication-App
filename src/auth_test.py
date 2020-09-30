@@ -42,6 +42,8 @@ def test_auth_register_invalid_email():
     invalid_email = ('invalidemail.com', '123abc!@#', 'Hayden', 'Everest')
     with pytest.raises(InputError):
         auth.auth_register(*invalid_email)
+    clear()
+    print(data['users'])
 
 # EMAIL ALREADY IN USE
 def test_auth_register_email_taken():
@@ -51,6 +53,8 @@ def test_auth_register_email_taken():
     auth.auth_register(*user1)
     with pytest.raises(InputError):
         auth.auth_register(*user2)
+    clear()
+    print(data['users'])
 
 # INVALID PASSWORD
 def test_auth_register_invalid_pw():
@@ -88,14 +92,52 @@ def test_auth_register_invalid_name():
                             eeeeeeeeeeeeeeeeee\
                             eeeeeeeeeeeeeeeeee\
                             eeeeeeeeeeeeeerest')
-    print(data)
-
     clear()
 
+# AUTH_LOGOUT TESTS
+
+# BASE CASE
 def test_auth_logout_success(): 
-    clear()
-    assert auth.auth_logout(None) == {'is_success': True,}
 
-def test_auth_logout_fail():
+    # Register user1
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+    token = user[0]
+
+    # Login
+    auth.auth_login('validemail@gmail.com', '123abc!@#')
+
+    logout_success = {'is_success' : True}
+    # Logout after logging in
+    assert auth.auth_logout(token) == logout_success
+    
     clear()
-    assert auth.auth_logout("online") == {'is_success': True,}
+
+# LOGGING OUT WITHOUT LOGGING IN
+def test_auth_logout_fail():
+    
+    # Register two users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user1)
+    token1 = user1[0]
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    auth.auth_register(*user2)
+    token2 = user2[0] 
+
+    logout_success = {'is_success' : True}
+    logout_fail = {'is_success' : False}
+
+    # Try logging out without logging in
+    assert auth.auth_logout(token1) == logout_fail
+
+    # Login with user1
+    auth.auth_login('validemail@gmail.com', '123abc!@#')
+
+    # Try logging out with user2, who isn't logged in
+    assert auth.auth_logout(token2) == logout_fail
+
+    # Logout with user1
+    assert auth.auth_logout(token1) == logout_success
+
+    clear()

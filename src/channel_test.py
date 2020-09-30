@@ -16,6 +16,7 @@ def test_channel_messages_valid():
 
     passed = {'messages': [], 'start': 0, 'end': -1}
     assert channel.channel_messages(token, channel_id, 0) == passed
+    clear()
     
 # INVALID CHANNEL
 def test_channel_messages_invalid_channel():
@@ -26,6 +27,7 @@ def test_channel_messages_invalid_channel():
     channel_id = 123
     with pytest.raises(InputError):
         channel.channel_messages(token, channel_id, 0)
+    clear()
 
 # INVALID START PARAMETER
 def test_channel_messages_invalid_start():
@@ -42,6 +44,7 @@ def test_channel_messages_invalid_start():
         
         # Start < 0
         channel.channel_messages(token, channel_id, -1)
+    clear()
 
 # INACCESSBILE CHANNEL
 def test_channel_messages_no_access():
@@ -59,6 +62,7 @@ def test_channel_messages_no_access():
     assert channel.channel_messages(token1, channel_id, 0) == passed
     with pytest.raises(AccessError):
         channel.channel_messages(token2, channel_id, 0)
+    clear()
 
 # Can't implement other cases without messages_send(), which isn't in iter1?
 
@@ -95,6 +99,7 @@ def test_channel_leave_valid():
     }
 
     assert channel.channel_details(token1, channel_id) == passed
+    clear()
 
 # INVALID CHANNEL
 def test_channel_leave_invalid_channel():
@@ -126,13 +131,48 @@ def test_channel_leave_not_member():
 
 # CHANNEL_DETAILS TEST
 def test_channel_details():
-    pass
-    # -create user1 and user2
-    # -use user1 to create a channel
-    # - Try channel details, must show user1 as owner and also member
-    # - Invite user2, must show user1 as owner and both user1 and 2 as members
-    #user1 = ()
 
+    # Register two users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user1)
+    token1 = user1[0]
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    auth.auth_register(*user2)
+    token2 = user2[0] 
+
+    # Create a channel with user1
+    channel_id = channels.channels_create(token1, "Test Channel", True)
+
+    user1_details = {
+        'u_id': 1,
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+    }
+    user2_details = {
+        'u_id': 2,
+        'name_first': 'Andras',
+        'name_last': 'Arato',
+    }
+    passed = {
+        'name': 'Test Channel',
+        'owner_members': [user1_details],
+        'all_members': [user1_details],
+    }
+    # user1 owner, user1 member
+    assert channel.channel_details(token1, channel_id) == passed
+
+    channel.channel_invite(token1, channel_id, user2_details['u_id'])
+
+    passed = {
+        'name': 'Test Channel',
+        'owner_members': [user1_details],
+        'all_members': [user1_details, user2_details],
+    }
+
+    assert channel.channel_details(token1, channel_id) == passed
+
+    clear()
 
 
 # CHANNEL_JOIN TESTS
@@ -151,18 +191,18 @@ def test_channel_join_valid():
     channel.channel_join(token2, channel_id)
 
     user1_details = {
-        'u_id': '1',
+        'u_id': 1,
         'name_first': 'Hayden',
-        'name_last': 'Everest'
+        'name_last': 'Everest',
     }
     user2_details = {
-        'u_id': '2',
+        'u_id': 2,
         'name_first': 'Andras',
-        'name_last': 'Arato'
+        'name_last': 'Arato',
     }
     passed = {
         'name': 'test channel',
-        'owner_members': [user1_details, user2_details],
+        'owner_members': [user1_details], #, user2_details], only one owner?
         'all_members': [user1_details, user2_details]
     }
 
@@ -199,12 +239,12 @@ def test_channel_join_private_channel():
     user1_details = {
         'u_id': '1',
         'name_first': 'Hayden',
-        'name_last': 'Everest'
+        'name_last': 'Everest',
     }
     user2_details = {
         'u_id': '2',
         'name_first': 'Andras',
-        'name_last': 'Arato'
+        'name_last': 'Arato',
     }
     passed = {
         'name': 'test channel',
@@ -214,3 +254,4 @@ def test_channel_join_private_channel():
 
     assert channel.channel_details(token1, channel_id) == passed
     
+    clear()
