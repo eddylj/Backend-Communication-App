@@ -101,8 +101,7 @@ def test_auth_logout_success():
     clear()
     # Register user1
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0]
+    token = auth.auth_register(*user)['token']
 
     # Login
     auth.auth_login('validemail@gmail.com', '123abc!@#')
