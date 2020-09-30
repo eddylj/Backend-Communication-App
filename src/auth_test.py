@@ -1,41 +1,8 @@
 import auth
 import pytest
 from error import InputError
-
-#AUTH_LOGIN TESTS
-
-#VALID EMAIL
-def test_auth_login_user_email():
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-
-    passed = {'u_id': '1', 'token': 'validemail@gmail.com'}
-    user_email = ('validemail@gmail.com', '123abc!@#')
-    assert auth.auth_login(*user_email) == passed
-
-#INVALID EMAIL
-def test_auth_login_invalid_email():
-    invalid_email = ('invalidemail.com', '123abc!@#')
-    with pytest.raises(InputError)
-        auth.auth_login(*invalid_email)
-
-#NON USER EMAIL
-def test_auth_login_non_user_email():
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-
-    non_user_email = ('nonuseremail@gmail.com', '123abc!@#')
-    with pytest.raises(InputError)
-        auth.auth_login(*non_user_email)
-
-#WRONG PASSWORD
-def test_auth_login_wrong_password():
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-
-    wrong_password = ('validemail@gmail.com', 'wrongpassword')
-    with pytest.raises(InputError)
-        auth.auth_login(*wrong_password)
+from other import clear
+from data import data
 
 # ASSERT VALUES TO BE CHANGED ACCORDINGLY
 
@@ -43,10 +10,13 @@ def test_auth_login_wrong_password():
 
 # BASE TEST - Valid user registration
 def test_auth_register_valid():
-    passed = {'u_id': 'haydeneverest', 'token': 'validemail@gmail.com'}
+    passed = {'u_id': 1, 'token': 'validemail@gmail.com'}
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     assert auth.auth_register(*user) == passed
-
+    
+    print(data['users']) 
+    clear()
+    print(data['users']) 
     '''
     Style?
     assert auth.auth_register('validemail@gmail.com',
@@ -68,14 +38,18 @@ def test_auth_register_invalid_email():
     invalid_email = ('invalidemail.com', '123abc!@#', 'Hayden', 'Everest')
     with pytest.raises(InputError):
         auth.auth_register(*invalid_email)
+    clear()
+    print(data['users'])
 
 # EMAIL ALREADY IN USE
 def test_auth_register_email_taken():
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    user2 = ('validemail@gmail.com', '123abc!@#', 'Andras', 'Arato')
+    user1 = ('asdf@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    user2 = ('asdf@gmail.com', '123abc!@#', 'Andras', 'Arato')
     auth.auth_register(*user1)
     with pytest.raises(InputError):
         auth.auth_register(*user2)
+    clear()
+    print(data['users'])
 
 # INVALID PASSWORD
 def test_auth_register_invalid_pw():
@@ -85,6 +59,8 @@ def test_auth_register_invalid_pw():
     with pytest.raises(InputError):
         auth.auth_register(*short_pw)
         auth.auth_register(*empty_pw)
+    clear()
+    print(data['users'])
 
 # INVALID NAME
 def test_auth_register_invalid_name():
@@ -107,11 +83,52 @@ def test_auth_register_invalid_name():
                             eeeeeeeeeeeeeeeeee\
                             eeeeeeeeeeeeeeeeee\
                             eeeeeeeeeeeeeerest')
+    clear()
 
+# AUTH_LOGOUT TESTS
+
+# BASE CASE
 def test_auth_logout_success(): 
-#	assert auth.auth_logout(None) == False
 
-	assert auth.auth_logout(None) == {'is_success': True,}
+    # Register user1
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+    token = user[0]
 
+    # Login
+    auth.auth_login('validemail@gmail.com', '123abc!@#')
+
+    logout_success = {'is_success' : True}
+    # Logout after logging in
+    assert auth.auth_logout(token) == logout_success
+    
+    clear()
+
+# LOGGING OUT WITHOUT LOGGING IN
 def test_auth_logout_fail():
-	assert auth.auth_logout("online") == {'is_success': True,}
+    
+    # Register two users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user1)
+    token1 = user1[0]
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    auth.auth_register(*user2)
+    token2 = user2[0] 
+
+    logout_success = {'is_success' : True}
+    logout_fail = {'is_success' : False}
+
+    # Try logging out without logging in
+    assert auth.auth_logout(token1) == logout_fail
+
+    # Login with user1
+    auth.auth_login('validemail@gmail.com', '123abc!@#')
+
+    # Try logging out with user2, who isn't logged in
+    assert auth.auth_logout(token2) == logout_fail
+
+    # Logout with user1
+    assert auth.auth_logout(token1) == logout_success
+
+    clear()
