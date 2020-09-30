@@ -92,7 +92,6 @@ def test_channel_leave_valid():
         'u_id': 'haydeneverest',
         'name_first': 'Hayden',
         'name_last': 'Everest',
-        'handle' : 'haydeneverest',
     }
     passed = {
         'name': 'test channel',
@@ -153,13 +152,11 @@ def test_channel_details():
         'u_id': 1,
         'name_first': 'Hayden',
         'name_last': 'Everest',
-        'handle' : 'haydeneverest',
     }
     user2_details = {
         'u_id': 2,
         'name_first': 'Andras',
         'name_last': 'Arato',
-        'handle' : 'andrasarato',
     }
     passed = {
         'name': 'Test Channel',
@@ -202,13 +199,11 @@ def test_channel_join_valid():
         'u_id': 1,
         'name_first': 'Hayden',
         'name_last': 'Everest',
-        'handle' : 'haydeneverest',
     }
     user2_details = {
         'u_id': 2,
         'name_first': 'Andras',
         'name_last': 'Arato',
-        'handle' : 'andrasarato',
     }
     passed = {
         'name': 'test channel',
@@ -250,13 +245,11 @@ def test_channel_join_valid():
         'u_id': 'haydeneverest',
         'name_first': 'Hayden',
         'name_last': 'Everest',
-        'handle' : 'haydeneverest',
     }
     user2_details = {
         'u_id': 'andrasarato',
         'name_first': 'Andras',
         'name_last': 'Arato',
-        'handle' : 'andrasarato',
     }
     passed = {
         'name': 'test channel',

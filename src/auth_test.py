@@ -10,7 +10,7 @@ from data import data
 
 # BASE TEST - Valid user registration
 def test_auth_register_valid():
-    passed = {'u_id': 1, 'token': '12345'}
+    passed = {'u_id': 1, 'token': 'validemail@gmail.com'}
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     assert auth.auth_register(*user) == passed
     
@@ -98,7 +98,7 @@ def test_auth_logout_success():
     # Login
     auth.auth_login('validemail@gmail.com', '123abc!@#')
 
-    logout_success = True
+    logout_success = {'is_success' : True}
     # Logout after logging in
     assert auth.auth_logout(token) == logout_success
     
@@ -116,8 +116,8 @@ def test_auth_logout_fail():
     auth.auth_register(*user2)
     token2 = user2[0] 
 
-    logout_success = True
-    logout_fail = False
+    logout_success = {'is_success' : True}
+    logout_fail = {'is_success' : False}
 
     # Try logging out without logging in
     assert auth.auth_logout(token1) == logout_fail

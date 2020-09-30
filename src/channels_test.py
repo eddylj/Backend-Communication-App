@@ -93,14 +93,14 @@ def channels_list_base():
     ]
 
     # Assert only user 1 can see the channel
-    assert channels.channels_list(token2) == channel_list
+    assert channels.channels_list(token1) == channel_list
     assert channels.channels_list(token2) == empty_channels_list
     
     # Invite user 2
     channel.channel_invite(token1, channel_id, u_id2)
 
     # Assert both users can see the channel
-    assert channels.channels_list(token2) == channel_list
+    assert channels.channels_list(token1) == channel_list
     assert channels.channels_list(token2) == channel_list
 
     clear()
