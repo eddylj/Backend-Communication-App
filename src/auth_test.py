@@ -131,3 +131,5 @@ def test_auth_logout_fail():
 
     # Try logging out right after logging in
     assert auth.auth_logout(token) == logout_success
+
+clear()
