@@ -7,8 +7,7 @@ from other import clear
 # CHANNELS_CREATE TESTS
 
 # Base Case
-def channels_create_success():
-    clear()
+def test_hannels_create_success():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
     token = user[0]
@@ -26,7 +25,7 @@ def channels_create_success():
 
 
 # Will fail, because name is longer than 20 characters
-def channels_create_fail():
+def test_channels_create_fail():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
     token = user[0]
@@ -37,7 +36,7 @@ def channels_create_fail():
     clear()
 
 # CHANNELS_LISTALL TEST
-def channels_listall_base():
+def test_channels_listall_base():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
     token = user[0]
@@ -78,7 +77,7 @@ def channels_listall_base():
 
 # CHANNELS_LIST TEST
 
-def channels_list_base():
+def test_channels_list_base():
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user1)
     token1 = user1[0]
