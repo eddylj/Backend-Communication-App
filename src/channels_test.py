@@ -8,6 +8,7 @@ from other import clear
 
 # Base Case
 def channels_create_success():
+    clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
     token = user[0]
@@ -22,7 +23,7 @@ def channels_create_success():
         }
     ]
 
-    clear()
+
 
 # Will fail, because name is longer than 20 characters
 def channels_create_fail():

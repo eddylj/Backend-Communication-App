@@ -39,9 +39,6 @@ def channels_create(token, name, is_public):
         if user['email'] == token:
             owner = user
 
-    if owner == {}:
-        raise InputError
-
 
     new_channel = {
         'id' : len(data['channels']) + 1,
