@@ -3,11 +3,11 @@ from error import InputError
 
 def channels_list(token):
     
-    token_user = ''
+    # token_user = ''
 
-    for user in data['users']:
-        if user['email'] == token:
-            token_user = 
+    # for user in data['users']:
+    #     if user['email'] == token:
+    #         token_user = 
 
 
 
@@ -43,6 +43,8 @@ def channels_create(token, name, is_public):
     new_channel = {
         'id' : len(data['channels']) + 1,
         'name' : name,
+        'owners' : [],
+        'members' : [],
         # 'is_public' : is_public,
         # 'owner' : owner,
         # 'members' : [owner],
