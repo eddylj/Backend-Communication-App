@@ -35,10 +35,8 @@ def auth_register(email, password, name_first, name_last):
     if not is_valid(email):
         raise InputError
 
-    '''
-    Check if email is taken. Also checks for people with the same name to
-    create unique handles.
-    '''
+    # Check if email is taken. Also checks for people with the same name to
+    # create unique handles.
     number = 0
     for user in data['users']:
         if user['email'] == email:
@@ -89,4 +87,6 @@ def new_handle(handle, num):
     if len(handle) <= (20 - offset):
         return handle + str(num)
     else:
+        # Workaround method to replace a substring inside a string from:
+        # https://stackoverflow.com/questions/49701989/python-replace-character-range-in-a-string-with-new-string/49702020
         return str(num).join([handle[:20 - offset], handle[20:]])

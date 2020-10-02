@@ -4,32 +4,53 @@ from error import InputError
 from other import clear
 from data import data
 
-# ASSERT VALUES TO BE CHANGED ACCORDINGLY
+#AUTH_LOGIN TESTS
+
+#VALID EMAIL
+def test_auth_login_user_email():
+    clear()
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account = auth.auth_register(*user)
+    token = account['token']
+    u_id = account['u_id']
+
+    passed = {'u_id': u_id, 'token': token}
+    valid_login = ('validemail@gmail.com', '123abc!@#')
+    assert auth.auth_login(*valid_login) == passed
+
+#INVALID EMAIL
+def test_auth_login_invalid_email():
+    clear()
+    invalid_email = ('invalidemail.com', '123abc!@#')
+    with pytest.raises(InputError):
+        auth.auth_login(*invalid_email)
+
+#NON USER EMAIL
+def test_auth_login_non_user_email():
+    clear()
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+
+    non_user_email = ('nonuseremail@gmail.com', '123abc!@#')
+    with pytest.raises(InputError):
+        auth.auth_login(*non_user_email)
+
+#WRONG PASSWORD
+def test_auth_login_wrong_password():
+    clear()
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    auth.auth_register(*user)
+
+    wrong_password = ('validemail@gmail.com', 'wrongpassword')
+    with pytest.raises(InputError):
+        auth.auth_login(*wrong_password)
 
 # AUTH_REGISTER TESTS
 
 # BASE TEST - Valid user registration
 def test_auth_register_valid():
-    '''
-    Because we can't guarantee other people's implementation is going to use the
-    same u_id and token system as us (not a black box test), I don't think we 
-    can explicitly assert auth_register against an expected value. 
-    
-    Proposed workaround is to assume that auth_logout and auth_login is 
-    guaranteed to work, so the return value of auth_login should match up with 
-    auth_register (checking if u_id & token is valid) and auth_logout should 
-    succeed (checking if token is valid).
-
-    Two glaring problems:
-        1. IDK if we *can* assume that auth_login/logout works in auth_test,
-           even though we're testing register here.
-        2. Token would probably change in later iterations, so generated tokens
-           for register and login would probably be different.
-    '''
     clear()
-    # passed = {'u_id': 1, 'token': 'validemail@gmail.com'}
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    # assert auth.auth_register(*user) == passed
     account = auth.auth_register(*user)
     token = account['token']
     email, password, *_ = user
@@ -94,15 +115,17 @@ def test_auth_register_invalid_name():
                             eeeeeeeeeeeeeerest')
     clear()
 
+# Will need to check for handle generation, which requires user_profile (not in
+# iteration 1)
+
 # AUTH_LOGOUT TESTS
 
 # BASE CASE
 def test_auth_logout_success(): 
-
+    clear()
     # Register user1
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0]
+    token = auth.auth_register(*user)['token']
 
     # Login
     auth.auth_login('validemail@gmail.com', '123abc!@#')
@@ -111,33 +134,26 @@ def test_auth_logout_success():
     # Logout after logging in
     assert auth.auth_logout(token) == logout_success
     
-    clear()
-
 # LOGGING OUT WITHOUT LOGGING IN
 def test_auth_logout_fail():
-    
-    # Register two users
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user1)
-    token1 = user1[0]
-
-    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    auth.auth_register(*user2)
-    token2 = user2[0] 
+    clear()
+    # Register a user
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token = auth.auth_register(*user)['token']
 
     logout_success = {'is_success' : True}
     logout_fail = {'is_success' : False}
 
-    # Try logging out without logging in
-    assert auth.auth_logout(token1) == logout_fail
+    # Try logging out right after registering
+    assert auth.auth_logout(token) == logout_success
 
-    # Login with user1
+    # Try logging out, without being logged in
+    assert auth.auth_logout(token) == logout_fail
+
+    # Login with user
     auth.auth_login('validemail@gmail.com', '123abc!@#')
 
-    # Try logging out with user2, who isn't logged in
-    assert auth.auth_logout(token2) == logout_fail
+    # Try logging out right after logging in
+    assert auth.auth_logout(token) == logout_success
 
-    # Logout with user1
-    assert auth.auth_logout(token1) == logout_success
-
-    clear()
+clear()
