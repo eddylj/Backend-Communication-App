@@ -140,8 +140,4 @@ def test_auth_logout_fail():
     # Logout with user1
     assert auth.auth_logout(token1) == logout_success
 
-<<<<<<< HEAD
     clear()
-=======
-    clear()
->>>>>>> main/test
