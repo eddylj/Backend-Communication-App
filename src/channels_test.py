@@ -1,6 +1,8 @@
 import auth, channel, channels
 import pytest
+from data import data
 from error import InputError, AccessError
+from other import clear
 
 # CHANNELS_CREATE TESTS
 
@@ -11,7 +13,7 @@ def channels_create_success():
     token = user[0]
     name = "Channel 1"
     channel_id = channels.channels_create(token, name, True) 
-    assert channels[0] == {"id" : channel_id, "name" : name,}
+    assert data['channels'] == [{"id" : channel_id['id'], "name" : name,}]
 
     clear()
 
@@ -30,7 +32,7 @@ def channels_create_fail():
 def channels_listall_base():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
-    token = users[0]
+    token = user[0]
 
     name1 = "Channel 1"
     id1 = channels.channels_create(token, name1, True)
@@ -43,16 +45,16 @@ def channels_listall_base():
 
     channel_list = [
         {
-            "id" = id1,
-            "name" = name1,
+            'id' : id1['id'],
+            'name' : name1,
         },
         {
-            "id" = id2,
-            "name" = name2,
+            'id' : id2['id'],
+            'name' : name2,
         },
         {
-            "id" = id3,
-            "name" = name3,
+            'id' : id3['id'],
+            'name' : name3,
         }
     ]
     
@@ -87,8 +89,8 @@ def channels_list_base():
 
     channel_list = [
         {
-            "id" = channel_id
-            "name" = "Test Channel"
+            'id' : channel_id['id'],
+            'name' : 'Test Channel',
         }
     ]
 
