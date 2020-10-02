@@ -90,8 +90,6 @@ def test_channels_list_base():
     u_id2 = 2
 
     empty_channels_list = [
-        {
-        }
     ]
 
     # Assert no channels listed right now
@@ -109,7 +107,7 @@ def test_channels_list_base():
             'members' : ['validemail@gmail.com'],
         }
     ]
-
+    
     # Assert only user 1 can see the channel
     assert channels.channels_list(token1) == channel_list
     assert channels.channels_list(token2) == empty_channels_list
