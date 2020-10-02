@@ -47,20 +47,20 @@ def channels_listall_base():
         {
             'id' : id1['id'],
             'name' : name1,
-            'owners' : [],
-            'members' : [],
+            'owners' : ['validemail@gmail.com'],
+            'members' : ['validemail@gmail.com'],
         },
         {
             'id' : id2['id'],
             'name' : name2,
-            'owners' : [],
-            'members' : [],
+            'owners' : ['validemail@gmail.com'],
+            'members' : ['validemail@gmail.com'],
         },
         {
             'id' : id3['id'],
             'name' : name3,
-            'owners' : [],
-            'members' : [],
+            'owners' : ['validemail@gmail.com'],
+            'members' : ['validemail@gmail.com'],
         }
     ]
     
@@ -97,8 +97,8 @@ def channels_list_base():
         {
             'id' : channel_id['id'],
             'name' : 'Test Channel',
-            'owners' : [],
-            'members' : [],
+            'owners' : ['validemail@gmail.com'],
+            'members' : ['validemail@gmail.com'],
         }
     ]
 
