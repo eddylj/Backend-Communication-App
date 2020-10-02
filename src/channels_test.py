@@ -8,6 +8,7 @@ from other import clear
 
 # Base Case
 def test_channels_create_success():
+    clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
     token = user[0]
@@ -23,9 +24,9 @@ def test_channels_create_success():
     ]
 
 
-
 # Will fail, because name is longer than 20 characters
 def test_channels_create_fail():
+    clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
     token = user[0]
@@ -33,10 +34,10 @@ def test_channels_create_fail():
     with pytest.raises(InputError):
         channels.channels_create(token, name, True)
 
-    clear()
 
 # CHANNELS_LISTALL TEST
 def test_channels_listall_base():
+    clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
     token = user[0]
@@ -73,11 +74,11 @@ def test_channels_listall_base():
     
     assert channels.channels_listall(token) == channel_list
 
-    clear()
 
 # CHANNELS_LIST TEST
 
 def test_channels_list_base():
+    clear()
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user1)
     token1 = user1[0]
@@ -119,5 +120,3 @@ def test_channels_list_base():
     # Assert both users can see the channel
     assert channels.channels_list(token1) == channel_list
     assert channels.channels_list(token2) == channel_list
-
-    clear()

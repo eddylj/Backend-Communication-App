@@ -3,23 +3,21 @@ from error import InputError
 
 def channels_list(token):
     
-    # token_user = ''
+    token_user = ''
 
-    # for user in data['users']:
-    #     if user['email'] == token:
-    #         token_user = 
+    for user in data['users']:
+        if user['email'] == token:
+            token_user = token
+    
+    channel_list = [
+    ]
 
+    for channel in data['channels']:
+        for member in channel['members']:
+            if member == token_user:
+                channel_list.append(channel)
 
-
-
-    return {
-        'channels': [
-        	{
-        		'channel_id': 1,
-        		'name': 'My Channel',
-        	}
-        ],
-    }
+    return channel_list
 
 def channels_listall(token):
 
