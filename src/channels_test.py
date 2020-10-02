@@ -7,7 +7,7 @@ from other import clear
 # CHANNELS_CREATE TESTS
 
 # Base Case
-def test_hannels_create_success():
+def test_channels_create_success():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
     token = user[0]
