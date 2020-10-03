@@ -18,7 +18,7 @@ def test_channel_invite_valid():
     token2 = account2['token']
     u_id2 = account2['u_id']
     
-    channel_id = channels.channels_create(token1, 'test channel', True)
+    channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
     
     user1_details = {
         'u_id': u_id1,
