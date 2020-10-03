@@ -122,7 +122,7 @@ def channel_addowner(token, channel_id, u_id):
         raise InputError
 
     if not is_owner(channel_id, caller_id) and caller_id != 0:
-        return AccessError
+        raise AccessError
 
     data['channels'][channel_id]['owners'].append(u_id)
     return {}
