@@ -604,3 +604,36 @@ def test_channel_removeowner_last_owner():
 
     with pytest.raises(InputError):
         channel.channel_removeowner(token1, channel_id, u_id2)
+
+def test_channel_inactive():
+    clear()
+
+    # Create a user
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token = auth.auth_register(*user)['token']
+
+    # If user becomes inactive
+    auth.auth_logout(token)
+
+    # Cannot use when token is inactive
+    with pytest.raises():
+        channel.channel_invite(token)
+
+    with pytest.raises():
+        channel.channel_details(token)
+
+    with pytest.raises():
+        channel.channel_messages(token)
+
+    with pytest.raises():
+        channel.channel_leave(token)
+
+    with pytest.raises():
+        channel.channel_join(token)
+
+    with pytest.raises():
+        channel.channel_addowner(token)
+
+    with pytest.raises():
+        channel.channel_removeowner(token)
+    
