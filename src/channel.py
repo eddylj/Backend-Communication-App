@@ -1,9 +1,15 @@
 from other import is_active
 from data import data
+from error import InputError, AccessError
 
 def channel_invite(token, channel_id, u_id):
     inviter = is_active(token)
 
+    # Invalid user
+    if inviter == None:
+        raise InputError
+
+        
     # Check if user is part of the channel
     
     return {
