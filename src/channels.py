@@ -1,13 +1,15 @@
 from data import data
 from error import InputError
+from other import is_active
 
 def channels_list(token):
     
-    token_user = ''
+    # Check if the token is active
+    token_user = is_active(token)
 
-    for user in data['users']:
-        if user['email'] == token:
-            token_user = token
+    # for user in data['users']:
+    #     if user['email'] == token:
+    #         token_user = token
     
     channel_list = [
     ]
@@ -29,14 +31,15 @@ def channels_create(token, name, is_public):
     if len(name) > 20:
         raise InputError
 
-    # Finding the creator/owner of the channel
-    owner = {}
+    # # Finding the creator/owner of the channel
+    # owner = {}
 
-    for user in data['users']:
-        # For now, the token is the equivalent to the user's email
-        if user['email'] == token:
-            owner = user
-
+    # for user in data['users']:
+    #     # For now, the token is the equivalent to the user's email
+    #     if user['email'] == token:
+    #         owner = user
+    #print(f"token is : {token}")
+    owner = is_active(token)
 
     new_channel = {
         'id' : len(data['channels']) + 1,
