@@ -13,6 +13,8 @@
 ### channel_leave()
 - Leave = user voluntarily leaving a channel, not a target user being removed by an "owner".
 - Creator of a channel can leave that channel, however the channel remains.
+### channel_join()
+- Attempting to join a channel you're already part of raises InputError.
 
 ## Channels
 ### channels_create()

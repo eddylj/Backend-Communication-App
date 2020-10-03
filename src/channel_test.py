@@ -260,5 +260,15 @@ def test_channel_join_private_channel():
     }
 
     assert channel.channel_details(token1, channel_id) == passed
-    
+
+# JOINING A CHANNEL USER IS ALREADY IN
+def test_channel_join_already_member():
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token = auth.auth_register(*user)['token']
+
+    new_channel = channels.channels_create(token, 'test channel', False)
+    channel_id = new_channel.get('channel_id')
+    with pytest.raises(InputError):
+        channel.channel_join(token, channel_id)
+
 clear()
