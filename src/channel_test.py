@@ -217,8 +217,10 @@ def test_channel_leave_not_member():
     with pytest.raises(AccessError):
         channel.channel_leave(token2, channel_id)
     
-# CHANNEL_DETAILS TEST
-def test_channel_details():
+# CHANNEL_DETAILS TESTS
+
+# BASE CASE
+def test_channel_details_valid():
     clear()
     # Register two users
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -261,6 +263,36 @@ def test_channel_details():
     }
 
     assert channel.channel_details(token1, channel_id) == passed
+
+# INVALID CHANNEL
+def test_channel_details_invalid_channel():
+    clear()
+
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account = auth.auth_register(*user)
+    token = account['token']
+    u_id = account['u_id']
+
+    channel_id = 1231
+
+    with pytest.raises(InputError):
+        channel.channel_details(token, channel_id)
+
+# AUTHORISED USER NOT A MEMBER
+def test_channel_details_not_member():
+    clear()
+
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token1 = auth.auth_register(*user1)['token']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    token2 = auth.auth_register(*user2)['token']
+
+    new_channel = channels.channels_create(token1, 'test channel', False)
+    channel_id = new_channel['channel_id']
+    
+    with pytest.raises(AccessError):
+        channel.channel_details(token2, channel_id)
 
 # CHANNEL_JOIN TESTS
 
