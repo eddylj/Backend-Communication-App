@@ -18,8 +18,9 @@ def test_channels_create_success():
         {
             'id' : channel_id['channel_id'], 
             'name' : name, 
-            'owners' : ['validemail@gmail.com'], 
-            'members' : ['validemail@gmail.com'],
+            # user id
+            'owners' : [0], 
+            'members' : [0],
         }
     ]
 
@@ -54,20 +55,20 @@ def test_channels_listall_base():
         {
             'id' : id1['id'],
             'name' : name1,
-            'owners' : ['validemail@gmail.com'],
-            'members' : ['validemail@gmail.com'],
+            'owners' : [0],
+            'members' : [0],
         },
         {
             'id' : id2['id'],
             'name' : name2,
-            'owners' : ['validemail@gmail.com'],
-            'members' : ['validemail@gmail.com'],
+            'owners' : [0],
+            'members' : [0],
         },
         {
             'id' : id3['id'],
             'name' : name3,
-            'owners' : ['validemail@gmail.com'],
-            'members' : ['validemail@gmail.com'],
+            'owners' : [0],
+            'members' : [0],
         }
     ]
     
@@ -96,22 +97,31 @@ def test_channels_list_base():
     # Create a channel with user1
     channel_id = channels.channels_create(token1, 'Test Channel', True)
 
-    channel_list = [
+    channel_list1 = [
         {
             'id' : channel_id['channel_id'],
             'name' : 'Test Channel',
-            'owners' : ['validemail@gmail.com'],
-            'members' : ['validemail@gmail.com'],
+            'owners' : [0],
+            'members' : [0],
         }
     ]
-    
+
+    channel_list2 = [
+        {
+            'id' : channel_id['channel_id'],
+            'name' : 'Test Channel',
+            'owners' : [0],
+            'members' : [0, 1],
+        }
+    ]
+
     # Assert only user 1 can see the channel
-    assert channels.channels_list(token1) == { 'channels' : channel_list}
+    assert channels.channels_list(token1) == { 'channels' : channel_list1}
     assert channels.channels_list(token2) == { 'channels' : empty_channels_list}
     
     # Invite user 2
     channel.channel_invite(token1, channel_id['channel_id'], u_id2)
 
     # Assert both users can see the channel
-    assert channels.channels_list(token1) == { 'channels' : channel_list}
-    assert channels.channels_list(token2) == { 'channels' : channel_list}
+    assert channels.channels_list(token1) == { 'channels' : channel_list2}
+    assert channels.channels_list(token2) == { 'channels' : channel_list2}
