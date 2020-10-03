@@ -7,53 +7,65 @@ from other import clear
 # CHANNEL_INVITE TESTS
 
 def test_channel_invite_valid():
+    clear()
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token1 = auth.auth_register(*user1)['token']
+
+    user2 = ('secondemail@gmail.com', "12315ajs", 'John', 'Smith')
+    token2 = auth.auth_register(*user2)['token']
     
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    token = auth.auth_register(*user)['token']
+    channel_id = channels.channels_create(token1, 'test channel', True)
     
-    valid_channel = channel.channel_create(token, 'test channel', True)
-    channel_id = valid_channel.get('channel_id')
+    u_id1 = auth.auth_register(*user1)['u_id']
+    u_id2 = auth.auth_register(*user2)['u_id']
     
-    current_channel = channel.channel_details('validemail@gmail.com', channel_id)
-    u_id = current_channel.get('u_id')
-    
-    user_details = {
-        'u_id': u_id,
+    user1_details = {
+        'u_id': u_id1,
         'name_first': 'Hayden',
         'name_last': 'Everest',
+    }
 
+    user2_details = {
+        'u_id': u_id2,
+        'name_first': 'John',
+        'name_last': 'Smith',
     }
     
     passed = {
         'name': 'test channel',
-        'owner_members': [user_details],
-        'all_members': [user_details]
+        'owner_members': [user1_details],
+        'all_members': [user1_details, user2_details]
     }   
 
-    assert channel.channel_details(token, channel_id) == passed
+    channel.channel_join(token2, channel_id) #inviting user 2
+
+    assert channel.channel_details(token1, channel_id) == passed
 
 # assuming that the channel id aand u_id is a number
 
+
 def test_channel_invite_channel_invalid():
+    clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
     
-    valid_channel = channel.channel_create(token, 'test channel', True)
-    channel_id = valid_channel.get('channel_id') + 1 #getting and invalid channel_id
+    channel_id = channels.channels_create(token, 'test channel', True)
+    channel_id = channel_id + 1 # getting an invalid channel_id
     
+    u_id = auth.auth_register(*user)['u_id']
+
     with pytest.raises(InputError):
         channel.channel_invite(token, channel_id, u_id)
 
 def test_channel_invite_user_id_invalid():
+    clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
    
-    valid_channel = channel.channel_create(token, 'test channel', True)
-    channel_id = valid_channel.get('channel_id')
+    channel_id = channels.channels_create(token, 'test channel', True)
     
-    current_channel = channel.channel_details('validemail@gmail.com', channel_id)
-    u_id = current_channel.get('u_id') + 1 # following method in other tests for invalid id (need checking)
-    
+    u_id = auth.auth_register(*user)['u_id'] + 1
+
     with pytest.raises(InputError):
         channel.channel_invite(token, channel_id, u_id)
 
@@ -63,21 +75,22 @@ def test_channel_invite_user_id_invalid():
 def test_channel_invite_access_error():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
+    u_id = auth.auth_register(*user)['u_id']
 
     user2 = ('differentemail@gmail.com', 'asdkjans123', 'John', 'Smith')
     token2 = auth.auth_register(*user2)['token']
+    u_id2 = auth.auth_register(*user)['u_id']
 
-    new_channel = channels.channels_create(token, 'test channel', False)
-    channel_id = new_channel.get('channel_id')
+    channel_id = channels.channels_create(token, 'test channel', False)
 
     current_channel = channel.channel_details(token, channel_id)
-    u_id = current_channel.get('u_id')
+    
 
-    member = new_channel.get('all_members')
+    member = current_channel.get('all_members')
 
-    assert user or user2 == member #if the user is authorised member of channel
+    assert user in member #if the user is authorised member of channel
     with pytest.raises(AccessError):
-         channel.channel_invite(token2, channel_id, u_id) 
+         channel.channel_invite(token1, channel_id, u_id)
 
 # CHANNEL_MESSAGES TESTS
 
