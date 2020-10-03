@@ -30,8 +30,6 @@ def test_auth_login_non_user_email():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
-    token = account['token']
-    u_id = account['u_id']
 
     non_user_email = ('nonuseremail@gmail.com', '123abc!@#')
     with pytest.raises(InputError):
@@ -42,8 +40,6 @@ def test_auth_login_wrong_password():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
-    token = account['token']
-    u_id = account['u_id']
 
     wrong_password = ('validemail@gmail.com', '12345abc!@#')
     with pytest.raises(InputError):
