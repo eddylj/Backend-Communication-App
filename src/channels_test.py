@@ -130,7 +130,7 @@ def test_channels_list_base():
 
 # Breaks if the user is inactive (logged out)
 
-def test_channels_list_listall_inactive():
+def test_channels_inactive():
     clear()
 
     # Create a user
