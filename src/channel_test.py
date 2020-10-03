@@ -353,4 +353,243 @@ def test_channel_join_private_channel():
 
     assert channel.channel_details(token1, channel_id) == passed
     
-clear()
+# CHANNEL_ADDOWNER TESTS
+
+# BASE TEST
+def test_channel_addowner_valid():
+    clear()
+
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel['channel_id']
+    channel.channel_join(token2, channel_id)
+    channel.channel_addowner(token2, channel_id, u_id2)
+
+    user1_details = {
+        'u_id': u_id1,
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+    }
+    user2_details = {
+        'u_id': u_id2,
+        'name_first': 'Andras',
+        'name_last': 'Arato',
+    }
+    passed = {
+        'name': 'test channel',
+        'owner_members': [user1_details, user2_details],
+        'all_members': [user1_details, user2_details]
+    }
+
+    assert channel.channel_details(token1, channel_id) == passed
+
+ # INVALID CHANNEL
+ def test_channel_addowner_invalid_channel():
+    clear()
+
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account = auth.auth_register(*user)
+    token = account['token']
+    u_id = account['u_id']
+
+    channel_id = 123
+
+    with pytest.raises(InputError):
+        channel.channel_addowner(token, channel_id, u_id)
+
+# WHEN USER IS ALREADY AN OWNER OF THE CHANNEL
+def test_channel_addowner_already_owner():
+    clear()
+
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account = auth.auth_register(*user)
+    token = account['token']
+    u_id = account['u_id']
+
+    new_channel = channels.channels_create(token, 'test channel', True)
+    channel_id = new_channel['channel_id']
+
+    with pytest.raises(InputError):
+        channel.channel_addowner(token, channel_id, u_id)
+
+# WHEN AUTHORISED USER IS NOT AN OWNER AND ADDOWNERS THEMSELF
+def test_channel_addowner_auth_not_owner():
+    clear()
+
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel['channel_id']
+    channel.channel_join(token2, channel_id)
+    
+    with pytest.raises(AccessError):
+        channel.channel_addowner(token2, channel_id, u_id2)
+
+# WHEN AUTHORISED USER IS NOT AN OWNER AND ADDOWNERS ANOTHER USER
+def test_channel_addowner_auth_not_owner():
+    clear()
+
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+    
+    user3 = ('alsoalsovalid@gmail.com', '1234abc!@#', 'Mark', 'Head')
+    account3 = auth.auth_register(*user3)
+    token3 = account3['token']
+    u_id3 = account3['u_id']
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel['channel_id']
+    channel.channel_join(token2, channel_id)
+    channel.channel_join(token3, channel_id)
+    
+    with pytest.raises(AccessError):
+        channel.channel_addowner(token2, channel_id, u_id3)
+
+
+# CHANNEL_REMOVEOWNER TESTS
+
+# BASE CASE
+def test_channel_removeowner_valid():
+    clear()
+
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel['channel_id']
+    channel.channel_join(token2, channel_id)
+    channel.channel_addowner(token2, channel_id, u_id2)
+    channel.channel_removeowner(token1, channel_id, u_id1)
+
+    user1_details = {
+        'u_id': u_id1,
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+    }
+    user2_details = {
+        'u_id': u_id2,
+        'name_first': 'Andras',
+        'name_last': 'Arato',
+    }
+    passed = {
+        'name': 'test channel',
+        'owner_members': [user2_details],
+        'all_members': [user1_details, user2_details]
+    }
+
+    assert channel.channel_details(token1, channel_id) == passed
+
+# INVALID CHANNEL
+def test_channel_removeowner_invalid_channel():
+    clear()
+
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account = auth.auth_register(*user)
+    token = account['token']
+    u_id = account['u_id']
+
+    channel_id = 123
+
+    with pytest.raises(InputError):
+        channel.channel_removeowner(token, channel_id, u_id)
+
+# WHEN USER IS NOT AN OWNER
+def test_channel_removeowner_not_owner():
+    clear()
+
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel['channel_id']
+    channel.channel_join(token2, channel_id)
+
+    with pytest.raises(InputError):
+        channel.channel_removeowner(token2, channel_id, u_id2)
+
+# WHEN AUTHORISED USER IS NOT AN OWNER
+def test_channel_removeowner_auth_not_owner():
+    clear()
+    
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel['channel_id']
+    channel.channel_join(token2, channel_id)
+    
+    with pytest.raises(AccessError):
+        channel.channel_removeowner(token2, channel_id, u_id2)
+        
+        
+# WHEN AUTHORISED USER IS NOT AN OWNER AND ADDOWNERS ANOTHER USER
+def test_channel_addowner_auth_not_owner():
+    clear()
+
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+    
+    user3 = ('alsoalsovalid@gmail.com', '1234abc!@#', 'Mark', 'Head')
+    account3 = auth.auth_register(*user3)
+    token3 = account3['token']
+    u_id3 = account3['u_id']
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel['channel_id']
+    channel.channel_join(token2, channel_id)
+    channel.channel_join(token3, channel_id)
+    
+    with pytest.raises(AccessError):
+        channel.channel_removeowner(token2, channel_id, u_id3)
