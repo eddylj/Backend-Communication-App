@@ -1,6 +1,6 @@
-from other import is_active
 from data import data
 from error import InputError, AccessError
+from other import is_active
 
 def channel_invite(token, channel_id, u_id):
     inviter = is_active(token)
@@ -35,6 +35,7 @@ def channel_details(token, channel_id):
     }
 
 def channel_messages(token, channel_id, start):
+    
     return {
         'messages': [
             {
