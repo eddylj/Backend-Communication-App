@@ -42,7 +42,7 @@ def channel_messages(token, channel_id, start):
     if not is_member(channel_id, u_id):
         raise AccessError
 
-    if start + 49 < len(messages):
+    if start + 50 < len(messages):
         end = start + 50
     else:
         end = -1
