@@ -5,9 +5,7 @@ from other import is_active
 def channels_list(token):
     
     # Check if the token is active
-    token_user = is_active(token)
-
-    if token_user == None:
+    if is_active(token) == None:
         raise AccessError
 
     channel_list = [
@@ -30,10 +28,8 @@ def channels_create(token, name, is_public):
     if len(name) > 20:
         raise InputError
 
-    # # Finding the creator/owner of the channel
-    owner = is_active(token)
-
-    if owner == None:
+    # Check if active token
+    if is_active(token) == None:
         raise AccessError
 
     new_channel = {
