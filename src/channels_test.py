@@ -72,7 +72,7 @@ def test_channels_listall_base():
         }
     ]
     
-    assert channels.channels_listall(token) == channel_list
+    assert channels.channels_listall(token) == { 'channels' : channel_list}
 
 
 # CHANNELS_LIST TEST
@@ -93,8 +93,8 @@ def test_channels_list_base():
     ]
 
     # Assert no channels listed right now
-    assert channels.channels_list(token1) == empty_channels_list
-    assert channels.channels_list(token2) == empty_channels_list
+    assert channels.channels_list(token1) == { 'channels' : empty_channels_list}
+    assert channels.channels_list(token2) == { 'channels' : empty_channels_list}
 
     # Create a channel with user1
     channel_id = channels.channels_create(token1, 'Test Channel', True)
@@ -109,12 +109,12 @@ def test_channels_list_base():
     ]
     
     # Assert only user 1 can see the channel
-    assert channels.channels_list(token1) == channel_list
-    assert channels.channels_list(token2) == empty_channels_list
+    assert channels.channels_list(token1) == { 'channels' : channel_list}
+    assert channels.channels_list(token2) == { 'channels' : empty_channels_list}
     
     # Invite user 2
     channel.channel_invite(token1, channel_id, u_id2)
 
     # Assert both users can see the channel
-    assert channels.channels_list(token1) == channel_list
-    assert channels.channels_list(token2) == channel_list
+    assert channels.channels_list(token1) == { 'channels' : channel_list}
+    assert channels.channels_list(token2) == { 'channels' : channel_list}
