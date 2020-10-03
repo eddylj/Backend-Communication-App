@@ -17,11 +17,11 @@ def channels_list(token):
             if member == token_user:
                 channel_list.append(channel)
 
-    return channel_list
+    return { 'channels' : channel_list}
 
 def channels_listall(token):
 
-    return data['channels']
+    return { 'channels' : data['channels']}
 
 def channels_create(token, name, is_public):
     
