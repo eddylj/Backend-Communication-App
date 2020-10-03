@@ -53,19 +53,19 @@ def test_channels_listall_base():
 
     channel_list = [
         {
-            'id' : id1['id'],
+            'id' : id1['channel_id'],
             'name' : name1,
             'owners' : [0],
             'members' : [0],
         },
         {
-            'id' : id2['id'],
+            'id' : id2['channel_id'],
             'name' : name2,
             'owners' : [0],
             'members' : [0],
         },
         {
-            'id' : id3['id'],
+            'id' : id3['channel_id'],
             'name' : name3,
             'owners' : [0],
             'members' : [0],
