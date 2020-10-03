@@ -42,6 +42,12 @@ def test_channels_create_fail():
     with pytest.raises(InputError):
         channels.channels_create(token, name, True)
 
+    # User logged out
+    auth.auth_logout(token)
+
+    name = 'Channel'
+    with pytest.raises(AccessError):
+        channels.channels_create(token, name, True)
 
 # CHANNELS_LISTALL TEST
 def test_channels_listall_base():
@@ -120,3 +126,37 @@ def test_channels_list_base():
     # Assert both users can see the channel
     assert channels.channels_list(token1) == { 'channels' : channel_list}
     assert channels.channels_list(token2) == { 'channels' : channel_list}
+
+
+# Breaks if the user is inactive (logged out)
+
+def test_channels_list_listall_inactive():
+    clear()
+
+    # Create a user
+    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token = auth.auth_register(*user)['token']
+
+    # Create a channel
+    name = 'Channel 1'
+    channel_id = channels.channels_create(token, name, True) 
+    assert data['channels'] == [
+        {
+            'channel_id' : channel_id['channel_id'], 
+            'name' : name, 
+            'owners' : [0], 
+            'members' : [0],
+            'is_public' : True,
+            'messages' : [],
+        }
+    ]
+
+    # If user becomes inactive
+    auth.auth_logout(token)
+
+    # Cannot use channels_list nor channels_listall
+    with pytest.raises(AccessError):
+        channels.channels_list(token)
+
+    with pytest.raises(AccessError):
+        channels.channels_listall(token)
