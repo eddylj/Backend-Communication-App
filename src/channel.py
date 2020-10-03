@@ -118,7 +118,7 @@ def channel_join(token, channel_id):
 
     if not is_valid_channel(channel_id):
         raise InputError
-
+    
     if not data['channels'][channel_id]['is_public'] and caller_id != 0:
         raise AccessError
 
@@ -158,6 +158,13 @@ def channel_removeowner(token, channel_id, u_id):
 
     if not is_owner(channel_id, caller_id) and caller_id != 0:
         raise AccessError
+    
+    # Global owner removing last owner in channel.
+    if caller_id == 0 and len(data['channels'][channel_id]['owners']) == 1:
+        raise InputError
+
+    if caller_id == u_id:
+        raise InputError
 
     data['channels'][channel_id]['owners'].remove(u_id)
     return {}

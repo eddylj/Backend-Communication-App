@@ -28,8 +28,8 @@ def test_channel_invite_valid():
 
     user2_details = {
         'u_id': u_id2,
-        'name_first': 'John',
-        'name_last': 'Smith',
+        'name_first': 'Andras',
+        'name_last': 'Arato',
     }
     
     passed = {
@@ -38,7 +38,7 @@ def test_channel_invite_valid():
         'all_members': [user1_details, user2_details]
     }   
     
-    channel.channel_join(token2, channel_id) #inviting user 2
+    channel.channel_join(token2, channel_id) 
 
     assert channel.channel_details(token1, channel_id) == passed
 
@@ -356,7 +356,7 @@ def test_channel_addowner_valid():
     new_channel = channels.channels_create(token1, 'test channel', True)
     channel_id = new_channel['channel_id']
     channel.channel_join(token2, channel_id)
-    channel.channel_addowner(token2, channel_id, u_id2)
+    channel.channel_addowner(token1, channel_id, u_id2)
 
     user1_details = {
         'u_id': u_id1,
@@ -470,8 +470,8 @@ def test_channel_removeowner_valid():
     new_channel = channels.channels_create(token1, 'test channel', True)
     channel_id = new_channel['channel_id']
     channel.channel_join(token2, channel_id)
-    channel.channel_addowner(token2, channel_id, u_id2)
-    channel.channel_removeowner(token1, channel_id, u_id1)
+    channel.channel_addowner(token1, channel_id, u_id2)
+    channel.channel_removeowner(token2, channel_id, u_id1)
 
     user1_details = {
         'u_id': u_id1,
@@ -504,8 +504,8 @@ def test_channel_removeowner_invalid_channel():
 
     with pytest.raises(InputError):
         channel.channel_removeowner(token, channel_id, u_id)
-
-# WHEN USER IS NOT AN OWNER
+        
+# WHEN AUTHORISED USER IS NOT AN OWNER REMOVE ANOTHER OWNER
 def test_channel_removeowner_not_owner():
     clear()
 
@@ -517,13 +517,19 @@ def test_channel_removeowner_not_owner():
     account2 = auth.auth_register(*user2)
     token2 = account2['token']
     u_id2 = account2['u_id']
+    
+    user3 = ('alsoalsovalid@gmail.com', '1234abc!@#', 'Mark', 'Head')
+    account3 = auth.auth_register(*user3)
+    token3 = account3['token']
 
     new_channel = channels.channels_create(token1, 'test channel', True)
     channel_id = new_channel['channel_id']
     channel.channel_join(token2, channel_id)
-
-    with pytest.raises(InputError):
-        channel.channel_removeowner(token2, channel_id, u_id2)
+    channel.channel_addowner(token1, channel_id, u_id2)
+    channel.channel_join(token3, channel_id)
+    
+    with pytest.raises(AccessError):
+        channel.channel_removeowner(token3, channel_id, u_id2)
 
 # REMOVING THEMSELVES AS OWNER
 def test_channel_removeowner_auth_self():
@@ -541,13 +547,13 @@ def test_channel_removeowner_auth_self():
     new_channel = channels.channels_create(token1, 'test channel', True)
     channel_id = new_channel['channel_id']
     channel.channel_join(token2, channel_id)
+    channel.channel_addowner(token1, channel_id, u_id2)
     
-    with pytest.raises(AccessError):
+    with pytest.raises(InputError):
         channel.channel_removeowner(token2, channel_id, u_id2)
-        
-        
-# WHEN AUTHORISED USER IS NOT AN OWNER REMOVE ANOTHER OWNER
-def test_channel_removeowner_auth_not_owner():
+
+# REMOVING LAST OWNER AS GLOBAL OWNER
+def test_channel_removeowner_last_owner():
     clear()
 
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -557,16 +563,12 @@ def test_channel_removeowner_auth_not_owner():
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
     account2 = auth.auth_register(*user2)
     token2 = account2['token']
-    
-    user3 = ('alsoalsovalid@gmail.com', '1234abc!@#', 'Mark', 'Head')
-    account3 = auth.auth_register(*user3)
-    token3 = account3['token']
-    u_id3 = account3['u_id']
+    u_id2 = account2['u_id']
 
-    new_channel = channels.channels_create(token1, 'test channel', True)
+    new_channel = channels.channels_create(token2, 'test channel', True)
     channel_id = new_channel['channel_id']
-    channel.channel_join(token2, channel_id)
-    channel.channel_join(token3, channel_id)
-    
-    with pytest.raises(AccessError):
-        channel.channel_removeowner(token2, channel_id, u_id3)
+
+    channel.channel_join(token1, channel_id)
+
+    with pytest.raises(InputError):
+        channel.channel_removeowner(token1, channel_id, u_id2)
