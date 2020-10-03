@@ -9,14 +9,17 @@ from other import clear
 # Base Case
 def test_channels_create_success():
     clear()
+
+    # Create a user
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
 
+    # Create a channel
     name = 'Channel 1'
     channel_id = channels.channels_create(token, name, True) 
     assert data['channels'] == [
         {
-            'id' : channel_id['channel_id'], 
+            'channel_id' : channel_id['channel_id'], 
             'name' : name, 
             # user id
             'owners' : [0], 
@@ -28,9 +31,12 @@ def test_channels_create_success():
 # Will fail, because name is longer than 20 characters
 def test_channels_create_fail():
     clear()
+    
+    # Create a user
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
 
+    # Invalid name (too long)
     name = 'Channel 1234567890abcdef'
     with pytest.raises(InputError):
         channels.channels_create(token, name, True)
@@ -39,9 +45,12 @@ def test_channels_create_fail():
 # CHANNELS_LISTALL TEST
 def test_channels_listall_base():
     clear()
+
+    # Create a user
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
 
+    # Create channels
     name1 = 'Channel 1'
     id1 = channels.channels_create(token, name1, True)
 
@@ -79,6 +88,8 @@ def test_channels_listall_base():
 
 def test_channels_list_base():
     clear()
+
+    # Create users
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     u_id1 = 1
     token1 = auth.auth_register(*user1)['token']
@@ -106,6 +117,13 @@ def test_channels_list_base():
         }
     ]
 
+    # Assert only user 1 can see the channel
+    assert channels.channels_list(token1) == { 'channels' : channel_list1}
+    assert channels.channels_list(token2) == { 'channels' : empty_channels_list}
+
+    # Invite user 2
+    channel.channel_invite(token1, channel_id['channel_id'], u_id2)
+
     channel_list2 = [
         {
             'id' : channel_id['channel_id'],
@@ -114,13 +132,6 @@ def test_channels_list_base():
             'members' : [0, 1],
         }
     ]
-
-    # Assert only user 1 can see the channel
-    assert channels.channels_list(token1) == { 'channels' : channel_list1}
-    assert channels.channels_list(token2) == { 'channels' : empty_channels_list}
-    
-    # Invite user 2
-    channel.channel_invite(token1, channel_id['channel_id'], u_id2)
 
     # Assert both users can see the channel
     assert channels.channels_list(token1) == { 'channels' : channel_list2}
