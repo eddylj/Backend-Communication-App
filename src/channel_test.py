@@ -36,7 +36,7 @@ def test_channel_invite_valid():
         'owner_members': [user1_details],
         'all_members': [user1_details, user2_details]
     }   
-
+    channel.channel_invite(token1, channel_id, u_id2)
     channel.channel_join(token2, channel_id) #inviting user 2
 
     assert channel.channel_details(token1, channel_id) == passed
@@ -82,16 +82,22 @@ def test_channel_invite_access_error():
     token2 = auth.auth_register(*user2)['token']
     u_id2 = auth.auth_register(*user2)['u_id']
 
+    user3 = ('thirdemail@gmail.com', 'ad!@ans123', 'Hello', 'Kitty')
+    token3 = auth.auth_register(*user3)['token']
+    u_id3 = auth.auth_register(*user3)['u_id']
+
     channel_id = channels.channels_create(token, 'test channel', False)
 
+    # second user is inviting when not a member
+    channel_invite(token2, channel_id, u_id3) 
     current_channel = channel.channel_details(token, channel_id)
     
 
     member = current_channel.get('all_members')
 
-    assert user in member #if the user is authorised member of channel
+    assert user2 in member #if the user is authorised member of channel
     with pytest.raises(AccessError):
-         channel.channel_invite(token1, channel_id, u_id)
+         channel.channel_invite(token2, channel_id, u_id3)
 
 # CHANNEL_MESSAGES TESTS
 
