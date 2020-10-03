@@ -7,16 +7,12 @@ def channels_list(token):
     # Check if the token is active
     token_user = is_active(token)
 
-    # for user in data['users']:
-    #     if user['email'] == token:
-    #         token_user = token
-    
     channel_list = [
     ]
 
     for channel in data['channels']:
         for member in channel['members']:
-            if member == token_user:
+            if member == token:
                 channel_list.append(channel)
 
     return { 'channels' : channel_list}
@@ -32,13 +28,6 @@ def channels_create(token, name, is_public):
         raise InputError
 
     # # Finding the creator/owner of the channel
-    # owner = {}
-
-    # for user in data['users']:
-    #     # For now, the token is the equivalent to the user's email
-    #     if user['email'] == token:
-    #         owner = user
-    #print(f"token is : {token}")
     owner = is_active(token)
 
     new_channel = {
