@@ -34,10 +34,26 @@ def channel_details(token, channel_id):
     if not is_member(channel_id, caller_id):
         raise AccessError
 
+    owners = []
+    for user in data['channels'][channel_id]['owners']:
+        user_details = {}
+        user_details['u_id'] = data['users'][user]['u_id']
+        user_details['name_first'] = data['users'][user]['name_first']
+        user_details['name_last'] = data['users'][user]['name_last']
+        owners.append(user_details)
+    
+    members = []
+    for user in data['channels'][channel_id]['members']:
+        user_details = {}
+        user_details['u_id'] = data['users'][user]['u_id']
+        user_details['name_first'] = data['users'][user]['name_first']
+        user_details['name_last'] = data['users'][user]['name_last']
+        members.append(user_details)
+
     return {
         'name': data['channels'][channel_id]['name'],
-        'owner_members': data['channels'][channel_id]['owners'],
-        'all_members': data['channels'][channel_id]['members'],
+        'owner_members': owners,
+        'all_members': members,
     }
 
 def channel_messages(token, channel_id, start):
@@ -46,7 +62,6 @@ def channel_messages(token, channel_id, start):
         raise AccessError
 
     if not is_valid_channel(channel_id):
-        print(data['channels'][channel_id])
         raise InputError
     
     messages = data['channels'][channel_id]['messages']
