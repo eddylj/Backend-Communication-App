@@ -1,5 +1,5 @@
 from data import data
-from error import InputError
+from error import InputError, AccessError
 import re 
 from other import is_active
 
