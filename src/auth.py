@@ -3,26 +3,32 @@ from error import InputError, AccessError
 import re 
 from other import get_active
 
+# Formula for determining invalid/valid email
 regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
 
+# Function to generate a valid token given a user's email and password
 def auth_login(email, password):
+    # looping through user database
     for (index, user) in enumerate(data['users']):
+        # checking if login details are correct
         if user['email'] == email and user['password'] == password:
-            if get_active(index) == None:
-                data['tokens'].append(index)
+            if get_active(index) == None: # checking for a valid token
+                data['tokens'].append(index) # updating user's token
             return {
                 'u_id': index,
                 'token': index,
             }
     raise InputError
-
+# Function to invalidate user's token when logging out
 def auth_logout(token):
+    # looping through token database
     for (index, active_token) in enumerate(data['tokens']):
         if token == active_token:
-            data['tokens'].pop(index)
-            return {'is_success': True}
-    return {'is_success': False}
+            data['tokens'].pop(index) # remove the given token
+            return {'is_success': True} # logout is successful
+    return {'is_success': False} # non-active token 
 
+# Function to create an account for the new user and return a new token
 def auth_register(email, password, name_first, name_last):
     u_id = len(data['users'])
     new_user = {
@@ -83,6 +89,7 @@ def is_valid(email):
     else:  
         return False
 
+# Creating a handle
 def new_handle(handle, num):
     offset = len(str(num))
     if len(handle) <= (20 - offset):
