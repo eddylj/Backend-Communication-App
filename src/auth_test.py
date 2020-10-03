@@ -6,7 +6,7 @@ from data import data
 
 #AUTH_LOGIN TESTS
 
-#VALID EMAIL
+# BASE TEST - VALID EMAIL
 def test_auth_login_user_email():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -18,30 +18,34 @@ def test_auth_login_user_email():
     valid_login = ('validemail@gmail.com', '123abc!@#')
     assert auth.auth_login(*valid_login) == passed
 
-#INVALID EMAIL
+# INVALID EMAIL
 def test_auth_login_invalid_email():
     clear()
     invalid_email = ('invalidemail.com', '123abc!@#')
     with pytest.raises(InputError):
         auth.auth_login(*invalid_email)
 
-#NON USER EMAIL
+# NON USER EMAIL
 def test_auth_login_non_user_email():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
+    token = account['token']
+    u_id = account['u_id']
 
     non_user_email = ('nonuseremail@gmail.com', '123abc!@#')
     with pytest.raises(InputError):
         auth.auth_login(*non_user_email)
 
-#WRONG PASSWORD
+# WRONG PASSWORD
 def test_auth_login_wrong_password():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
+    token = account['token']
+    u_id = account['u_id']
 
-    wrong_password = ('validemail@gmail.com', 'wrongpassword')
+    wrong_password = ('validemail@gmail.com', '12345abc!@#')
     with pytest.raises(InputError):
         auth.auth_login(*wrong_password)
 
@@ -64,7 +68,6 @@ def test_auth_register_invalid_email():
     with pytest.raises(InputError):
         auth.auth_register(*invalid_email)
     clear()
-    print(data['users'])
 
 # EMAIL ALREADY IN USE
 def test_auth_register_email_taken():
@@ -75,7 +78,6 @@ def test_auth_register_email_taken():
     with pytest.raises(InputError):
         auth.auth_register(*user2)
     clear()
-    print(data['users'])
 
 # INVALID PASSWORD
 def test_auth_register_invalid_pw():
@@ -155,5 +157,3 @@ def test_auth_logout_fail():
 
     # Try logging out right after logging in
     assert auth.auth_logout(token) == logout_success
-
-clear()
