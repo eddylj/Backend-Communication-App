@@ -1,11 +1,14 @@
 from data import data
-from error import InputError
+from error import InputError, AccessError
 from other import is_active
 
 def channels_list(token):
     
     # Check if the token is active
     token_user = is_active(token)
+
+    if token_user == None:
+        raise AccessError
 
     channel_list = [
     ]
@@ -29,6 +32,9 @@ def channels_create(token, name, is_public):
 
     # # Finding the creator/owner of the channel
     owner = is_active(token)
+
+    if owner == None:
+        raise AccessError
 
     new_channel = {
         'id' : len(data['channels']) + 1,
