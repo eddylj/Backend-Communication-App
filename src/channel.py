@@ -3,15 +3,29 @@ from error import InputError, AccessError
 from other import get_active
 
 def channel_invite(token, channel_id, u_id):
-    inviter = is_active(token)
+
+    inviter = get_active(token)
 
     # Invalid user
-    if inviter == None:
+    if inviter == None or get_active(u_id) == None:
         raise InputError
-
-        
-    # Check if user is part of the channel
     
+
+    # Invalid channel
+    if not is_valid_channel(channel_id):
+        raise InputError
+    
+    # CHANGE IN FUTURE IF GET_ACTIVE CHANGES
+    # Inviter is not a member of the channel
+    if is_member(channel_id, inviter):
+        raise AccessError
+
+
+    # Invite user to the channel
+    for channel in data['channels']:
+        if channel['channel_id'] == channel_id:
+            channel['members'].append(u_id)
+
     return {
     }
 
@@ -74,6 +88,25 @@ def channel_leave(token, channel_id):
     }
 
 def channel_join(token, channel_id):
+
+    user = get_active(token)
+
+    # Invalid user
+    if user == None:
+        raise InputError
+
+    # Invalid channel
+    if not is_valid_channel(channel_id):
+        raise InputError
+
+    # Channel is private
+    for channel in data['channels']:
+        if channel['channel_id'] == channel_id:
+            if channel['is_public'] == False:
+                raise AccessError
+            else:
+                channel['members'].append(user)
+
     return {
     }
 
