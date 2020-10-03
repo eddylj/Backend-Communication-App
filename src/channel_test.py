@@ -9,15 +9,16 @@ from other import clear
 def test_channel_invite_valid():
     clear()
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    token1 = auth.auth_register(*user1)['token']
+    account1 = auth.auth_register(user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
 
-    user2 = ('secondemail@gmail.com', "12315ajs", 'John', 'Smith')
-    token2 = auth.auth_register(*user2)['token']
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
     
     channel_id = channels.channels_create(token1, 'test channel', True)
-    
-    u_id1 = auth.auth_register(*user1)['u_id']
-    u_id2 = auth.auth_register(*user2)['u_id']
     
     user1_details = {
         'u_id': u_id1,
@@ -36,7 +37,7 @@ def test_channel_invite_valid():
         'owner_members': [user1_details],
         'all_members': [user1_details, user2_details]
     }   
-    channel.channel_invite(token1, channel_id, u_id2)
+    
     channel.channel_join(token2, channel_id) #inviting user 2
 
     assert channel.channel_details(token1, channel_id) == passed
@@ -46,58 +47,53 @@ def test_channel_invite_valid():
 
 def test_channel_invite_channel_invalid():
     clear()
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    token = auth.auth_register(*user)['token']
-    
-    channel_id = channels.channels_create(token, 'test channel', True)
-    channel_id = channel_id + 1 # getting an invalid channel_id
-    
-    u_id = auth.auth_register(*user)['u_id']
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    channel_id = 1231512
 
     with pytest.raises(InputError):
-        channel.channel_invite(token, channel_id, u_id)
+        channel.channel_invite(token1, channel_id, u_id1)
 
-def test_channel_invite_user_id_invalid():
+def test_channel_invite_self_invite():
     clear()
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    token = auth.auth_register(*user)['token']
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
    
-    channel_id = channels.channels_create(token, 'test channel', True)
-    
-    u_id = auth.auth_register(*user)['u_id'] + 1
+    channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
 
     with pytest.raises(InputError):
-        channel.channel_invite(token, channel_id, u_id)
+        channel.channel_invite(token1, channel_id, u_id1)
 
 
 # auth user is not already in channel 
 
 def test_channel_invite_access_error():
     clear()
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    token = auth.auth_register(*user)['token']
-    u_id = auth.auth_register(*user)['u_id']
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
 
-    user2 = ('differentemail@gmail.com', 'asdkjans123', 'John', 'Smith')
-    token2 = auth.auth_register(*user2)['token']
-    u_id2 = auth.auth_register(*user2)['u_id']
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
 
-    user3 = ('thirdemail@gmail.com', 'ad!@ans123', 'Hello', 'Kitty')
-    token3 = auth.auth_register(*user3)['token']
-    u_id3 = auth.auth_register(*user3)['u_id']
+    user3 = ('alsoalsovalid@gmail.com', '1234abc!@#', 'Mark', 'Head')
+    account3 = auth.auth_register(*user3)
+    token3 = account3['token']
+    u_id3 = account3['u_id']
 
-    channel_id = channels.channels_create(token, 'test channel', False)
+    channel_id = channels.channels_create(token1, 'test channel', False)['channel_id']
 
-    # second user is inviting when not a member
-    channel_invite(token2, channel_id, u_id3) 
-    current_channel = channel.channel_details(token, channel_id)
-    
-
-    member = current_channel.get('all_members')
-
-    assert user2 in member #if the user is authorised member of channel
     with pytest.raises(AccessError):
-         channel.channel_invite(token2, channel_id, u_id3)
+        channel.channel_invite(token2, channel_id, u_id3)
+     
 
 # CHANNEL_MESSAGES TESTS
 
