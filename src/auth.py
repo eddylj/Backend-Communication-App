@@ -8,11 +8,11 @@ regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
 def auth_login(email, password):
     for (index, user) in enumerate(data['users']):
         if user['email'] == email and user['password'] == password:
-            if not is_active(email):
-                data['tokens'].append(email)
+            if is_active(index) == None:
+                data['tokens'].append(index)
             return {
-                'u_id': index + 1,
-                'token': email,
+                'u_id': index,
+                'token': index,
             }
     raise InputError
 
@@ -62,12 +62,12 @@ def auth_register(email, password, name_first, name_last):
         raise InputError
     
     data['users'].append(new_user)
-    if not is_active(email):
-        data['tokens'].append(email)
+    token = len(data['users']) - 1
+    data['tokens'].append(token)
 
     return {
-        'u_id': len(data['users']),
-        'token': email,
+        'u_id': len(data['users']) - 1,
+        'token': token,
     }
 
 # Code provided in project specs, from:
