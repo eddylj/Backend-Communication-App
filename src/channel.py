@@ -145,7 +145,7 @@ def channel_removeowner(token, channel_id, u_id):
     return {}
 
 def is_valid_channel(channel_id):
-    return len(data['channels']) <= channel_id
+    return len(data['channels']) > channel_id
 
 def is_member(channel_id, u_id):
     return u_id in data['channels'][channel_id]['members']
