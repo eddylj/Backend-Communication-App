@@ -73,13 +73,14 @@ def test_channel_invite_user_id_invalid():
 # auth user is not already in channel 
 
 def test_channel_invite_access_error():
+    clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
     u_id = auth.auth_register(*user)['u_id']
 
     user2 = ('differentemail@gmail.com', 'asdkjans123', 'John', 'Smith')
     token2 = auth.auth_register(*user2)['token']
-    u_id2 = auth.auth_register(*user)['u_id']
+    u_id2 = auth.auth_register(*user2)['u_id']
 
     channel_id = channels.channels_create(token, 'test channel', False)
 
