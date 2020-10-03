@@ -79,12 +79,12 @@ def test_channels_listall_base():
 def test_channels_list_base():
     clear()
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    token1 = auth.auth_register(*user1)['token']
     u_id1 = 1
+    token1 = auth.auth_register(*user1)['token']
 
     user2 = ('goodemail@gmail.com', '123abc!@#', 'LeBron', 'James')
-    token2 = auth.auth_register(*user2)['token']
     u_id2 = 2
+    token2 = auth.auth_register(*user2)['token']
 
     empty_channels_list = [
     ]
@@ -98,7 +98,7 @@ def test_channels_list_base():
 
     channel_list = [
         {
-            'id' : channel_id['id'],
+            'id' : channel_id['channel_id'],
             'name' : 'Test Channel',
             'owners' : ['validemail@gmail.com'],
             'members' : ['validemail@gmail.com'],
@@ -110,7 +110,7 @@ def test_channels_list_base():
     assert channels.channels_list(token2) == { 'channels' : empty_channels_list}
     
     # Invite user 2
-    channel.channel_invite(token1, channel_id, u_id2)
+    channel.channel_invite(token1, channel_id['channel_id'], u_id2)
 
     # Assert both users can see the channel
     assert channels.channels_list(token1) == { 'channels' : channel_list}
