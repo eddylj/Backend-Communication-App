@@ -5,6 +5,8 @@
 - If a u_id is already taken (multiple people with same name), a number is added at the end to differentiate individual accounts.
 
 ## Channel
+### channel_invite()
+- InputError if you try to invite someone that's already in the channel, including yourself.
 ### channel_details()
 - Name = name of the channel, not members.
 - Members are ordered by joining date.
