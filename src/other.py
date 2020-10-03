@@ -5,13 +5,13 @@ def clear():
     data['tokens'].clear()
 
 '''
-Loops through list of active tokens checking if provided token is already
-active.
+Checks if a token is active. Returns the corresponding u_id if it is active,
+None otherwise.
 '''
-def is_active(token):
-    for active_token in data['tokens']:
-        if token == active_token:
-            return data['users'][token]
+def get_active(token):
+    if token in data['tokens']:
+        # Written in this redundant way because token will be changed in the future
+        return data['users'][token]['u_id']
     return None
 
 def users_all(token):

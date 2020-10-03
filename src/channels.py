@@ -1,17 +1,18 @@
 from data import data
 from error import InputError, AccessError
-from other import is_active
+from other import get_active
 
 def channels_list(token):
     # Check if the token is active
-    if is_active(token) == None:
+    u_id = get_active(token)
+    if u_id == None:
         raise AccessError
 
     channel_list = []
 
     for channel in data['channels']:
         for member in channel['members']:
-            if member == token:
+            if member == u_id:
                 details = {
                     'channel_id': channel['channel_id'],
                     'name': channel['name']
@@ -22,7 +23,7 @@ def channels_list(token):
     return { 'channels' : channel_list }
 
 def channels_listall(token):
-    if is_active(token) == None:
+    if get_active(token) == None:
         raise AccessError
 
     channel_list = []
@@ -42,18 +43,18 @@ def channels_create(token, name, is_public):
         raise InputError
 
     # Check if active token
-    if is_active(token) == None:
+    u_id = get_active(token)
+    if u_id == None:
         raise AccessError
     
     channel_id = len(data['channels'])
     new_channel = {
         'channel_id' : channel_id,
         'name' : name,
-        'owners' : [token],
-        'members' : [token],
+        'owners' : [u_id],
+        'members' : [u_id],
         'is_public' : is_public,
-        # 'owner' : owner,
-        # 'members' : [owner],
+        'messages': [],
     }
     
     # Add to the global variable

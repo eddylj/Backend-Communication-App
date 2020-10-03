@@ -1,14 +1,14 @@
 from data import data
 from error import InputError, AccessError
 import re 
-from other import is_active
+from other import get_active
 
 regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
 
 def auth_login(email, password):
     for (index, user) in enumerate(data['users']):
         if user['email'] == email and user['password'] == password:
-            if is_active(index) == None:
+            if get_active(index) == None:
                 data['tokens'].append(index)
             return {
                 'u_id': index,
@@ -24,7 +24,9 @@ def auth_logout(token):
     return {'is_success': False}
 
 def auth_register(email, password, name_first, name_last):
+    u_id = len(data['users'])
     new_user = {
+        'u_id': u_id,
         'email': email,
         'password': password,
         'name_first': name_first,
@@ -62,12 +64,11 @@ def auth_register(email, password, name_first, name_last):
         raise InputError
     
     data['users'].append(new_user)
-    token = len(data['users']) - 1
-    data['tokens'].append(token)
+    data['tokens'].append(u_id)
 
     return {
-        'u_id': len(data['users']) - 1,
-        'token': token,
+        'u_id': u_id,
+        'token': u_id,
     }
 
 # Code provided in project specs, from:
