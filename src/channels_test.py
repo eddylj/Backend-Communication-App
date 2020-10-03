@@ -10,13 +10,13 @@ from other import clear
 def test_channels_create_success():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0]
+    token = auth.auth_register(*user)['token']
+
     name = 'Channel 1'
     channel_id = channels.channels_create(token, name, True) 
     assert data['channels'] == [
         {
-            'id' : channel_id['id'], 
+            'id' : channel_id['channel_id'], 
             'name' : name, 
             'owners' : ['validemail@gmail.com'], 
             'members' : ['validemail@gmail.com'],
@@ -28,8 +28,8 @@ def test_channels_create_success():
 def test_channels_create_fail():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0]
+    token = auth.auth_register(*user)['token']
+
     name = 'Channel 1234567890abcdef'
     with pytest.raises(InputError):
         channels.channels_create(token, name, True)
@@ -39,8 +39,7 @@ def test_channels_create_fail():
 def test_channels_listall_base():
     clear()
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user)
-    token = user[0]
+    token = auth.auth_register(*user)['token']
 
     name1 = 'Channel 1'
     id1 = channels.channels_create(token, name1, True)
@@ -80,13 +79,11 @@ def test_channels_listall_base():
 def test_channels_list_base():
     clear()
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user1)
-    token1 = user1[0]
+    token1 = auth.auth_register(*user1)['token']
     u_id1 = 1
 
     user2 = ('goodemail@gmail.com', '123abc!@#', 'LeBron', 'James')
-    auth.auth_register(*user2)
-    token2 = user2[0]
+    token2 = auth.auth_register(*user2)['token']
     u_id2 = 2
 
     empty_channels_list = [
