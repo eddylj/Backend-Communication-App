@@ -11,8 +11,8 @@ active.
 def is_active(token):
     for active_token in data['tokens']:
         if token == active_token:
-            return True
-    return False
+            return data['users'][token]
+    return None
 
 def users_all(token):
     return {
