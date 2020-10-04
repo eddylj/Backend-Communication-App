@@ -25,5 +25,3 @@
 ## Channels
 ### channels_create()
 - Creator of a channel automatically joins that channel.
-
-# KEEP IN MIND, U_ID 1 IS A GLOBAL OWNER

@@ -23,7 +23,7 @@ def channels_list(token):
                 channel_list.append(details)
                 break
 
-    return { 'channels' : channel_list }
+    return {'channels': channel_list}
 
 # Lists the details of all channels in the database
 def channels_listall(token):

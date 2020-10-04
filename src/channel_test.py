@@ -618,7 +618,7 @@ def test_channel_invalid_token():
 
     channel_id = channels.channels_create(token1, "Test Channel", True)['channel_id']
 
-    # Deactive token by logging out
+    # Deactivate token by logging out
     auth.auth_logout(token1)
 
     # Cannot use when token is invalid
