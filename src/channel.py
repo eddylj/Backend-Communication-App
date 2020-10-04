@@ -16,10 +16,6 @@ def channel_invite(token, channel_id, u_id):
     if is_member(channel_id, u_id):
         raise InputError
 
-    # If you try to invite yourself
-    if caller_id == u_id:
-        raise InputError
-
     if not is_member(channel_id, caller_id):
         raise AccessError
 

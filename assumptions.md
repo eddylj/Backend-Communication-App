@@ -1,22 +1,26 @@
 # Assumptions
 
 ## Auth
+### auth_logout()
+- Auth_logout returns {'is_success': False} if invalid token is passed. Conflicting statements in project specs:
+    - 6.2: "If a valid token is given, and the user is successfully logged out, it returns true, otherwise false."
+    - 6.3: "For all functions except auth_register and auth_login, an AccessError is thrown when the token passed in is not a valid token"
 ### auth_register()
-- If a u_id is already taken (multiple people with same name), a number is added at the end to differentiate individual accounts.
+- If a handle is already taken (multiple people with same name), a number is added at the end to differentiate individual accounts.
+    - If the number puts the handle over the 20 character limit, the number would replace characters at the end of the handle string instead.
 
 ## Channel
 ### channel_invite()
 - InputError if you try to invite someone that's already in the channel, including yourself.
 ### channel_details()
-- Name = name of the channel, not members.
 - Members are ordered by joining date.
 ### channel_messages()
 - Negative start parameters are treated as invalid.
 ### channel_leave()
-- Leave = user voluntarily leaving a channel, not a target user being removed by an "owner".
-- Creator of a channel can leave that channel, however the channel remains.
+- Last member of a channel can leave, however the channel still remains.
 ### channel_join()
 - Attempting to join a channel you're already part of raises InputError.
+- Flockr owner (global permissions) can join private channels.
 
 ## Channels
 ### channels_create()

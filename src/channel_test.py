@@ -271,7 +271,6 @@ def test_channel_details_invalid_channel():
     user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account = auth.auth_register(*user)
     token = account['token']
-    u_id = account['u_id']
 
     channel_id = 1231
 
@@ -605,35 +604,42 @@ def test_channel_removeowner_last_owner():
     with pytest.raises(InputError):
         channel.channel_removeowner(token1, channel_id, u_id2)
 
-def test_channel_inactive():
+# Checking invalid token
+def test_channel_invalid_token():
     clear()
 
-    # Create a user
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    token = auth.auth_register(*user)['token']
+    # Create 2 users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token1 = auth.auth_register(*user1)['token']
 
-    # If user becomes inactive
-    auth.auth_logout(token)
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    u_id2 = account2['u_id']
 
-    # Cannot use when token is inactive
-    with pytest.raises():
-        channel.channel_invite(token)
+    channel_id = channels.channels_create(token1, "Test Channel", True)['channel_id']
 
-    with pytest.raises():
-        channel.channel_details(token)
+    # Deactive token by logging out
+    auth.auth_logout(token1)
 
-    with pytest.raises():
-        channel.channel_messages(token)
+    # Cannot use when token is invalid
+    with pytest.raises(AccessError):
+        channel.channel_invite(token1, channel_id, u_id2)
 
-    with pytest.raises():
-        channel.channel_leave(token)
+    with pytest.raises(AccessError):
+        channel.channel_details(token1, channel_id)
 
-    with pytest.raises():
-        channel.channel_join(token)
+    with pytest.raises(AccessError):
+        channel.channel_messages(token1, channel_id, 0)
 
-    with pytest.raises():
-        channel.channel_addowner(token)
+    with pytest.raises(AccessError):
+        channel.channel_leave(token1, channel_id)
 
-    with pytest.raises():
-        channel.channel_removeowner(token)
+    with pytest.raises(AccessError):
+        channel.channel_join(token1, channel_id)
+
+    with pytest.raises(AccessError):
+        channel.channel_addowner(token1, channel_id, u_id2)
+
+    with pytest.raises(AccessError):
+        channel.channel_removeowner(token1, channel_id, u_id2)
     
