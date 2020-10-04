@@ -1,6 +1,8 @@
 # Assumptions
 
 ## Auth
+### auth_login()
+- A user can login while already being logged in. Auth_login just returns the current active token in that case.
 ### auth_logout()
 - Auth_logout returns {'is_success': False} if invalid token is passed. Conflicting statements in project specs:
     - 6.2: "If a valid token is given, and the user is successfully logged out, it returns true, otherwise false."
@@ -17,7 +19,7 @@
 ### channel_messages()
 - Negative start parameters are treated as invalid.
 ### channel_leave()
-- Last member of a channel can leave, however the channel still remains.
+- Last member of a channel can leave, however the channel still remains with the same channel_id.
 ### channel_join()
 - Attempting to join a channel you're already part of raises InputError.
 - Flockr owner (global permissions) can join private channels.

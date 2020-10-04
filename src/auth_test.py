@@ -11,13 +11,11 @@ user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 # BASE TEST - VALID EMAIL
 def test_auth_login_user_email():
     clear()
-    account = auth.auth_register(*user)
-    token = account['token']
-    u_id = account['u_id']
-
-    passed = {'u_id': u_id, 'token': token}
-    valid_login = ('validemail@gmail.com', '123abc!@#')
-    assert auth.auth_login(*valid_login) == passed
+    token = auth.auth_register(*user)['token']
+    auth.auth_logout(token)
+    
+    email, password, *_ = user
+    auth.auth_login(email, password)
 
 # INVALID EMAIL
 def test_auth_login_invalid_email():
@@ -85,8 +83,7 @@ def test_auth_register_invalid_pw():
 # INVALID NAME
 def test_auth_register_invalid_name():
     clear()
-    email = 'validemail@gmail.com'
-    password = '123abc!@#'
+    email, password, *_ = user
 
     # No names entered
     with pytest.raises(InputError):
