@@ -27,10 +27,10 @@ def auth_login(email, password):
     for (index, user) in enumerate(data['users']):
         if user['email'] == email and user['password'] == password:
             if get_active(index) == None:
-                data['tokens'].append(index)
+                data['tokens'].append(str(index))
             return {
                 'u_id': index,
-                'token': index,
+                'token': str(index),
             }
     raise InputError
 
@@ -119,11 +119,11 @@ def auth_register(email, password, name_first, name_last):
         new_user['handle'] = new_handle(new_user['handle'], number)
     
     data['users'].append(new_user)
-    data['tokens'].append(u_id)
+    data['tokens'].append(str(u_id))
 
     return {
         'u_id': u_id,
-        'token': u_id,
+        'token': str(u_id),
     }
 
 def is_valid(email):

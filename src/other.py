@@ -18,7 +18,7 @@ def get_active(token):
     """
     if token in data['tokens']:
         # Written in this redundant way because token will be changed in the future
-        return data['users'][token]['u_id']
+        return data['users'][int(token)]['u_id']
     return None
 
 def users_all(token):
