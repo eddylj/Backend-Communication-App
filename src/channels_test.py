@@ -4,14 +4,15 @@ from data import data
 from error import InputError, AccessError
 from other import clear
 
-# CHANNELS_CREATE TESTS
+user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+
+############################ CHANNELS_CREATE TESTS #############################
 
 # Base Case
 def test_channels_create_success():
     clear()
 
     # Create a user
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
 
     # Create channels
@@ -25,7 +26,6 @@ def test_channels_create_fail():
     clear()
 
     # Create a user
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
 
     # Invalid name (too long)
@@ -33,12 +33,12 @@ def test_channels_create_fail():
     with pytest.raises(InputError):
         channels.channels_create(token, name, True)
 
-# CHANNELS_LISTALL TEST
+############################ CHANNELS_LISTALL TESTS ############################
+
 def test_channels_listall_base():
     clear()
 
     # Create a user
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
 
     # Create channels
@@ -69,7 +69,7 @@ def test_channels_listall_base():
     assert channels.channels_listall(token) == {'channels': channel_list}
 
 
-# CHANNELS_LIST TEST
+############################# CHANNELS_LIST TESTS ##############################
 
 def test_channels_list_base():
     clear()
@@ -116,7 +116,6 @@ def test_channels_invalid_token():
     clear()
 
     # Create a user
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
 
     # Create a channel
@@ -134,3 +133,5 @@ def test_channels_invalid_token():
 
     with pytest.raises(AccessError):
         channels.channels_listall(token)
+
+clear()

@@ -154,10 +154,6 @@ def channel_removeowner(token, channel_id, u_id):
 
     if not is_owner(channel_id, caller_id) and caller_id != 0:
         raise AccessError
-    
-    # Global owner removing last owner in channel.
-    if caller_id == 0 and len(data['channels'][channel_id]['owners']) == 1:
-        raise InputError
 
     if caller_id == u_id:
         raise InputError

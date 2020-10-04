@@ -4,12 +4,13 @@ from error import InputError
 from other import clear
 from data import data
 
-#AUTH_LOGIN TESTS
+user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+
+############################### AUTH_LOGIN TESTS ###############################
 
 # BASE TEST - VALID EMAIL
 def test_auth_login_user_email():
     clear()
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account = auth.auth_register(*user)
     token = account['token']
     u_id = account['u_id']
@@ -28,7 +29,6 @@ def test_auth_login_invalid_email():
 # NON USER EMAIL
 def test_auth_login_non_user_email():
     clear()
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
 
     non_user_email = ('nonuseremail@gmail.com', '123abc!@#')
@@ -38,19 +38,17 @@ def test_auth_login_non_user_email():
 # WRONG PASSWORD
 def test_auth_login_wrong_password():
     clear()
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     auth.auth_register(*user)
 
     wrong_password = ('validemail@gmail.com', '12345abc!@#')
     with pytest.raises(InputError):
         auth.auth_login(*wrong_password)
 
-# AUTH_REGISTER TESTS
+############################## AUTH_REGISTER TESTS #############################
 
 # BASE TEST - Valid user registration
 def test_auth_register_valid():
     clear()
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account = auth.auth_register(*user)
     token = account['token']
     email, password, *_ = user
@@ -63,7 +61,6 @@ def test_auth_register_invalid_email():
     invalid_email = ('invalidemail.com', '123abc!@#', 'Hayden', 'Everest')
     with pytest.raises(InputError):
         auth.auth_register(*invalid_email)
-    clear()
 
 # EMAIL ALREADY IN USE
 def test_auth_register_email_taken():
@@ -73,7 +70,6 @@ def test_auth_register_email_taken():
     auth.auth_register(*user1)
     with pytest.raises(InputError):
         auth.auth_register(*user2)
-    clear()
 
 # INVALID PASSWORD
 def test_auth_register_invalid_pw():
@@ -111,18 +107,16 @@ def test_auth_register_invalid_name():
                             eeeeeeeeeeeeeeeeee\
                             eeeeeeeeeeeeeeeeee\
                             eeeeeeeeeeeeeerest')
-    clear()
 
 # Will need to check for handle generation, which requires user_profile (not in
 # iteration 1)
 
-# AUTH_LOGOUT TESTS
+############################## AUTH_LOGOUT TESTS ###############################
 
 # BASE CASE
 def test_auth_logout_success(): 
     clear()
-    # Register user1
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    # Register user
     token = auth.auth_register(*user)['token']
 
     # Login
@@ -136,7 +130,6 @@ def test_auth_logout_success():
 def test_auth_logout_fail():
     clear()
     # Register a user
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
 
     logout_success = {'is_success' : True}
@@ -153,3 +146,5 @@ def test_auth_logout_fail():
 
     # Try logging out right after logging in
     assert auth.auth_logout(token) == logout_success
+
+clear()

@@ -21,6 +21,8 @@
 ### channel_join()
 - Attempting to join a channel you're already part of raises InputError.
 - Flockr owner (global permissions) can join private channels.
+### channel_removeowner()
+- The flockr owner can remove the last owner in a channel. 
 
 ## Channels
 ### channels_create()
