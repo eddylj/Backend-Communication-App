@@ -46,6 +46,8 @@ def search(token, query_str):
         ],
     }
 
+# Fixture
+# from other import create_account
 def create_account():
     clear()
 
