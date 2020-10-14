@@ -4,14 +4,21 @@ def clear():
     data['channels'].clear()
     data['tokens'].clear()
 
-'''
-Checks if a token is active. Returns the corresponding u_id if it is active,
-None otherwise.
-'''
 def get_active(token):
+    """
+    Checks if a token is active. Returns the corresponding u_id if it is active,
+    None otherwise.
+
+    Parameters:
+        token (str) : Caller's authorisation hash.
+
+    Returns:
+        u_id (int)  : The corresponding u_id if token is active.
+        None        : If token isn't active.
+    """
     if token in data['tokens']:
         # Written in this redundant way because token will be changed in the future
-        return data['users'][token]['u_id']
+        return data['users'][int(token)]['u_id']
     return None
 
 def users_all(token):

@@ -3,7 +3,23 @@ from error import InputError, AccessError
 from other import get_active
 
 def channels_list(token):
-    # Check if the token is active
+    """
+    Provide a list of all channels (and their associated details) that the
+    caller is part of.
+
+    Parameters:
+        token (str) : Caller's authorisation hash.
+
+    Returns:
+        {
+            channels: A list of dictionaries with types {channel_id, name} of 
+                      all channels the caller is part of. If the caller isn't 
+                      part of any channels, an empty list is returned.
+        }
+
+    Raises:
+        AccessError: if token is invalid.
+    """
     u_id = get_active(token)
     if u_id == None:
         raise AccessError
@@ -20,9 +36,26 @@ def channels_list(token):
                 channel_list.append(details)
                 break
 
-    return { 'channels' : channel_list }
+    return {'channels': channel_list}
 
 def channels_listall(token):
+    """
+    Provide a list of all channels (and their associated details) in the entire
+    flockr server.
+
+    Parameters:
+        token (str) : Caller's authorisation hash.
+
+    Returns:
+        {
+            channels: A list of dictionaries with types {channel_id, name} of 
+                      all channels. If no channels exists, an empty list is
+                      returned.
+        }
+
+    Raises:
+        AccessError: if token is invalid.
+    """
     if get_active(token) == None:
         raise AccessError
 
@@ -38,11 +71,25 @@ def channels_listall(token):
     return {'channels': channel_list}
 
 def channels_create(token, name, is_public):
-    # If name of the channel is longer than 20 characters
+    """
+    Creates a new channel with a specified name that is either a public or 
+    private.
+
+    Parameters:
+        token (str)     : Caller's authorisation hash.
+        name (str)      : What the channel will be called.
+        is_public (bool): Whether or not the channel will be public.
+
+    Returns:
+        {channel_id}: A channel_id corresponding to the newly created channel.
+
+    Raises:
+        InputError: if name is more than 20 characters long.
+        AccessError: if token is invalid.
+    """
     if len(name) > 20:
         raise InputError
 
-    # Check if active token
     u_id = get_active(token)
     if u_id == None:
         raise AccessError
@@ -57,7 +104,6 @@ def channels_create(token, name, is_public):
         'messages': [],
     }
     
-    # Add to the global variable
     data['channels'].append(new_channel)
 
     return {'channel_id': channel_id}
