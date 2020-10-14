@@ -45,3 +45,17 @@ def search(token, query_str):
             }
         ],
     }
+
+def create_account():
+    clear()
+
+    # Create 2 users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
