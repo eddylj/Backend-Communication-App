@@ -39,7 +39,6 @@ def test_channels_listall_base():
     clear()
 
     # Create a user
-    user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     token = auth.auth_register(*user)['token']
 
     # Create channels
