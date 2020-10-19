@@ -25,7 +25,7 @@ def test_message_send_error_tests():
 
     # Create channel
     name = 'Channel'
-    channel_id = channels.channels_create(token, name, True)
+    channel_id = channels.channels_create(token1, name, True)
 
     message_valid = "what it do"
 
