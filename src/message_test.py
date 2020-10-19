@@ -13,6 +13,42 @@ from data import data
 
 
 ############################### MESSAGE_SEND TESTS ###############################
+def test_message_send_base():
+    '''
+    Base tests to test out valid workings of message_send
+    '''
+    clear()
+
+    # Create 2 users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+
+    # Create channel
+    name = 'Channel'
+    channel_id = channels.channels_create(token1, name, True)
+
+    message_valid = "what it do"
+
+
+    # Invite user 2 into the channel
+    channel.channel_invite(token1, channel_id, u_id2)
+
+
+    # Both users should be able to send messages
+    message_id1 = message.message_send(token1, channel_id, message_valid)
+    assert message_id1['message_id'] == 1
+
+    message_id2 = message.message_send(token2, channel_id, message_valid)
+    assert message_id2['message_id'] == 2
+
+
 
 def test_message_send_error_tests():
     '''
@@ -28,7 +64,6 @@ def test_message_send_error_tests():
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
     account2 = auth.auth_register(*user2)
     token2 = account2['token']
-    u_id2 = account2['u_id']
 
     # Create channel
     name = 'Channel'
@@ -57,12 +92,3 @@ def test_message_send_error_tests():
     # User not part of channel
     with pytest.raises(AccessError):
         message.message_send(token2, channel_id, message_valid)
-
-    channel.channel_invite(token1, channel_id, u_id2)
-
-    message_id1 = message.message_send(token1, channel_id, message_valid)
-    assert message_id1['message_id'] == 1
-
-    message_id2 = message.message_send(token2, channel_id, message_valid)
-    assert message_id2['message_id'] == 2
-    
