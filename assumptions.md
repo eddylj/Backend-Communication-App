@@ -30,6 +30,7 @@
 ### channels_create()
 - Creator of a channel automatically joins that channel.
 
+<<<<<<< HEAD
 
 
 
@@ -37,3 +38,9 @@
 ### message_remove()
 - Message ID is a number
 - only the authorised user can remove messages
+=======
+## Message
+### message_send()
+- token refers to the person sending the message
+- channel_id refers to the channel the message is being sent to
+>>>>>>> main/test
