@@ -29,3 +29,13 @@
 ## Channels
 ### channels_create()
 - Creator of a channel automatically joins that channel.
+
+
+
+
+## Message
+### message_remove()
+- Message ID is a number 
+- only the authorised user can remove messages
+- Message ID is unique to its own channel
+- Users can't remove message from another channel
