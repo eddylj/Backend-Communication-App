@@ -49,6 +49,15 @@ def test_message_send_error_tests():
     '''
     Tests to test the errors from different case using message_send
     '''
+    clear()
+
+    # Create 2 users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
     token2 = account2['token']
 
     # Create channel
