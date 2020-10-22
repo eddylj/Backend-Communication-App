@@ -3,13 +3,17 @@ from error import InputError, AccessError
 from other import get_active
 
 def message_send(token, channel_id, message):
+    '''
+    Send a message and create a new entry in the messages database and also inside the channels
+    messages database
+    '''
     # Could be error if we change what token is, right now it is the stringed version of u_id
     # If the message is too long
     if len(message) > 1000:
         raise InputError
 
     u_id = get_active(token)
-    if u_id == None:
+    if u_id is None:
         raise AccessError
 
     # If the user is not part of the channel, and not owner of flockr
