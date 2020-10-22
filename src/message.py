@@ -31,7 +31,7 @@ def message_send(token, channel_id, message):
     # also add to channels database
     # This puts the new message at the 0th element, as per requirement in channel_messages
     data['channels'][channel_id]['messages'].insert(0, new_message)
-    
+
     return {
         'message_id': message_id,
     }
