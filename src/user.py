@@ -1,14 +1,22 @@
 from data import data
 from error import InputError, AccessError
 from other import get_active
+import re
 
 def user_profile(token, u_id):
     '''
     Return information on the user (u_id, email, first name, last name, handle)
     '''
 
-    if u_id >= len(data['users']):
+    # Invalid user
+    if not is_user(u_id):
         raise InputError
+
+    # InputError as this only confirms that the token exists, not necessarily active or not
+    u_id = get_active(token)
+    if u_id is None:
+        raise InputError
+
 
     user = data['users'][u_id]
 
@@ -28,6 +36,12 @@ def user_profile_setname(token, name_first, name_last):
     '''
     Change first or last name of the user if valid 
     '''
+
+    # InputError as this only confirms that the token exists, not necessarily active or not
+    u_id = get_active(token)
+    if u_id is None:
+        raise InputError
+
     # name_first invalid length
     if len(name_first) > 50 or len(name_first) < 1:
         raise InputError
@@ -50,6 +64,12 @@ def user_profile_setemail(token, email):
     '''
     Change email of the user
     '''
+
+    # InputError as this only confirms that the token exists, not necessarily active or not
+    u_id = get_active(token)
+    if u_id is None:
+        raise InputError
+
     # Check if valid email
     if not is_valid(email):
         raise InputError
@@ -109,3 +129,6 @@ def is_valid(email):
           
     else:  
         return False
+
+def is_user(u_id):
+    return u_id < len(data['users'])

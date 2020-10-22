@@ -1,3 +1,6 @@
+'''
+Functions to send, remove and edit messages
+'''
 from data import data
 from error import InputError, AccessError
 from other import get_active
@@ -7,6 +10,7 @@ def message_send(token, channel_id, message):
     Send a message and create a new entry in the messages database and also inside the channels
     messages database
     '''
+
     # Could be error if we change what token is, right now it is the stringed version of u_id
     # If the message is too long
     if len(message) > 1000:
@@ -44,6 +48,11 @@ def message_remove(token, message_id):
     '''
     Remove a message inside the messages database and channels database
     '''
+
+    # If message doesn't exist already
+    if not is_message(message_id):
+        raise InputError
+
     # For now, removing a message is making the messages dictionary it belongs to to {}
     u_id = get_active(token)
     if u_id is None:
@@ -55,9 +64,14 @@ def message_remove(token, message_id):
 
     channel_id = data['messages'][message_id]['channel_id']
 
-    # If not sender of message / not owner of flockr / owner of channel
-    if u_id not in (data['messages'][message_id]['u_id'], 0, data['channels'][channel_id]['owners']):
-        raise AccessError
+    # If not sender of message / not owner of flockr
+    if u_id not in (data['messages'][message_id]['u_id'], 0):
+        if u_id not in data['channels'][channel_id]['owners']:
+            raise AccessError
+
+    # If not owner of the channel
+
+        #raise AccessError
 
     # Remove from messages database
     data['messages'][message_id] = {}
@@ -71,9 +85,14 @@ def message_remove(token, message_id):
 def message_edit(token, message_id, message):
     '''
     Edit a message
-    - This changes the message inside the data['messages'] database and also inside the 
-    data['channels'][channel_id]['messages'] database
+    This changes the message inside the data['messages'] database and also
+    inside the data['channels'][channel_id]['messages'] database
     '''
+
+    # If message doesn't exist already
+    if not is_message(message_id):
+        raise InputError
+
     # If the message is too long
     if len(message) > 1000:
         raise InputError
@@ -99,3 +118,6 @@ def message_edit(token, message_id, message):
 
     return {
     }
+
+def is_message(message_id):
+    return message_id < len(data['messages'])
