@@ -13,10 +13,11 @@ def message_edit(token, message_id, message):
         raise InputError
 
     u_id = get_active(token)
-    if u_id == None:
+    if u_id is None:
         raise AccessError
 
     ogu_id = data['messages'][message_id]['u_id']
+    channel_id = data['messages'][message_id]['channel_id']
 
     # If not original sender, not owner and not owner of flockr
     if u_id != ogu_id and u_id not in data['channels'][channel_id]['owners'] and u_id != 0:
