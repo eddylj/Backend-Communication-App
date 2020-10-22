@@ -12,6 +12,9 @@ from data import data
 
 
 def test_profile_valid():
+    '''
+    Test for checking for valid profile
+    '''
     clear()
     # Creates a user
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -33,12 +36,10 @@ def test_profile_valid():
     assert user.user_profile(token1, u_id1) == {'user': user1_details}
 
 def test_invalid_user():
+    '''
+    Test for invalid user trying to remove a message
+    '''
     clear()
-    '''
-    Invalid user trying to remove a message
-    
-    '''
-    
     # Creates a user
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account1 = auth.auth_register(*user1)
@@ -61,6 +62,9 @@ def test_invalid_user():
 
 # BASE CASE - Valid name change
 def test_user_profile_setname_valid():
+    '''
+    Test for valid update in user profile name
+    '''
     clear()
 
     # Creates a user
@@ -68,14 +72,15 @@ def test_user_profile_setname_valid():
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
     u_id1 = account1['u_id']
-    
     user.user_profile_setname(token1, 'John', 'Albert')
-
     assert data['users'][u_id1]['name_first'] == 'John'
     assert data['users'][u_id1]['name_last'] == 'Albert'
 
 # INVALID NAME
 def test_user_profile_setname_invalid_name():
+    '''
+    Test for invalid update in user profile name
+    '''
     clear()
 
     # Creates a user
@@ -90,14 +95,14 @@ def test_user_profile_setname_invalid_name():
     # First name > 50 characters
     with pytest.raises(InputError):
         user.user_profile_setname(token1,
-                           'Jooooooooooooooooo\
+                                  'Jooooooooooooooooo\
                             oooooooooooooooooo\
                             oooooooooooooooooo\
                             ooooooooooooooooohn', 'Albert')
     # Last name > 50 characters
     with pytest.raises(InputError):
         user.user_profile_setname(token1, 'John',
-                           'Alllllllllllllllll\
+                                  'Alllllllllllllllll\
                             llllllllllllllllll\
                             llllllllllllllllll\
                             lllllllllllllllbert')
@@ -106,6 +111,9 @@ def test_user_profile_setname_invalid_name():
 
 # BASE TEST - Valid email change
 def test_user_profile_setemail_valid():
+    '''
+    Test for valid update in user's email
+    '''
     clear()
 
     # Creates a user
@@ -120,6 +128,9 @@ def test_user_profile_setemail_valid():
 
 # INVALID EMAIL
 def test_user_profile_setemail_invalid_email():
+    '''
+    Test for invalid update in user's email
+    '''
     clear()
 
     # Creates a user
@@ -132,6 +143,9 @@ def test_user_profile_setemail_invalid_email():
 
 # EMAIL ALREADY IN USE
 def test_user_profile_setemail_email_taken():
+    '''
+    Test for when email is already taken
+    '''
     clear()
 
     # Creates 2 users
@@ -149,6 +163,9 @@ def test_user_profile_setemail_email_taken():
 
 # BASE TEST - Valid handle change
 def test_user_profile_sethandle_valid():
+    '''
+    Test for checking valid update in user handle
+    '''
     clear()
 
     #Creates a user
@@ -165,6 +182,9 @@ def test_user_profile_sethandle_valid():
 
 # INVALID HANDLE NAME (< 3 or > 20 characters)
 def test_user_profile_sethandle_invalid_handle():
+    '''
+    Test for checking invalid update in user handle
+    '''
     clear()
 
     # Creates a user
@@ -183,6 +203,9 @@ def test_user_profile_sethandle_invalid_handle():
 
 # HANDLE ALREADY IN USE
 def test_user_profile_sethandle_handle_taken():
+    '''
+    Test for checking user handle being taken already
+    '''
     clear()
 
     # Creates 2 users
