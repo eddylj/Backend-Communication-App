@@ -198,6 +198,11 @@ def test_message_edit_valid():
     message.message_edit(token1, message_id1, message_edited)
     assert data['channels'][channel_id]['messages'][0] == message_edited
 
+    # Tests for if the edit is an empty string
+    message_empty = ""
+    message.message_edit(token1, message_id1, message_empty)
+    assert data['channels'][channel_id]['messages'][0] == message_empty
+
 # Edited message is too long
 def test_message_edit_invalid_length():
     clear()
@@ -257,3 +262,4 @@ def test_message_edit_unauthorised_user():
 
     with pytest.raises(AccessError):
         message.message_edit(token2, message_id1, message_edited)
+
