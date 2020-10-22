@@ -37,7 +37,26 @@ def message_send(token, channel_id, message):
     }
 
 def message_remove(token, message_id):
+    # For now, removing a message is making the messages dictionary it belongs to to {}
+    u_id = get_active(token)
+
+    # The message is already empty
+    if data['messages'][message_id] == {}:
+        raise InputError
     
+    # If not sender of message / not owner of flockr
+    if data['messages']['u_id'] != u_id and u_id != 0:
+        raise AccessError
+
+
+    channel_id = data['messages'][message_id]['channel_id']
+    
+    # Remove from messages database
+    data['messages'][message_id] = {}
+
+    # Remove from channel database
+    data['channels'][channel_id]['messages'].pop(0)
+
     return {
     }
 
