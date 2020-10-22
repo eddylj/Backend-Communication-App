@@ -43,3 +43,4 @@
 - only the authorised user can remove messages
 - Users can't remove message from another channel
 - When you remove a message, it keeps the message dictionary, but removes contents inside that dictionary
+- Token of the user has to be active
