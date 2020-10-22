@@ -196,12 +196,12 @@ def test_message_edit_valid():
     # Sends a valid message
     message_id1 = message.message_send(token1, channel_id, message_valid)
     message.message_edit(token1, message_id1, message_edited)
-    assert data['channels'][channel_id]['messages'][0] == message_edited
+    assert data['messages'][message_id1]['messages'] == message_edited
 
     # Tests for if the edit is an empty string
     message_empty = ""
     message.message_edit(token1, message_id1, message_empty)
-    assert data['channels'][channel_id]['messages'][0] == message_empty
+    assert data['messages'][message_id1]['messages'] == message_empty
 
 # Edited message is too long
 def test_message_edit_invalid_length():
