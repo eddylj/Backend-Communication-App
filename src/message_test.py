@@ -51,7 +51,7 @@ def test_message_send_base():
         'message_id' : 0,
         'u_id': u_id1,
         'message' : "what it do",
-        'time_created' : 0, 
+        'time_created' : 0,
         'channel_id' : channel_id,
     }
 
@@ -59,7 +59,7 @@ def test_message_send_base():
         'message_id' : 1,
         'u_id': u_id2,
         'message' : "what it do",
-        'time_created' : 0, 
+        'time_created' : 0,
         'channel_id' : channel_id,
     }
 
@@ -126,8 +126,7 @@ def test_message_remove_invalid_message_id():
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
     channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
-    channel_id2 = channels.channels_create(token1, 'another channel', True)['channel_id']
-    
+
     # Random Message ID
     message_id = 1231415
 
@@ -140,15 +139,6 @@ def test_message_remove_invalid_message_id():
 
     with pytest.raises(InputError):
         message.message_remove(token1, message_id2)
-
-    # I don't think this tests works figure out later in implementation
-    # # Removing Message from different channel
-    # message_id3 = message.message_send(token1, channel_id, 'mechy5')['message_id']
-    # message_id4 = message.message_send(token1, channel_id2, 'lavar ball')['message_id']
-    # message.message_remove(token1, message_id4)
-    
-    # with pytest.raises(InputError):
-    #     message.message_remove(token1, message_id4)
 
 # test for when a user who is not authorised is trying to remove a message
 def test_message_remove_not_authorised_member():
@@ -193,35 +183,6 @@ def test_message_remove_not_authorised_member():
 
     message.message_remove(token1, message_id2)
     assert data['messages'][message_id2] == {}
-
-
-# def test_message_remove_not_owner():
-#     clear()
-
-#       # Create 2 users
-#     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-#     account1 = auth.auth_register(*user1)
-#     token1 = account1['token']
-#     u_id1 = account1['u_id']
-
-#     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-#     account2 = auth.auth_register(*user2)
-#     token2 = account2['token']
-#     u_id2 = account2['u_id']
-
-#     user3 = ('alsoalsovalid@gmail.com', '1234abc!@#', 'Mark', 'Head')
-#     account3 = auth.auth_register(*user3)
-#     token3 = account3['token']
-#     u_id3 = account3['u_id']
-    
-#     channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
-
-#     messages = data['channels'][channel_id]['messages']
-#     message_id = message.message_send(token2, channel_id, messages)
-#     message_removed = message.message_remove(token3, message_id)
-
-#     with pytest.raises(AccessError):
-#         message.message_remove(token3, message_id)
 
 ############################### MESSAGE_EDIT TESTS ###############################
 def test_message_edit_valid():
@@ -282,7 +243,7 @@ def test_message_edit_invalid_length():
     message_id1 = message.message_send(token1, channel_id, message_valid)
 
     with pytest.raises(InputError):
-            message.message_edit(token1, channel_id, message_error)
+        message.message_edit(token1, channel_id, message_error)
 
 # if the user trying to edit is not the owner of the channel or the user
 # that sent the message
@@ -309,4 +270,3 @@ def test_message_edit_unauthorised_user():
 
     with pytest.raises(AccessError):
         message.message_edit(token2, message_id1, message_edited)
-

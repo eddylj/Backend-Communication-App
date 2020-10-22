@@ -120,4 +120,7 @@ def message_edit(token, message_id, message):
     }
 
 def is_message(message_id):
+    '''
+    Checks if the message with 'message_id' has been sent before
+    '''
     return message_id < len(data['messages'])
