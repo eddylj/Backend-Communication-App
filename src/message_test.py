@@ -162,20 +162,24 @@ def test_message_remove_not_authorised_member():
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
     account2 = auth.auth_register(*user2)
     token2 = account2['token']  
+    u_id2 = account2['u_id']
     
     # Message
     channel_id1 = channels.channels_create(token1, 'test channel', True)['channel_id']
+
     message_id1 = message.message_send(token1, channel_id1, 'what it do')['message_id']
 
-    with pytest.raises(AccessError):
-        message.message_remove(token2, message_id1)
-
-
-    # Doesn't if you are member of channel
-    channel.channel_invite(token1, u_id2, channel_id1)
 
     with pytest.raises(AccessError):
         message.message_remove(token2, message_id1)
+
+
+    # Doesn't matter if you are member of channel
+    channel.channel_invite(token1, channel_id1, u_id2)
+
+    with pytest.raises(AccessError):
+        message.message_remove(token2, message_id1)
+
 
     # Works if you are the owner of channel
     channel.channel_addowner(token1, channel_id1, u_id2)
@@ -237,14 +241,14 @@ def test_message_edit_valid():
     message_edited = "do it what"
 
     # Sends a valid message
-    message_id1 = message.message_send(token1, channel_id, message_valid)
+    message_id1 = message.message_send(token1, channel_id, message_valid)['message_id']
     message.message_edit(token1, message_id1, message_edited)
     assert data['messages'][message_id1]['message'] == message_edited
 
     # Tests for if the edit is an empty string
     message_empty = ""
     message.message_edit(token1, message_id1, message_empty)
-    assert data['messages'][message_id1]['message'] == message_empty
+    assert data['messages'][message_id1] == {}
 
 # Edited message is too long
 def test_message_edit_invalid_length():
@@ -301,7 +305,7 @@ def test_message_edit_unauthorised_user():
     channel.channel_invite(token1, channel_id, u_id2)
     message_valid = "what it do"
     message_edited = "do it what"
-    message_id1 = message.message_send(token1, channel_id, message_valid)
+    message_id1 = message.message_send(token1, channel_id, message_valid)['message_id']
 
     with pytest.raises(AccessError):
         message.message_edit(token2, message_id1, message_edited)

@@ -23,11 +23,11 @@ def test_profile_valid():
 
 
     user1_details = {
-        'u_id': u_id1,
-        'email': email1
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-        'handle': handle1
+        'u_id' : u_id1,
+        'email' : email1,
+        'name_first' : 'Hayden',
+        'name_last' : 'Everest',
+        'handle_str' : handle1
     }
 
     assert user.user_profile(token1, u_id1) == {'user': user1_details}
@@ -45,8 +45,8 @@ def test_invalid_user():
     token1 = account1['token']
     u_id1 = account1['u_id']
 
-    token2 = 124124
-    u_id2 = 12388813
+    token2 = '124124'
+    u_id2 = 1001
 
     # Invalid token
     with pytest.raises(InputError):
@@ -62,6 +62,12 @@ def test_invalid_user():
 # BASE CASE - Valid name change
 def test_user_profile_setname_valid():
     clear()
+
+    # Creates a user
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
     
     user.user_profile_setname(token1, 'John', 'Albert')
 
@@ -101,6 +107,12 @@ def test_user_profile_setname_invalid_name():
 # BASE TEST - Valid email change
 def test_user_profile_setemail_valid():
     clear()
+
+    # Creates a user
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
 
     user.user_profile_setemail(token1, 'info@nip.gl')
 
