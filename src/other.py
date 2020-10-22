@@ -51,7 +51,7 @@ def search(token, query_str):
 
 # Fixture
 # from other import create_account
-@pytest.fixture
+#@pytest.fixture
 def create_account():
     clear()
 
