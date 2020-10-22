@@ -1,7 +1,10 @@
-from data import data
-from error import InputError, AccessError
-from other import get_active
+'''
+Functions used to return and change information regarding user's data
+'''
 import re
+from data import data
+from error import InputError
+from other import get_active
 
 def user_profile(token, u_id):
     '''
@@ -121,8 +124,11 @@ def is_valid(email):
     """
     regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
     if re.search(regex, email):
-        return True     
+        return True
     return False
 
 def is_user(u_id):
+    '''
+    Check for valid user ID
+    '''
     return u_id < len(data['users'])
