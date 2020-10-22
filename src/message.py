@@ -13,6 +13,8 @@ def message_remove(token, message_id):
     '''
     # For now, removing a message is making the messages dictionary it belongs to to {}
     u_id = get_active(token)
+    if u_id is None:
+        raise AccessError
 
     # The message is already empty
     if data['messages'][message_id] == {}:
