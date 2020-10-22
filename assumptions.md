@@ -47,3 +47,6 @@
 ### message_edit()
 - Token of the user has to be active
 - Cannot edit message to be longer than 1000 characters
+
+## User
+- user does not have to have an active token for these functions to work
