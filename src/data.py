@@ -7,4 +7,6 @@ data = {
     'channels': [],
     # Stores active tokens
     'tokens': [],
+    # Stores messages
+    'messages' : [],
 }

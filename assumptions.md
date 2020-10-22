@@ -34,8 +34,8 @@
 
 
 ## Message
+- message_id is unique across all channels
 ### message_remove()
 - Message ID is a number 
 - only the authorised user can remove messages
-- Message ID is unique to its own channel
 - Users can't remove message from another channel

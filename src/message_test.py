@@ -23,6 +23,7 @@ def test_message_send_base():
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
+    u_id1 = account1['u_id']
 
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
     account2 = auth.auth_register(*user2)
@@ -42,10 +43,25 @@ def test_message_send_base():
 
     # Both users should be able to send messages
     message_id1 = message.message_send(token1, channel_id, message_valid)
-    assert message_id1['message_id'] == 1
+    assert message_id1['message_id'] == 0
 
     message_id2 = message.message_send(token2, channel_id, message_valid)
-    assert message_id2['message_id'] == 2
+    assert message_id2['message_id'] == 1
+
+    # Both messages stored correctly in database
+    assert data['messages'][message_id1] == {
+        'message_id' : message_id1,
+        'u_id': u_id1,
+        'message' : "what it do",
+        'time_created' : 0, 
+    }
+
+    assert data['messages'][message_id2] == {
+        'message_id' : message_id2,
+        'u_id': u_id2,
+        'message' : "what it do",
+        'time_created' : 0, 
+    }
 
 
 
@@ -87,7 +103,7 @@ def test_message_send_error_tests():
     message_id = message.message_send(token1, channel_id, 'what it do')['message_id']
     message.message_remove(token1, message_id)
 
-    assert data['channels'][channel_id]['messages'] == []
+    assert data['messages'][message_id] == {}
 
 
 def test_message_remove_invalid_message_id():
@@ -109,18 +125,18 @@ def test_message_remove_invalid_message_id():
     # Removing Message Twice
     message_id2 = message.message_send(token1, channel_id, 'what it do')['message_id']
     message.message_remove(token1, message_id2)
-    message.message_remove(token1, message_id2)
 
     with pytest.raises(InputError):
         message.message_remove(token1, message_id2)
 
-    # Removing Message from different channel
-    message_id3 = message.message_send(token1, channel_id, 'mechy5')['message_id']
-    message_id4 = message.message_send(token1, channel_id2, 'lavar ball')['message_id']
-    message.message_remove(token1, message_id4)
+    # I don't think this tests works figure out later in implementation
+    # # Removing Message from different channel
+    # message_id3 = message.message_send(token1, channel_id, 'mechy5')['message_id']
+    # message_id4 = message.message_send(token1, channel_id2, 'lavar ball')['message_id']
+    # message.message_remove(token1, message_id4)
     
-    with pytest.raises(InputError):
-        message.message_remove(token1, message_id4)
+    # with pytest.raises(InputError):
+    #     message.message_remove(token1, message_id4)
 
 # test for when a user who is not authorised is trying to remove a message
 def test_message_remove_not_authorised_member():
@@ -136,12 +152,32 @@ def test_message_remove_not_authorised_member():
     token2 = account2['token']  
     
     # Message
-    channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
-    message_id = message.message_send(token1, channel_id, 'what it do')['message_id']
-    message.message_remove(token2, message_id)
+    channel_id1 = channels.channels_create(token1, 'test channel', True)['channel_id']
+    message_id1 = message.message_send(token1, channel_id1, 'what it do')['message_id']
 
     with pytest.raises(AccessError):
-        message.message_remove(token2, message_id)
+        message.message_remove(token2, message_id1)
+
+
+    # Doesn't if you are member of channel
+    channel.channel_invite(token1, u_id2, channel_id1)
+
+    with pytest.raises(AccessError):
+        message.message_remove(token2, message_id1)
+
+    # Works if you are the owner of channel
+    channel.channel_addowner(token1, channel_id1, u_id2)
+
+    message.message_remove(token2, message_id1)
+    assert data['messages'][message_id1] == {}
+
+    # Works if you are the owner of flockr (i.e. user1)
+    channel_id2 = channels.channels_create(token2, 'second channel', True)['channel_id']
+    message_id2 = message.message_send(token2, channel_id2, 'what it do')['message_id']
+
+    message.message_remove(token1, message_id2)
+    assert data['messages'][message_id2] == {}
+
 
 # def test_message_remove_not_owner():
 #     clear()
