@@ -1,6 +1,34 @@
+from data import data
+from error import InputError, AccessError
+from other import get_active
+
 def message_send(token, channel_id, message):
+    # Could be error if we change what token is, right now it is the stringed version of u_id
+    # If the message is too long
+    if len(message) > 1000:
+        raise InputError
+
+    u_id = get_active(token)
+    if u_id == None:
+        raise AccessError
+
+    # If the user is not part of the channel, and not owner of flockr
+    if u_id not in data['channels'][channel_id]['members'] and u_id != 0:
+        raise AccessError
+
+    message_id = len(data['messages'])
+    new_message = {
+        'message_id' : message_id,
+        'u_id' : u_id,
+        'message' : message,
+        'time_created' : 0,
+        'channel_id' : channel_id,
+    }
+
+    data['messages'].append(new_message)
+    
     return {
-        'message_id': 1,
+        'message_id': message_id,
     }
 
 def message_remove(token, message_id):
