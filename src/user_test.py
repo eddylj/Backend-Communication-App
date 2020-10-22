@@ -36,10 +36,8 @@ def test_invalid_user():
     token1 = account1['token']
     u_id1 = account1['u_id']
 
-    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
+    token2 = 124124
+    u_id2 = 12388813
 
     # Invalid token
     with pytest.raises(InputError):
