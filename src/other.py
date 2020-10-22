@@ -1,5 +1,12 @@
+'''
+Different Functions used throughout the program
+'''
+
 from data import data
 def clear():
+    '''
+    Function to clear the data
+    '''
     data['users'].clear()
     data['channels'].clear()
     data['tokens'].clear()
@@ -22,6 +29,9 @@ def get_active(token):
     return None
 
 def users_all(token):
+    '''
+    Function for returning all the information of the users
+    '''
     return {
         'users': [
             {
@@ -34,10 +44,16 @@ def users_all(token):
         ],
     }
 
-def admin_userpermission_change(token, u_id, permission_id):
-    pass
+# def admin_userpermission_change(token, u_id, permission_id):
+#     '''
+#     Function for changing admin user permission
+#     '''
+#     pass
 
 def search(token, query_str):
+    '''
+    Function to find the information about messages
+    '''
     return {
         'messages': [
             {
@@ -48,20 +64,3 @@ def search(token, query_str):
             }
         ],
     }
-
-# Fixture
-# from other import create_account
-#@pytest.fixture
-def create_account():
-    clear()
-
-    # Create 2 users
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-
-    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
