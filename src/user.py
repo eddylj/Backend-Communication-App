@@ -34,7 +34,7 @@ def user_profile(token, u_id):
 
 def user_profile_setname(token, name_first, name_last):
     '''
-    Change first or last name of the user if valid 
+    Change first or last name of the user if valid
     '''
 
     # InputError as this only confirms that the token exists, not necessarily active or not
@@ -55,8 +55,6 @@ def user_profile_setname(token, name_first, name_last):
 
     data['users'][u_id]['name_first'] = name_first
     data['users'][u_id]['name_last'] = name_last
-    
-
     return {
     }
 
@@ -78,7 +76,6 @@ def user_profile_setemail(token, email):
     for user in data['users']:
         if user['email'] == email:
             raise InputError
-    
     # Don't use get_active function as user doesn't have to be active
     u_id = int(token)
 
@@ -95,7 +92,6 @@ def user_profile_sethandle(token, handle_str):
     # Invalid length
     if len(handle_str) < 3 or len(handle_str) > 20:
         raise InputError
-    
     # Not used by another account
     for user in data['users']:
         if user['handle'] == handle_str:
@@ -124,11 +120,9 @@ def is_valid(email):
                 regex standards.
     """
     regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
-    if(re.search(regex,email)):
-        return True
-          
-    else:  
-        return False
+    if re.search(regex, email):
+        return True     
+    return False
 
 def is_user(u_id):
     return u_id < len(data['users'])
