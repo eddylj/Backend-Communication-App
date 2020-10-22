@@ -8,6 +8,11 @@ def message_remove(token, message_id):
     }
 
 def message_edit(token, message_id, message):
+    '''
+    Edit a message
+    - This changes the message inside the data['messages'] database and also inside the 
+    data['channels'][channel_id]['messages'] database
+    '''
     # If the message is too long
     if len(message) > 1000:
         raise InputError
