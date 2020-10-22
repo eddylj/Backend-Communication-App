@@ -54,6 +54,7 @@ def test_message_send_base():
         'u_id': u_id1,
         'message' : "what it do",
         'time_created' : 0, 
+        'channel_id' : channel_id,
     }
 
     assert data['messages'][message_id2] == {
@@ -61,6 +62,7 @@ def test_message_send_base():
         'u_id': u_id2,
         'message' : "what it do",
         'time_created' : 0, 
+        'channel_id' : channel_id,
     }
 
 
