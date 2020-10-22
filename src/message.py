@@ -37,6 +37,7 @@ def message_send(token, channel_id, message):
     }
 
 def message_remove(token, message_id):
+    
     return {
     }
 
