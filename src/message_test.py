@@ -9,8 +9,6 @@ import channels
 from error import InputError, AccessError
 from other import clear
 from data import data
-#from other import create_account
-
 
 ############################### MESSAGE_SEND TESTS ###############################
 def test_message_send_base():
@@ -23,6 +21,7 @@ def test_message_send_base():
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
+    u_id1 = account1['u_id']
 
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
     account2 = auth.auth_register(*user2)
@@ -42,17 +41,41 @@ def test_message_send_base():
 
     # Both users should be able to send messages
     message_id1 = message.message_send(token1, channel_id, message_valid)
-    assert message_id1['message_id'] == 1
+    assert message_id1['message_id'] == 0
 
     message_id2 = message.message_send(token2, channel_id, message_valid)
-    assert message_id2['message_id'] == 2
+    assert message_id2['message_id'] == 1
 
+    # Both messages stored correctly in database
+    assert data['messages'][message_id1] == {
+        'message_id' : message_id1,
+        'u_id': u_id1,
+        'message' : "what it do",
+        'time_created' : 0, 
+        'channel_id' : channel_id,
+    }
 
+    assert data['messages'][message_id2] == {
+        'message_id' : message_id2,
+        'u_id': u_id2,
+        'message' : "what it do",
+        'time_created' : 0, 
+        'channel_id' : channel_id,
+    }
 
 def test_message_send_error_tests():
     '''
     Tests to test the errors from different case using message_send
     '''
+    clear()
+
+    # Create 2 users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
     token2 = account2['token']
 
     # Create channel
@@ -87,9 +110,9 @@ def test_message_send_error_tests():
     message_id = message.message_send(token1, channel_id, 'what it do')['message_id']
     message.message_remove(token1, message_id)
 
-    assert data['channels'][channel_id]['messages'] == []
+    assert data['messages'][message_id] == {}
 
-
+############################### MESSAGE_REMOVE TESTS ###############################
 def test_message_remove_invalid_message_id():
     clear()
 
@@ -109,18 +132,18 @@ def test_message_remove_invalid_message_id():
     # Removing Message Twice
     message_id2 = message.message_send(token1, channel_id, 'what it do')['message_id']
     message.message_remove(token1, message_id2)
-    message.message_remove(token1, message_id2)
 
     with pytest.raises(InputError):
         message.message_remove(token1, message_id2)
 
-    # Removing Message from different channel
-    message_id3 = message.message_send(token1, channel_id, 'mechy5')['message_id']
-    message_id4 = message.message_send(token1, channel_id2, 'lavar ball')['message_id']
-    message.message_remove(token1, message_id4)
+    # I don't think this tests works figure out later in implementation
+    # # Removing Message from different channel
+    # message_id3 = message.message_send(token1, channel_id, 'mechy5')['message_id']
+    # message_id4 = message.message_send(token1, channel_id2, 'lavar ball')['message_id']
+    # message.message_remove(token1, message_id4)
     
-    with pytest.raises(InputError):
-        message.message_remove(token1, message_id4)
+    # with pytest.raises(InputError):
+    #     message.message_remove(token1, message_id4)
 
 # test for when a user who is not authorised is trying to remove a message
 def test_message_remove_not_authorised_member():
@@ -136,12 +159,32 @@ def test_message_remove_not_authorised_member():
     token2 = account2['token']  
     
     # Message
-    channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
-    message_id = message.message_send(token1, channel_id, 'what it do')['message_id']
-    message.message_remove(token2, message_id)
+    channel_id1 = channels.channels_create(token1, 'test channel', True)['channel_id']
+    message_id1 = message.message_send(token1, channel_id1, 'what it do')['message_id']
 
     with pytest.raises(AccessError):
-        message.message_remove(token2, message_id)
+        message.message_remove(token2, message_id1)
+
+
+    # Doesn't if you are member of channel
+    channel.channel_invite(token1, u_id2, channel_id1)
+
+    with pytest.raises(AccessError):
+        message.message_remove(token2, message_id1)
+
+    # Works if you are the owner of channel
+    channel.channel_addowner(token1, channel_id1, u_id2)
+
+    message.message_remove(token2, message_id1)
+    assert data['messages'][message_id1] == {}
+
+    # Works if you are the owner of flockr (i.e. user1)
+    channel_id2 = channels.channels_create(token2, 'second channel', True)['channel_id']
+    message_id2 = message.message_send(token2, channel_id2, 'what it do')['message_id']
+
+    message.message_remove(token1, message_id2)
+    assert data['messages'][message_id2] == {}
+
 
 # def test_message_remove_not_owner():
 #     clear()
@@ -170,3 +213,91 @@ def test_message_remove_not_authorised_member():
 
 #     with pytest.raises(AccessError):
 #         message.message_remove(token3, message_id)
+
+############################### MESSAGE_EDIT TESTS ###############################
+def test_message_edit_valid():
+    clear()
+
+    # Creates a user
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+
+    # Create channel
+    name = 'Channel'
+    channel_id = channels.channels_create(token1, name, True)['channel_id']
+    message_valid = "what it do"
+    message_edited = "do it what"
+
+    # Sends a valid message
+    message_id1 = message.message_send(token1, channel_id, message_valid)
+    message.message_edit(token1, message_id1, message_edited)
+    assert data['messages'][message_id1]['message'] == message_edited
+
+    # Tests for if the edit is an empty string
+    message_empty = ""
+    message.message_edit(token1, message_id1, message_empty)
+    assert data['messages'][message_id1]['message'] == message_empty
+
+# Edited message is too long
+def test_message_edit_invalid_length():
+    clear()
+
+    # Creates a user
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    # Create channel
+    name = 'Channel'
+    channel_id = channels.channels_create(token1, name, True)['channel_id']
+    message_valid = "what it do"
+
+    message_error = "what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do what it do what it do what it do what it do \
+                what it do what it do what it do what it do "
+
+    message_id1 = message.message_send(token1, channel_id, message_valid)
+
+    with pytest.raises(InputError):
+            message.message_edit(token1, channel_id, message_error)
+
+# if the user trying to edit is not the owner of the channel or the user
+# that sent the message
+def test_message_edit_unauthorised_user():
+    clear()
+    # Create 2 users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    # Create channel
+    name = 'Channel'
+    channel_id = channels.channels_create(token1, name, True)['channel_id']
+    channel.channel_invite(token1, channel_id, u_id2)
+    message_valid = "what it do"
+    message_edited = "do it what"
+    message_id1 = message.message_send(token1, channel_id, message_valid)
+
+    with pytest.raises(AccessError):
+        message.message_edit(token2, message_id1, message_edited)
+
