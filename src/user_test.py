@@ -6,13 +6,13 @@ from other import clear
 from data import data
 
 
-def profile_valid():
+def test_profile_valid():
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
     u_id1 = account1['u_id']
-    email1 = account1['email']
-    handle1 = account1['handle']
+    email1 = data['users'][u_id1]['email']
+    handle1 = data['users'][u_id1]['handle']
 
 
     user1_details = {
@@ -20,15 +20,15 @@ def profile_valid():
         'email': email1
         'name_first': 'Hayden',
         'name_last': 'Everest',
-        'handle': handle
+        'handle': handle1
     }
 
-    assert user.user_profile(token1, u_id1) == user1_details
+    assert user.user_profile(token1, u_id1) == {'user': user1_details}
 
 def test_invalid_user():
 
     '''
-    Invalid user accessing different account
+    Invalid user trying to remove a message
     '''
 
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
