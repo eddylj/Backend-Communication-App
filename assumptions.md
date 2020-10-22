@@ -35,7 +35,11 @@
 
 ## Message
 - message_id is unique across all channels
+### message_send()
+- The owner of flockr can send messages into any channel
+- Token of the user has to be active
 ### message_remove()
 - Message ID is a number 
 - only the authorised user can remove messages
 - Users can't remove message from another channel
+- When you remove a message, it keeps the message dictionary, but removes contents inside that dictionary
