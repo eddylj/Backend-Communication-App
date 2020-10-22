@@ -27,7 +27,7 @@ def test_auth_login_invalid_email():
 # NON USER EMAIL
 def test_auth_login_non_user_email():
     clear()
-    auth.auth_register(*user)
+    account = auth.auth_register(*user)
     token = account['token']
     u_id = account['u_id']
 
@@ -38,7 +38,7 @@ def test_auth_login_non_user_email():
 # WRONG PASSWORD
 def test_auth_login_wrong_password():
     clear()
-    auth.auth_register(*user)
+    account = auth.auth_register(*user)
     token = account['token']
     u_id = account['u_id']
 
