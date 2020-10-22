@@ -8,5 +8,6 @@ def message_remove(token, message_id):
     }
 
 def message_edit(token, message_id, message):
+    
     return {
     }
