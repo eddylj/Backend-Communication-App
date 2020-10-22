@@ -119,6 +119,9 @@ def test_message_send_error_tests():
 
 ############################### MESSAGE_REMOVE TESTS ###############################
 def test_message_remove_invalid_message_id():
+    '''
+    Tests removing a message with an invalid message id
+    '''
     clear()
 
     # Create user
@@ -140,8 +143,10 @@ def test_message_remove_invalid_message_id():
     with pytest.raises(InputError):
         message.message_remove(token1, message_id2)
 
-# test for when a user who is not authorised is trying to remove a message
 def test_message_remove_not_authorised_member():
+    '''
+    Test for when a user who is not authorised is trying to remove a message
+    '''
     clear()
 
     # Create 2 users
@@ -151,9 +156,9 @@ def test_message_remove_not_authorised_member():
 
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
     account2 = auth.auth_register(*user2)
-    token2 = account2['token']  
+    token2 = account2['token']
     u_id2 = account2['u_id']
-    
+
     # Message
     channel_id1 = channels.channels_create(token1, 'test channel', True)['channel_id']
 
@@ -186,14 +191,15 @@ def test_message_remove_not_authorised_member():
 
 ############################### MESSAGE_EDIT TESTS ###############################
 def test_message_edit_valid():
+    '''
+    Base valid case - an authorised user edits a message
+    '''
     clear()
 
     # Creates a user
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
-    u_id1 = account1['u_id']
-
 
     # Create channel
     name = 'Channel'
@@ -211,15 +217,16 @@ def test_message_edit_valid():
     message.message_edit(token1, message_id1, message_empty)
     assert data['messages'][message_id1] == {}
 
-# Edited message is too long
 def test_message_edit_invalid_length():
+    '''
+    Tests for if the edited message is over 1000 characters
+    '''
     clear()
 
     # Creates a user
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
-    u_id1 = account1['u_id']
 
     # Create channel
     name = 'Channel'
@@ -240,20 +247,21 @@ def test_message_edit_invalid_length():
                 what it do what it do what it do what it do what it do what it do what it do what it do \
                 what it do what it do what it do what it do "
 
-    message_id1 = message.message_send(token1, channel_id, message_valid)
+    message_id1 = message.message_send(token1, channel_id, message_valid)['message_id']
 
     with pytest.raises(InputError):
-        message.message_edit(token1, channel_id, message_error)
+        message.message_edit(token1, message_id1, message_error)
 
-# if the user trying to edit is not the owner of the channel or the user
-# that sent the message
 def test_message_edit_unauthorised_user():
+    '''
+    If the user trying to edit is not the owner of the channel or the user
+    that sent the message, raise 'AccessError'
+    '''
     clear()
     # Create 2 users
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
-    u_id1 = account1['u_id']
 
     user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
     account2 = auth.auth_register(*user2)
