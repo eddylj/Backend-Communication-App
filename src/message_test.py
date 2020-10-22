@@ -30,7 +30,7 @@ def test_message_send_base():
 
     # Create channel
     name = 'Channel'
-    channel_id = channels.channels_create(token1, name, True)
+    channel_id = channels.channels_create(token1, name, True)['channel_id']
 
     message_valid = "what it do"
 
@@ -47,16 +47,16 @@ def test_message_send_base():
     assert message_id2['message_id'] == 1
 
     # Both messages stored correctly in database
-    assert data['messages'][message_id1] == {
-        'message_id' : message_id1,
+    assert data['messages'][0] == {
+        'message_id' : 0,
         'u_id': u_id1,
         'message' : "what it do",
         'time_created' : 0, 
         'channel_id' : channel_id,
     }
 
-    assert data['messages'][message_id2] == {
-        'message_id' : message_id2,
+    assert data['messages'][1] == {
+        'message_id' : 1,
         'u_id': u_id2,
         'message' : "what it do",
         'time_created' : 0, 
@@ -80,7 +80,7 @@ def test_message_send_error_tests():
 
     # Create channel
     name = 'Channel'
-    channel_id = channels.channels_create(token1, name, True)
+    channel_id = channels.channels_create(token1, name, True)['channel_id']
 
     message_valid = "what it do"
 
@@ -108,9 +108,14 @@ def test_message_send_error_tests():
 
     channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
     message_id = message.message_send(token1, channel_id, 'what it do')['message_id']
-    message.message_remove(token1, message_id)
 
-    assert data['messages'][message_id] == {}
+    assert data['messages'][message_id] == {
+        'message_id' : message_id,
+        'u_id' : int(token1),
+        'message' : 'what it do',
+        'time_created' : 0,
+        'channel_id' : channel_id,
+    }
 
 ############################### MESSAGE_REMOVE TESTS ###############################
 def test_message_remove_invalid_message_id():
@@ -147,7 +152,7 @@ def test_message_remove_invalid_message_id():
 
 # test for when a user who is not authorised is trying to remove a message
 def test_message_remove_not_authorised_member():
-     clear()
+    clear()
 
     # Create 2 users
     user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
