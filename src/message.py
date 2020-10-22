@@ -20,12 +20,11 @@ def message_remove(token, message_id):
     if data['messages'][message_id] == {}:
         raise InputError
 
-    # If not sender of message / not owner of flockr
-    if u_id not in (data['messages'][message_id]['u_id'], 0):
-        raise AccessError
-
-
     channel_id = data['messages'][message_id]['channel_id']
+
+    # If not sender of message / not owner of flockr / owner of channel
+    if u_id not in (data['messages'][message_id]['u_id'], 0, data['channels'][channel_id]['owners']):
+        raise AccessError
 
     # Remove from messages database
     data['messages'][message_id] = {}
