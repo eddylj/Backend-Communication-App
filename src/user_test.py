@@ -119,6 +119,76 @@ def test_user_setname_repeated():
 
 ########################## USER_PROFILE_SETEMAIL TESTS #########################
 
+def test_user_setemail_valid():
+    """ Base case for user_profile_setemail(). """
+    clear()
+
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
+
+    user.user_profile_setemail(token, "alsovalid@gmail.com")
+
+    expected = {
+        'u_id': u_id,
+        'email': 'alsovalid@gmail.com',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+        'handle_str': 'haydeneverest'
+    }
+
+    assert user.user_profile(token, u_id) == expected
+
+def test_user_setemail_invalid():
+    """
+    Test case for user_profile_setemail(), where the email passed doesn't
+    conform to the predetermined format rules.
+    """
+    clear()
+
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
+
+    with pytest.raises(InputError):
+        user.user_profile_setemail(token, "invalidemail.com")
+
+    expected = {
+        'u_id': u_id,
+        'email': 'validemail@gmail.com',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+        'handle_str': 'haydeneverest'
+    }
+
+    assert user.user_profile(token, u_id) == {expected}
+
+def test_user_setemail_email_taken():
+    """
+    Test case for user_profile_setemail(), where a user tries to change their
+    email to one already used by another registered user.
+    """
+    clear()
+
+    token = auth.auth_register(*user1)['token']
+    auth.auth_register(*user2)
+
+    with pytest.raises(InputError):
+        user.user_profile_setemail(token, 'alsovalid@gmail.com')
+
+def test_user_setemail_repeated():
+    """
+    Test case for user_profile_setemail(), where the passed email is the same as
+    the existing email.
+    """
+    # Assumed to raise an InputError. Possibly easier to implement.
+    clear()
+
+    token = auth.auth_register(*user1)['token']
+
+    with pytest.raises(InputError):
+        user.user_profile_setemail(token, "validemail@gmail.com")
+
 ######################### USER_PROFILE_SETHANDLE TESTS #########################
 
 
