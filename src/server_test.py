@@ -23,10 +23,10 @@ def test_auth_base(url):
     }
 
     r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
-    payload1 = r.json()
+    user1 = r.json()
 
-    assert payload1['u_id'] == 0
-    assert payload1['token'] == '0'
+    assert user1['u_id'] == 0
+    assert user1['token'] == '0'
 
     # Create user2
     dataIn = {
@@ -37,15 +37,15 @@ def test_auth_base(url):
     }
 
     r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
-    payload2 = r.json()
+    user2 = r.json()
 
-    assert payload2['u_id'] == 1
-    assert payload2['token'] == '1'
+    assert user2['u_id'] == 1
+    assert user2['token'] == '1'
 
     # Logout user1 (successful)
 
     dataIn = {
-        'token' : payload1['token']
+        'token' : user1['token']
     }
 
     r = requests.post(f"{BASE_URL}/auth/logout", json=dataIn)
@@ -63,7 +63,7 @@ def test_auth_base(url):
     # Logout user2
 
     dataIn = {
-        'token' : payload2['token']
+        'token' : user2['token']
     }
 
     r = requests.post(f"{BASE_URL}/auth/logout", json=dataIn)
@@ -86,7 +86,7 @@ def test_auth_base(url):
 
     # Logout user1
     dataIn = {
-        'token' : payload1['token']
+        'token' : user1['token']
     }
 
     r = requests.post(f"{BASE_URL}/auth/logout", json=dataIn)
