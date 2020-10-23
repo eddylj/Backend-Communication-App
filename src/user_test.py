@@ -96,26 +96,15 @@ def test_user_setname_invalid():
 def test_user_setname_repeated():
     """
     Test case for user_profile_setname(), where the passed name is the same as
-    the existing name.
+    the existing name. Expected to raise an input error.
     """
-    # Assumed to just work; nothing changes but no errors raised.
+    # Assumed to raise an InputError. Probably easier to implement + efficiency.
     clear()
 
-    account = auth.auth_register(*user1)
-    token = account['token']
-    u_id = account['u_id']
+    token = auth.auth_register(*user1)['token']
 
-    user.user_profile_setname(token, "Hayden", "Everest")
-
-    expected = {
-        'u_id': u_id,
-        'email': 'validemail@gmail.com',
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-        'handle_str': 'haydeneverest'
-    }
-
-    assert user.user_profile(token, u_id) == {expected}
+    with pytest.raises(InputError):
+        user.user_profile_setname(token, "Hayden", "Everest")
 
 ########################## USER_PROFILE_SETEMAIL TESTS #########################
 
@@ -179,9 +168,9 @@ def test_user_setemail_email_taken():
 def test_user_setemail_repeated():
     """
     Test case for user_profile_setemail(), where the passed email is the same as
-    the existing email.
+    the existing email. Expected to raise an input error.
     """
-    # Assumed to raise an InputError. Possibly easier to implement.
+    # Assumed to raise an InputError. Probably easier to implement + efficiency.
     clear()
 
     token = auth.auth_register(*user1)['token']
@@ -191,6 +180,90 @@ def test_user_setemail_repeated():
 
 ######################### USER_PROFILE_SETHANDLE TESTS #########################
 
+def test_user_sethandle_valid():
+    """ Base case for user_profile_sethandle() """
+    clear()
+
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
+
+    user.user_profile_sethandle(token, "everesthayden")
+
+    expected = {
+        'u_id': u_id,
+        'email': 'validemail@gmail.com',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+        'handle_str': 'everesthayden'
+    }
+
+    assert user.user_profile(token, u_id) == expected
+
+def test_user_sethandle_invalid():
+    """
+    Test cases for invalid handles passed to user_profile_sethandle. Invalid
+    handles include handles which are not:
+        - Between 3-20 characters inclusively in length.
+        - Contains upper-case letters.
+    """
+    # Include these in assumptions.md
+    clear()
+
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
+
+    # Empty handle string
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "")
+
+    # 2-character handle string
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "he")
+
+    # 21-character handle string
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "haaaaaaaaaydeneverest")
+
+    # Correct length, but contains upper-case characters.
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "EverestHayden")
+
+    expected = {
+        'u_id': u_id,
+        'email': 'validemail@gmail.com',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+        'handle_str': 'haydeneverest'
+    }
+
+    assert user.user_profile(token, u_id) == expected
+
+def test_user_sethandle_handle_taken():
+    """
+    Test case for user_profile_sethandle(), where a user tries to change their
+    handle to one already used by another registered user.
+    """
+    clear()
+
+    token = auth.auth_register(*user1)['token']
+    auth.auth_register(*user2)
+
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "andrasarato")
+
+def test_user_sethandle_repeated():
+    """
+    Test case for user_profile_sethandle(), where the passed handle is the same
+    as the existing handle. Expected to raise an input error.
+    """
+    clear()
+
+    token = auth.auth_register(*user1)['token']
+
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "haydeneverest")
 
 # To be added: invalid token tests
 
