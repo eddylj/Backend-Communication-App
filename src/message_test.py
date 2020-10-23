@@ -12,6 +12,8 @@ user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
 
+# Consider changing user registration to fixtures
+
 ############################# MESSAGE_SEND TESTS ###############################
 
 def test_message_send_valid():
@@ -38,25 +40,25 @@ def test_message_send_valid():
 
     # Send messages
     # Processing time could potentially affect pytest results
-    time1 = int(time.time())
-    m_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
-    time2 = int(time.time())
-    m_id2 = message.message_send(token2, channel_id, "Goodbye")['message_id']
+    timestamp2 = int(time.time())
+    msg_id2 = message.message_send(token2, channel_id, "Goodbye")['message_id']
 
     expected = {
         'messages': [
             {
-                'message_id': m_id1,
+                'message_id': msg_id1,
                 'u_id': u_id1,
                 'message': "Hello",
-                'time_created': time1
+                'time_created': timestamp1
             },
             {
-                'message_id': m_id2,
+                'message_id': msg_id2,
                 'u_id': u_id2,
                 'message': "Goodbye",
-                'time_created': time2
+                'time_created': timestamp2
             }
         ],
         'start': 0,
@@ -65,6 +67,7 @@ def test_message_send_valid():
 
     assert channel.channel_messages(token1, channel_id, 0) == expected
 
+    # Will move this to channel_messages
     # User2 leaves the channel
     channel.channel_leave(token2, channel_id)
     assert channel.channel_messages(token1, channel_id, 0) == expected
@@ -75,6 +78,7 @@ def test_message_send_too_long():
     character limit.
     """
     clear()
+
     account = auth.auth_register(*user)
     token = account['token']
 
@@ -122,9 +126,145 @@ def test_message_send_not_member():
     with pytest.raises(AccessError):
         message.message_send(token2, channel_id, "Hello")
 
-############################ CHANNELS_LISTALL TESTS ############################
+############################# MESSAGE_REMOVE TESTS #############################
 
+def test_message_remove_valid():
+    """ Base case for message_remove() """
+    clear()
 
+    account = auth.auth_register(*user)
+    token = account['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+
+    message.message_remove(token, msg_id)
+
+    assert channel.channel_messages(token, channel_id, 0) == {
+        'messages': [],
+        'start': 0,
+        'end': -1
+    }
+
+def test_message_remove_nonexistent():
+    """
+    Test case for message_remove(), where the message corresponding to the ID
+    passed into message_remove() does not exist. e.g. Never been sent or already
+    deleted.
+    """
+    clear()
+
+    account = auth.auth_register(*user)
+    token = account['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+
+    # No messages sent yet
+    with pytest.raises(InputError):
+        message.message_remove(token, 12345)
+
+    # Sending a message, then removing it
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+    message.message_remove(token, msg_id)
+
+    with pytest.raises(InputError):
+        message.message_remove(token, msg_id)
+
+def test_message_remove_not_owner():
+    """
+    Test case for message_remove(), where the caller isn't the user who sent the
+    message, or an owner of the channel/Flockr.
+    """
+    clear()
+
+    # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Invite user 2 into the channel
+    channel.channel_invite(token1, channel_id, u_id2)
+
+    timestamp = int(time.time())
+    msg_id = message.message_send(token1, channel_id, "Hello")['message_id']
+
+    with pytest.raises(AccessError):
+        message.message_remove(token2, msg_id)
+
+    expected = {
+        'messages': [
+            {
+                'message_id': msg_id,
+                'u_id': u_id1,
+                'message': "Hello",
+                'time_created': timestamp
+            }
+        ],
+        'start': 0,
+        'end': -1
+    }
+
+    assert channel.channel_messages(token1, channel_id, 0) == expected
+
+def test_message_remove_as_owner():
+    """
+    Testing if an owner of the flockr or channel can freely remove messages.
+    """
+    clear()
+
+    # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Invite user 2 into the channel
+    channel.channel_invite(token1, channel_id, u_id2)
+
+    # User 2 sends a message, then user 1 removes it.
+    msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
+    message.message_remove(token1, msg_id)
+
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': [],
+        'start': 0,
+        'end': -1
+    }
+
+def test_message_remove_not_member():
+    """
+    Edge case for message_remove(), where the caller isn't even in the channel
+    where the message is sent. This includes the Flockr owner.
+    """
+    clear()
+
+    # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+
+    # Create channel
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+
+    msg_id = message.message_send(token2, channel_id, "Hello")['message_id']
+
+    with pytest.raises(AccessError):
+        message.message_remove(token1, msg_id)
 
 ############################# CHANNELS_LIST TESTS ##############################
 
