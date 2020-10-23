@@ -1,6 +1,7 @@
-
-import auth, channel, channels
 import pytest
+import auth
+import channel
+import channels
 from error import InputError, AccessError
 from other import clear
 
