@@ -4,15 +4,22 @@ def clear():
     data['channels'].clear()
     data['tokens'].clear()
 
-'''
-Loops through list of active tokens checking if provided token is already
-active.
-'''
-def is_active(token):
-    for active_token in data['tokens']:
-        if token == active_token:
-            return True
-    return False
+def get_active(token):
+    """
+    Checks if a token is active. Returns the corresponding u_id if it is active,
+    None otherwise.
+
+    Parameters:
+        token (str) : Caller's authorisation hash.
+
+    Returns:
+        u_id (int)  : The corresponding u_id if token is active.
+        None        : If token isn't active.
+    """
+    if token in data['tokens']:
+        # Written in this redundant way because token will be changed in the future
+        return data['users'][token]['u_id']
+    return None
 
 def users_all(token):
     return {
@@ -26,6 +33,9 @@ def users_all(token):
             },
         ],
     }
+
+def admin_userpermission_change(token, u_id, permission_id):
+    pass
 
 def search(token, query_str):
     return {
