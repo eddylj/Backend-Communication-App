@@ -442,4 +442,6 @@ def test_message_edit_not_member():
     with pytest.raises(AccessError):
         message.message_edit(token1, msg_id, "Hello")
 
+# To be added: invalid token tests
+
 clear()
