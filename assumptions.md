@@ -36,10 +36,10 @@
 ## Message
 - message_id is unique across all channels
 ### message_send()
-- The owner of flockr can send messages into any channel
+- ~~The owner of flockr can send messages into any channel~~ The Flockr owner cannot send messages into a channel without being in it.
+- Message cannot be empty. Raise InputError in that case.
 - Token of the user has to be active
 ### message_remove()
-- Message ID is a number 
 - only the authorised user can remove messages
 - Users can't remove message from another channel
 - When you remove a message, it keeps the message dictionary, but removes contents inside that dictionary
@@ -47,6 +47,7 @@
 ### message_edit()
 - Token of the user has to be active
 - Cannot edit message to be longer than 1000 characters
+- Edit updates the timestamp of the message
 
 ## User
 - user does not have to have an active token for these functions to work

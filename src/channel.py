@@ -157,18 +157,10 @@ def channel_messages(token, channel_id, start):
 
     if start + 50 < len(messages):
         end = start + 50
+        messages = messages[start:end]
     else:
         end = -1
 
-    # Provided example kept for records. Might be useful in later iterations.
-    # 'messages': [
-    #     {
-    #         'message_id': 1,
-    #         'u_id': 1,
-    #         'message': 'Hello world',
-    #         'time_created': 1582426789,
-    #     }
-    # ],
     return {
         'messages': messages,
         'start': start,

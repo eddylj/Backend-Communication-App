@@ -18,8 +18,7 @@ user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
 
 def test_message_send_valid():
     """
-    Base case for message_send(), as well as an additional test to see if
-    messages persist if a user leaves the channel after sending one.
+    Base case for message_send().
     """
     clear()
 
@@ -48,16 +47,16 @@ def test_message_send_valid():
 
     expected = [
         {
-            'message_id': msg_id1,
-            'u_id': u_id1,
-            'message': "Hello",
-            'time_created': timestamp1
-        },
-        {
             'message_id': msg_id2,
             'u_id': u_id2,
             'message': "Goodbye",
             'time_created': timestamp2
+        },
+        {
+            'message_id': msg_id1,
+            'u_id': u_id1,
+            'message': "Hello",
+            'time_created': timestamp1
         }
     ]
 
@@ -66,11 +65,6 @@ def test_message_send_valid():
         'start': 0,
         'end': -1
     }
-
-    # Will move this to channel_messages
-    # User2 leaves the channel
-    channel.channel_leave(token2, channel_id)
-    assert channel.channel_messages(token1, channel_id, 0) == expected
 
 def test_message_send_too_long():
     """
@@ -249,7 +243,7 @@ def test_message_remove_as_owner():
 def test_message_remove_not_member():
     """
     Edge case for message_remove(), where the caller isn't even in the channel
-    where the message is sent. This includes the Flockr owner.
+    where the message is sent. This does not includes the Flockr owner.
     """
     clear()
 
@@ -261,12 +255,12 @@ def test_message_remove_not_member():
     token2 = account2['token']
 
     # Create channel
-    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
-    msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
+    msg_id = message.message_send(token1, channel_id, "Goodbye")['message_id']
 
     with pytest.raises(AccessError):
-        message.message_remove(token1, msg_id)
+        message.message_remove(token2, msg_id)
 
 ############################## MESSAGE_EDIT TESTS ##############################
 
@@ -423,7 +417,7 @@ def test_message_edit_as_owner():
 def test_message_edit_not_member():
     """
     Edge case for message_edit(), where the caller isn't even in the channel
-    where the message is sent. This includes the Flockr owner.
+    where the message is sent. This does not includes the Flockr owner.
     """
     clear()
 
@@ -435,12 +429,12 @@ def test_message_edit_not_member():
     token2 = account2['token']
 
     # Create channel
-    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
-    msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
+    msg_id = message.message_send(token1, channel_id, "Goodbye")['message_id']
 
     with pytest.raises(AccessError):
-        message.message_edit(token1, msg_id, "Hello")
+        message.message_edit(token2, msg_id, "Hello")
 
 # To be added: invalid token tests
 
