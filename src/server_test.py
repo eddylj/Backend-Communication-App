@@ -422,3 +422,138 @@ def test_channel_base(url):
             }
         ],
     }        
+
+
+def test_user_base(url):
+    
+    '''
+    Base test for user functions
+    '''
+
+    # Create user1
+    dataIn = {
+        'email' : 'validemail@gmail.com',
+        'password' : 'asdfqwer1234',
+        'name_first' : 'Howard',
+        'name_last' : 'Dwight',
+    }
+
+    r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
+    user1 = r.json()
+
+    assert user1['u_id'] == 0
+    assert user1['token'] == '0'
+
+    # Create user2
+    dataIn = {
+        'email' : 'alsovalidemail@gmail.com',
+        'password' : 'asdfqwer1234',
+        'name_first' : 'West',
+        'name_last' : 'Delonte',
+    }
+
+    r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
+    user2 = r.json()
+
+    assert user2['u_id'] == 1
+    assert user2['token'] == '1'
+
+
+    # Get profile of user1
+
+    dataIn = {
+        'token' : user1['token'],
+        'u_id' : u_id1['u_id']
+    }
+
+    r = request.get(f"{BASE_URL}/user/profile", json=dataIn)
+    payload = r.json()
+    assert payload == {
+        'u_id' : 0,
+        'email' : 'validemail@gmail.com',
+        'name_first' : 'Howard',
+        'name_last' : 'Dwight',
+        'handle_str' : user1['handle'], # not sure bout this handle        
+    }
+
+    # change name for user1 in profile
+
+    dataIn = {
+        'token' : user1['token'],
+        'name_first' : "Dawon",
+        'name_last' : "Other"
+    }
+
+    r = request.put(f"{BASE_URL}/user/profile", json=dataIn)
+    
+    # change email for user1 in profile
+    dataIn = {
+         'token' : user1['token'],
+         'email' : "randomemail@gmail.com"
+    }
+
+    r = request.put(f"{BASE_URL}/user/profile", json=dataIn)
+    
+    # change handle 
+    dataIn = {
+         'token' : user1['token'],
+         'handle_str' : "Lavar Ball"
+    }
+
+    r = request.put(f"{BASE_URL}/user/profile", json=dataIn)
+
+    # show the profile of user1 after change
+    dataIn = {
+        'token' : user1['token'],
+        'u_id' : u_id1['u_id']
+    }
+
+    r = request.get(f"{BASE_URL}/user/profile", json=dataIn)
+    payload = r.json()
+    assert payload == {
+        'u_id' : 0,
+        'email' : 'randomemail@gmail.com',
+        'name_first' : 'Dawon',
+        'name_last' : 'Other',
+        'handle_str' : 'Lavar Ball', # not sure bout this handle        
+    }
+
+    # list out all the users
+
+    dataIn = {
+        'token' : user1['token']
+    }
+
+    r = request.get(f"{BASE_URL}/user/profile", json=dataIn)
+    payload = r.json()
+    assert payload == {
+        'users' : [
+            { 
+                'u_id' : 0,
+                'email' : 'randomemail@gmail.com',
+                'name_first' : 'Dawon',
+                'name_last' : 'Other',
+                'handle_str' : 'Lavar Ball'
+            },
+            {
+                'u_id' : 1,
+                'email' : 'alsovalidemail@gmail.com',
+                'name_first' : 'West',
+                'name_last' : 'Delonte',
+                'handle_str' : user2['handle']
+
+
+            }
+        ]
+    }
+
+
+
+
+    
+
+    
+
+
+    
+
