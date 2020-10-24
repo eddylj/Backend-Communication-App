@@ -156,18 +156,20 @@ def test_channels_base(url):
 
     # List user2 channels
 
-    dataIn = {
-        'token' : user2['token']
-    }
+    # dataIn = {
+    #     'token' : user2['token']
+    # }
 
-    r = requests.get(f"{BASE_URL}/channels/list", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channels/list?token={user2['token']}")
     payload = r.json()
-    assert payload == [
-        {
-            'channel_id' : 1,
-            'name' : 'Channel 2'
-        }
-    ]
+    assert payload == {
+        'channels' : [
+            {
+                'channel_id' : 1,
+                'name' : 'Channel 2'
+            }
+        ]
+    }
 
     # Listall channels
 
@@ -175,18 +177,20 @@ def test_channels_base(url):
         'token' : user2['token']
     }
 
-    r = requests.get(f"{BASE_URL}/channels/listall", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channels/listall?token={user2['token']}")
     payload = r.json()
-    assert payload == [
-        {
-            'channel_id' : 0,
-            'name' : 'Channel 1'
-        },
-        {
-            'channel_id' : 1,
-            'name' : 'Channel 2'
-        }
-    ]
+    assert payload == {
+        'channels' : [
+            {
+                'channel_id' : 0,
+                'name' : 'Channel 1'
+            },
+            {
+                'channel_id' : 1,
+                'name' : 'Channel 2'
+            }
+        ]
+    }
 
 def test_channel_base(url):
     '''
@@ -249,12 +253,12 @@ def test_channel_base(url):
 
     # List details of channel1 with user1 
 
-    dataIn = {
-        'token' : user1['token'],
-        'channel_id' : channel_id1
-    }
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'channel_id' : channel_id1
+    # }
 
-    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
     payload = r.json()
     assert payload == {
         'name' : 'Channel 1',
@@ -286,12 +290,12 @@ def test_channel_base(url):
 
     # List details of channel1 with user2
 
-    dataIn = {
-        'token' : user1['token'],
-        'channel_id' : channel_id1
-    }
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'channel_id' : channel_id1
+    # }
 
-    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
     payload = r.json()
     assert payload == {
         'name' : 'Channel 1',
@@ -356,12 +360,12 @@ def test_channel_base(url):
 
     # List details with user1 channel1
 
-    dataIn = {
-        'token' : user1['token'],
-        'channel_id' : channel_id1
-    }
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'channel_id' : channel_id1
+    # }
 
-    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
     payload = r.json()
     assert payload == {
         'name' : 'Channel 1',
@@ -398,12 +402,12 @@ def test_channel_base(url):
 
     # List details with user1 channel
 
-    dataIn = {
-        'token' : user1['token'],
-        'channel_id' : channel_id1
-    }
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'channel_id' : channel_id1
+    # }
 
-    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
     payload = r.json()
     assert payload == {
         'name' : 'Channel 1',

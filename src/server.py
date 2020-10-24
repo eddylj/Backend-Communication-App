@@ -38,6 +38,8 @@ def echo():
         'data': data
     })
 
+
+# AUTH FUNCTIONS
 @APP.route("/auth/register", methods=['POST'])
 def register():
     data = request.get_json('data')
@@ -63,7 +65,90 @@ def logout():
     )
 
 
+# CHANNEL FUNCTIONS
+@APP.route("/channel/invite", methods=['POST'])
+def invite():
+    data = request.get_json('data')
 
+    return dumps(
+        channel.channel_invite(data['token'], data['channel_id'], data['u_id'])
+    )
+
+@APP.route("/channel/details", methods=['GET'])
+def details():
+    # token = request.args.get('token')
+    # channel_id = request.args.get('channel_id')
+
+    return dumps(
+        channel.channel_details(request.args.get('token'), int(request.args.get('channel_id')))
+    )
+
+@APP.route("/channel/messages", methods=['GET'])
+def messages():
+    # token = request.args.get('token')
+    # channel_id = request.args.get('channel_id')
+    # start = request.args.get('start')
+
+    return dumps(
+        channel.channel_messages(request.args.get('token'), request.args.get('channel_id'),request.args.get('start'))
+    )
+
+
+@APP.route("/channel/leave", methods=['POST'])
+def leave():
+    data = request.get_json('data')
+
+    return dumps(
+        channel.channel_leave(data['token'], data['channel_id'])
+    )
+
+@APP.route("/channel/join", methods=['POST'])
+def join():
+    data = request.get_json('data')
+
+    return dumps(
+        channel.channel_leave(data['token'], data['channel_id'])
+    )
+
+@APP.route("/channel/addowner", methods=['POST'])
+def addowner():
+    data = request.get_json('data')
+
+    return dumps(
+        channel.channel_addowner(data['token'], data['channel_id'], data['u_id'])
+    )
+
+@APP.route("/channel/removeowner", methods=['POST'])
+def removeowner():
+    data = request.get_json('data')
+
+    return dumps(
+        channel.channel_removeowner(data['token'], data['channel_id'], data['u_id'])
+    )
+
+@APP.route("/channels/list", methods=['GET'])
+def clist():
+    # token = request.args.get('token')
+
+    return dumps(
+        channels.channels_list(request.args.get('token'))
+    )
+
+@APP.route("/channels/listall", methods=['GET'])
+def listall():
+    # token = request.args.get('token')
+
+    return dumps(
+        channels.channels_listall(request.args.get('token'))
+    )
+
+@APP.route("/channels/create", methods=['POST'])
+def create():
+    data = request.get_json('data')
+
+    return dumps(
+        channels.channels_create(data['token'], data['name'], data['is_public'])
+    )
 
 if __name__ == "__main__":
     APP.run(port=9557) # Do not edit this port
