@@ -156,7 +156,11 @@ def test_channels_base(url):
 
     # List user2 channels
 
-    r = requests.get(f"{BASE_URL}/channels/list")
+    dataIn = {
+        'token' : user2['token']
+    }
+
+    r = requests.get(f"{BASE_URL}/channels/list", json=dataIn)
     payload = r.json()
     assert payload == [
         {
@@ -167,7 +171,11 @@ def test_channels_base(url):
 
     # Listall channels
 
-    r = requests.get(f"{BASE_URL}/channels/listall")
+    dataIn = {
+        'token' : user2['token']
+    }
+
+    r = requests.get(f"{BASE_URL}/channels/listall", json=dataIn)
     payload = r.json()
     assert payload == [
         {
@@ -215,27 +223,202 @@ def test_channel_base(url):
 
     # Create channel 1 with user1 
 
+    dataIn = {
+        'token' : user1['token'],
+        'name' : 'Channel 1',
+        'is_public' : False
+    }
+
+    r = requests.post(f"{BASE_URL}/channels/create", json=dataIn)
+    channel_id1 = r.json()['channel_id']
+
+    assert channel_id1 == 0
+
     # Create channel 2 with user2
 
-    # List details of channel1 with user2 (fail)
+    dataIn = {
+        'token' : user2['token'],
+        'name' : 'Channel 2',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{BASE_URL}/channels/create", json=dataIn)
+    channel_id2 = r.json()['channel_id']
+
+    assert channel_id2 == 1
 
     # List details of channel1 with user1 
 
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1
+    }
+
+    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    payload = r.json()
+    assert payload == {
+        'name' : 'Channel 1',
+        'owner_members' : [
+            {
+                'u_id' : 0,
+                'name_first' : 'Howard',
+                'name_last' : 'Dwight'
+            }
+        ],
+        'all_members' : [
+            {
+                'u_id' : 0,
+                'name_first' : 'Howard',
+                'name_last' : 'Dwight'
+            }
+        ],
+    }
+
     # Invite user2 into channel1
+
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1,
+        'u_id' : user2['u_id']
+    }
+
+    requests.post(f"{BASE_URL}/channel/invite", json=dataIn)
 
     # List details of channel1 with user2
 
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1
+    }
+
+    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    payload = r.json()
+    assert payload == {
+        'name' : 'Channel 1',
+        'owner_members' : [
+            {
+                'u_id' : 0,
+                'name_first' : 'Howard',
+                'name_last' : 'Dwight'
+            }
+        ],
+        'all_members' : [
+            {
+                'u_id' : 0,
+                'name_first' : 'Howard',
+                'name_last' : 'Dwight'
+            },
+            {
+                'u_id' : 1,
+                'name_first' : 'West',
+                'name_last' : 'Delonte'
+            }
+        ],
+    }
+
     # Leave channel1 with user2
+
+    dataIn = {
+        'token' : user2['token'],
+        'channel_id' : channel_id1,
+    }
+
+    requests.post(f"{BASE_URL}/channel/leave", json=dataIn)
 
     # Join channel1 with user2 (fail)
 
+    # dataIn = {
+    #     'token' : user2['token'],
+    #     'channel_id' : channel_id1,
+    # }
+
+    # with pytest.raises(InputError):
+    #     requests.post(f"{BASE_URL}/channel/leave", json=dataIn).json()
+
     # Join channel2 with user1
+
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id2,
+    }
+
+    requests.post(f"{BASE_URL}/channel/join", json=dataIn)
 
     # Addowner user2 into channel1
 
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1,
+        'u_id' : user2['u_id']
+    }
+
+    requests.post(f"{BASE_URL}/channel/addowner", json=dataIn)    
+
     # List details with user1 channel1
 
-    # Removeowner user1 from channel1
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1
+    }
+
+    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    payload = r.json()
+    assert payload == {
+        'name' : 'Channel 1',
+        'owner_members' : [
+            {
+                'u_id' : 0,
+                'name_first' : 'Howard',
+                'name_last' : 'Dwight'
+            },
+            {
+                'u_id' : 1,
+                'name_first' : 'West',
+                'name_last' : 'Delonte'
+            }
+        ],
+        'all_members' : [
+            {
+                'u_id' : 0,
+                'name_first' : 'Howard',
+                'name_last' : 'Dwight'
+            }
+        ],
+    }    
+
+    # Removeowner user2 from channel1
+
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1,
+        'u_id' : user2['u_id']
+    }
+
+    requests.post(f"{BASE_URL}/channel/removeowner", json=dataIn)  
 
     # List details with user1 channel
 
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1
+    }
+
+    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    payload = r.json()
+    assert payload == {
+        'name' : 'Channel 1',
+        'owner_members' : [
+            {
+                'u_id' : 0,
+                'name_first' : 'Howard',
+                'name_last' : 'Dwight'
+            }
+        ],
+        'all_members' : [
+            {
+                'u_id' : 0,
+                'name_first' : 'Howard',
+                'name_last' : 'Dwight'
+            }
+        ],
+    }        
