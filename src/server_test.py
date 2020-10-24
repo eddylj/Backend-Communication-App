@@ -93,3 +93,4 @@ def test_auth_base(url):
     payload = r.json()
 
     assert payload['is_success'] == True
+
