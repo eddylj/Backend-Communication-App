@@ -49,6 +49,8 @@
 - Token of the user has to be active
 - Cannot edit message to be longer than 1000 characters
 - Edit updates the timestamp of the message
+- Edit raises InputError if passed message is the same as the existing message.
+- Edit does not change the original sender's ID if editted by a different user.
 
 ## User
 - user does not have to have an active token for these functions to work

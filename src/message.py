@@ -11,6 +11,9 @@ def message_send(token, channel_id, message):
     Send a message and create a new entry in the messages database and also inside the channels
     messages database
     '''
+    # Keeping the timestamp as close to the start of function as possible.
+    timestamp = int(time.time())
+
     # Check if token is valid
     caller_id = get_active(token)
     if caller_id is None:
@@ -29,7 +32,7 @@ def message_send(token, channel_id, message):
         'message_id' : message_id,
         'u_id' : caller_id,
         'message' : message,
-        'time_created' : int(time.time()),
+        'time_created' : timestamp,
     }
 
     # Adds to channel data WITHOUT channel_id, since output demands that.
@@ -71,9 +74,9 @@ def message_remove(token, message_id):
     data['messages'][message_id] = {}
 
     # Remove from channel database
-    for i in range(len(channel_data['messages'])):
-        if channel_data['messages'][i]['message_id'] == message_id:
-            channel_data['messages'].pop(i)
+    for (index, msg) in enumerate(channel_data['messages']):
+        if msg['message_id'] == message_id:
+            channel_data['messages'].pop(index)
             break
 
     return {}
@@ -84,6 +87,13 @@ def message_edit(token, message_id, message):
     This changes the message inside the data['messages'] database and also
     inside the data['channels'][channel_id]['messages'] database
     '''
+    # Keeping the timestamp as close to the start of function as possible.
+    timestamp = int(time.time())
+
+    # Check if token is valid
+    u_id = get_active(token)
+    if u_id is None:
+        raise AccessError
 
     # If message doesn't exist already
     if not is_message(message_id):
@@ -93,27 +103,28 @@ def message_edit(token, message_id, message):
     if len(message) > 1000:
         raise InputError
 
-    u_id = get_active(token)
-    if u_id is None:
-        raise AccessError
-
-    ogu_id = data['messages'][message_id]['u_id']
+    sender_id = data['messages'][message_id]['u_id']
     channel_id = data['messages'][message_id]['channel_id']
+    channel_messages = data['channels'][channel_id]['messages']
 
     # If not original sender, not owner and not owner of flockr
-    if u_id != ogu_id and u_id not in data['channels'][channel_id]['owners'] and u_id != 0:
+    if u_id not in (sender_id, data['messages'][message_id]['u_id'], 0):
         raise AccessError
 
-    # Delete if message is an empty string
-    if message == "":
-        data['messages'][message_id] = {}
-    else:
-        # edit message
-        data['messages'][message_id]['message'] = message
+    for (index, msg) in enumerate(channel_messages):
+        if msg['message_id'] == message_id:
+            # If passed message is the same as existing message
+            if message == msg['message']:
+                raise InputError
+            # If message is an empty string
+            if message == "":
+                channel_messages.pop(index)
+            else:
+                msg['message'] = message
+                msg['time_created'] = timestamp
+            break
 
-
-    return {
-    }
+    return {}
 
 def is_message(message_id):
     '''
