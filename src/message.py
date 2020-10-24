@@ -57,29 +57,26 @@ def message_remove(token, message_id):
     if not is_message(message_id):
         raise InputError
 
-    # The message is already deleted
-    if data['messages'][message_id] == {}:
-        raise InputError
-
     channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
 
     # If not sender of message / not owner of flockr
     if u_id not in (data['messages'][message_id]['u_id'], 0):
-        if u_id not in data['channels'][channel_id]['owners']:
+        if u_id not in channel_data['owners']:
             raise AccessError
-
-    # If not owner of the channel
-
-        #raise AccessError
+    elif u_id not in channel_data['members']:
+        raise AccessError
 
     # Remove from messages database
     data['messages'][message_id] = {}
 
     # Remove from channel database
-    data['channels'][channel_id]['messages'].pop(0)
+    for i in range(len(channel_data['messages'])):
+        if channel_data['messages'][i]['message_id'] == message_id:
+            channel_data['messages'].pop(i)
+            break
 
-    return {
-    }
+    return {}
 
 def message_edit(token, message_id, message):
     '''
@@ -120,6 +117,10 @@ def message_edit(token, message_id, message):
 
 def is_message(message_id):
     '''
-    Checks if the message with 'message_id' has been sent before
+    Checks if message_id corresponds to a sent message. Also checks if the
+    message has already been deleted.
     '''
-    return -1 < message_id < len(data['messages'])
+    return (
+        -1 < message_id < len(data['messages']) and
+        data['messages'][message_id] != {}
+    )

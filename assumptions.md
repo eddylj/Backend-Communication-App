@@ -41,7 +41,8 @@
 - Token of the user has to be active
 ### message_remove()
 - only the authorised user can remove messages
-- Users can't remove message from another channel
+- Users can't remove message from another channel. 
+- Normal users can't remove a message after leaving the channel where the message was sent. Raise AccessError if attempted.
 - When you remove a message, it keeps the message dictionary, but removes contents inside that dictionary
 - Token of the user has to be active
 ### message_edit()

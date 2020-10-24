@@ -10,6 +10,7 @@ def clear():
     data['users'].clear()
     data['channels'].clear()
     data['tokens'].clear()
+    data['messages'].clear()
 
 def get_active(token):
     """
