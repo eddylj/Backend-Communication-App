@@ -1,25 +1,23 @@
 '''
 Functions used to return and change information regarding user's data
 '''
-import re
 from data import data
-from error import InputError
-from other import get_active
+from error import InputError, AccessError
+from other import get_active, is_valid
 
 def user_profile(token, u_id):
     '''
     Return information on the user (u_id, email, first name, last name, handle)
     '''
 
+    # Why would you change it to InputError? Token's going to get changed but error handling won't.
+    caller_id = get_active(token)
+    if caller_id is None:
+        raise AccessError
+
     # Invalid user
     if not is_user(u_id):
         raise InputError
-
-    # InputError as this only confirms that the token exists, not necessarily active or not
-    u_id = get_active(token)
-    if u_id is None:
-        raise InputError
-
 
     user = data['users'][u_id]
 
@@ -31,9 +29,7 @@ def user_profile(token, u_id):
         'handle_str' : user['handle'],
     }
 
-    return {
-        'user': return_user,
-    }
+    return {'user': return_user}
 
 def user_profile_setname(token, name_first, name_last):
     '''
@@ -41,35 +37,47 @@ def user_profile_setname(token, name_first, name_last):
     '''
 
     # InputError as this only confirms that the token exists, not necessarily active or not
-    u_id = get_active(token)
-    if u_id is None:
-        raise InputError
+    caller_id = get_active(token)
+    if caller_id is None:
+        raise AccessError
 
     # name_first invalid length
-    if len(name_first) > 50 or len(name_first) < 1:
+    if not 1 <= len(name_first) <= 50:
         raise InputError
 
     # name_last invalid length
-    if len(name_last) > 50 or len(name_last) < 1:
+    if not 1 <= len(name_last) <= 50:
         raise InputError
 
-    # Don't use get_active function as user doesn't have to be active
-    u_id = int(token)
+    # # Don't use get_active function as user doesn't have to be active
+    # u_id = int(token)
+    # Where did you get this from? Because assignment specs say in 6.3:
+    # "for all functions except auth/register and auth/login, an AccessError is
+    # thrown when the token passed in is not a valid token."
 
-    data['users'][u_id]['name_first'] = name_first
-    data['users'][u_id]['name_last'] = name_last
-    return {
-    }
+    # Proposed change: have InputError be thrown if passed name is the same as
+    # existing. This keeps the code consistent to the logic for the other
+    # profile_set functions.
+    # data['users'][caller_id]['name_first'] = name_first
+    # data['users'][caller_id]['name_last'] = name_last
+
+    if (data['users'][caller_id]['name_first'] == name_first and
+        data['users'][caller_id]['name_last'] == name_last):
+            raise InputError
+    else:
+        data['users'][caller_id]['name_first'] = name_first
+        data['users'][caller_id]['name_last'] = name_last
+
+    return {}
 
 def user_profile_setemail(token, email):
     '''
     Change email of the user
     '''
 
-    # InputError as this only confirms that the token exists, not necessarily active or not
-    u_id = get_active(token)
-    if u_id is None:
-        raise InputError
+    caller_id = get_active(token)
+    if caller_id is None:
+        raise AccessError
 
     # Check if valid email
     if not is_valid(email):
@@ -79,56 +87,43 @@ def user_profile_setemail(token, email):
     for user in data['users']:
         if user['email'] == email:
             raise InputError
+
     # Don't use get_active function as user doesn't have to be active
-    u_id = int(token)
+    # lines 53-55
+    # u_id = int(token)
 
-    data['users'][u_id]['email'] = email
+    data['users'][caller_id]['email'] = email
 
-    return {
-    }
+    return {}
 
 def user_profile_sethandle(token, handle_str):
     '''
     Change handle of the user
     '''
 
+    caller_id = get_active(token)
+    if caller_id is None:
+        raise AccessError
+
     # Invalid length
-    if len(handle_str) < 3 or len(handle_str) > 20:
+    if not 3 <= len(handle_str) <= 20:
         raise InputError
+
+    # Check for uppercase letters.
+    if not handle_str.islower():
+        raise InputError
+
     # Not used by another account
     for user in data['users']:
         if user['handle'] == handle_str:
             raise InputError
 
-    # Don't use get_active function as user doesn't have to be active
-    u_id = int(token)
+    data['users'][caller_id]['handle'] = handle_str
 
-    data['users'][u_id]['handle'] = handle_str
-
-    return {
-    }
-
-
-def is_valid(email):
-    """
-    Code provided in project specs, from:
-    https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
-    Checks if email is valid against a regular expression.
-
-    Parameters:
-        email (str) : User's email
-
-    Returns:
-        (bool): Whether or not the email entered is invalid according to the
-                regex standards.
-    """
-    regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
-    if re.search(regex, email):
-        return True
-    return False
+    return {}
 
 def is_user(u_id):
     '''
     Check for valid user ID
     '''
-    return u_id < len(data['users'])
+    return -1 < u_id < len(data['users'])

@@ -1,224 +1,276 @@
-'''
-Tests for all functions in user.py
-'''
+""" This module contains test functions for user.py """
 import pytest
-import user
 import auth
-from error import InputError
+import user
+from error import InputError#, AccessError <- used for invalid token tests
 from other import clear
-from data import data
 
-############################### USER_PROFILE TESTS ###############################
+user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
 
+# Consider changing user registration to fixtures
 
-def test_profile_valid():
-    '''
-    Test for checking for valid profile
-    '''
+############################# USER_PROFILE TESTS ###############################
+
+def test_user_profile_valid():
+    """ Base case for user_profile(). """
     clear()
-    # Creates a user
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-    email1 = data['users'][u_id1]['email']
-    handle1 = data['users'][u_id1]['handle']
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
 
-
-    user1_details = {
-        'u_id' : u_id1,
-        'email' : email1,
-        'name_first' : 'Hayden',
-        'name_last' : 'Everest',
-        'handle_str' : handle1
+    expected = {
+        'u_id': u_id,
+        'email': 'validemail@gmail.com',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+        'handle_str': 'haydeneverest'
     }
 
-    assert user.user_profile(token1, u_id1) == {'user': user1_details}
+    print(user.user_profile(token, u_id))
+    assert user.user_profile(token, u_id) == {'user': expected}
 
-def test_invalid_user():
-    '''
-    Test for invalid user trying to remove a message
-    '''
+def test_user_profile_invalid_id():
+    """
+    Test case for user_profile(), where u_id does not correspond to a registered
+    user.
+    """
     clear()
-    # Creates a user
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
 
-    token2 = '124124'
-    u_id2 = 1001
-
-    # Invalid token
     with pytest.raises(InputError):
-        user.user_profile(token2, u_id1)
+        user.user_profile(token, u_id + 1)
 
-    # Invalid u_id
+    # White-box? test for negative u_ids
     with pytest.raises(InputError):
-        user.user_profile(token1, u_id2)
+        user.user_profile(token, -1)
 
+########################## USER_PROFILE_SETNAME TESTS ##########################
 
-############################### USER_PROFILE_SETNAME TESTS ###############################
-
-# BASE CASE - Valid name change
-def test_user_profile_setname_valid():
-    '''
-    Test for valid update in user profile name
-    '''
+def test_user_setname_valid():
+    """ Base case for user_profile_setname() """
     clear()
 
-    # Creates a user
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-    user.user_profile_setname(token1, 'John', 'Albert')
-    assert data['users'][u_id1]['name_first'] == 'John'
-    assert data['users'][u_id1]['name_last'] == 'Albert'
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
 
-# INVALID NAME
-def test_user_profile_setname_invalid_name():
-    '''
-    Test for invalid update in user profile name
-    '''
+    # Changing name to Andras Arato
+    user.user_profile_setname(token, "Andras", "Arato")
+
+    expected = {
+        'u_id': u_id,
+        'email': 'validemail@gmail.com',
+        'name_first': 'Andras',
+        'name_last': 'Arato',
+        'handle_str': 'haydeneverest'
+    }
+
+    assert user.user_profile(token, u_id) == {'user': expected}
+
+def test_user_setname_invalid():
+    """
+    Invalid name cases for user_profile_setname(). Names have to been in ASCII
+    characters and between 1-50 characters inclusively in length.
+    """
     clear()
 
-    # Creates a user
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
+    account = auth.auth_register(*user1)
+    token = account['token']
 
-    # No names entered
+    # 70-character long names
+    long_first_name = (
+        "Haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayden"
+    )
+    long_last_name = (
+        "Eveeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeerest"
+    )
+
     with pytest.raises(InputError):
-        user.user_profile_setname(token1, '', '')
+        user.user_profile_setname(token, long_first_name, "Everest")
 
-    # First name > 50 characters
     with pytest.raises(InputError):
-        user.user_profile_setname(token1,
-                                  'Jooooooooooooooooo\
-                            oooooooooooooooooo\
-                            oooooooooooooooooo\
-                            ooooooooooooooooohn', 'Albert')
-    # Last name > 50 characters
+        user.user_profile_setname(token, "Hayden", long_last_name)
+
+    # Empty strings passed into setname. 0 length < required 1.
     with pytest.raises(InputError):
-        user.user_profile_setname(token1, 'John',
-                                  'Alllllllllllllllll\
-                            llllllllllllllllll\
-                            llllllllllllllllll\
-                            lllllllllllllllbert')
+        user.user_profile_setname(token, "", "")
 
-############################### USER_PROFILE_SETEMAIL TESTS ###############################
-
-# BASE TEST - Valid email change
-def test_user_profile_setemail_valid():
-    '''
-    Test for valid update in user's email
-    '''
+def test_user_setname_repeated():
+    """
+    Test case for user_profile_setname(), where the passed name is the same as
+    the existing name. Expected to raise an input error.
+    """
+    # Assumed to raise an InputError to maintain consistency with other set functions.
     clear()
 
-    # Creates a user
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-
-    user.user_profile_setemail(token1, 'info@nip.gl')
-
-    assert data['users'][u_id1]['email'] == 'info@nip.gl'
-
-# INVALID EMAIL
-def test_user_profile_setemail_invalid_email():
-    '''
-    Test for invalid update in user's email
-    '''
-    clear()
-
-    # Creates a user
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
+    token = auth.auth_register(*user1)['token']
 
     with pytest.raises(InputError):
-        user.user_profile_setemail(token1, 'invalidemail.com')
+        user.user_profile_setname(token, "Hayden", "Everest")
 
-# EMAIL ALREADY IN USE
-def test_user_profile_setemail_email_taken():
-    '''
-    Test for when email is already taken
-    '''
+########################## USER_PROFILE_SETEMAIL TESTS #########################
+
+def test_user_setemail_valid():
+    """ Base case for user_profile_setemail(). """
     clear()
 
-    # Creates 2 users
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    auth.auth_register(*user1)
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
 
-    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
+    user.user_profile_setemail(token, "alsovalid@gmail.com")
 
-    with pytest.raises(InputError):
-        user.user_profile_setemail(token2, 'validemail@gmail.com')
+    expected = {
+        'u_id': u_id,
+        'email': 'alsovalid@gmail.com',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+        'handle_str': 'haydeneverest'
+    }
 
-############################### USER_PROFILE_SETHANDLE TESTS ###############################
+    assert user.user_profile(token, u_id) == {'user': expected}
 
-# BASE TEST - Valid handle change
-def test_user_profile_sethandle_valid():
-    '''
-    Test for checking valid update in user handle
-    '''
+def test_user_setemail_invalid():
+    """
+    Test case for user_profile_setemail(), where the email passed doesn't
+    conform to the predetermined format rules.
+    """
     clear()
 
-    #Creates a user
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
 
-    valid_handle = 'NIPFORLIFE'
+    with pytest.raises(InputError):
+        user.user_profile_setemail(token, "invalidemail.com")
 
-    user.user_profile_sethandle(token1, valid_handle)
+    expected = {
+        'u_id': u_id,
+        'email': 'validemail@gmail.com',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+        'handle_str': 'haydeneverest'
+    }
 
-    assert data['users'][u_id1]['handle'] == valid_handle
+    assert user.user_profile(token, u_id) == {'user': expected}
 
-# INVALID HANDLE NAME (< 3 or > 20 characters)
-def test_user_profile_sethandle_invalid_handle():
-    '''
-    Test for checking invalid update in user handle
-    '''
+def test_user_setemail_email_taken():
+    """
+    Test case for user_profile_setemail(), where a user tries to change their
+    email to one already used by another registered user.
+    """
     clear()
 
-    # Creates a user
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-
-    invalid_handle1 = 'hi'
-    invalid_handle2 = 'hihihihihihiihiihihihi'
+    token = auth.auth_register(*user1)['token']
+    auth.auth_register(*user2)
 
     with pytest.raises(InputError):
-        user.user_profile_sethandle(token1, invalid_handle1)
+        user.user_profile_setemail(token, 'alsovalid@gmail.com')
 
-    with pytest.raises(InputError):
-        user.user_profile_sethandle(token1, invalid_handle2)
-
-# HANDLE ALREADY IN USE
-def test_user_profile_sethandle_handle_taken():
-    '''
-    Test for checking user handle being taken already
-    '''
+def test_user_setemail_repeated():
+    """
+    Test case for user_profile_setemail(), where the passed email is the same as
+    the existing email. Expected to raise an input error.
+    """
+    # Assumed to raise an InputError. No need for additional check if matching email is user's.
     clear()
 
-    # Creates 2 users
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-
-    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-
-    valid_handle = 'NIPFORLIFE'
-    user.user_profile_sethandle(token1, valid_handle)
+    token = auth.auth_register(*user1)['token']
 
     with pytest.raises(InputError):
-        user.user_profile_sethandle(token2, valid_handle)
+        user.user_profile_setemail(token, "validemail@gmail.com")
+
+######################### USER_PROFILE_SETHANDLE TESTS #########################
+
+def test_user_sethandle_valid():
+    """ Base case for user_profile_sethandle() """
+    clear()
+
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
+
+    user.user_profile_sethandle(token, "everesthayden")
+
+    expected = {
+        'u_id': u_id,
+        'email': 'validemail@gmail.com',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+        'handle_str': 'everesthayden'
+    }
+
+    assert user.user_profile(token, u_id) == {'user': expected}
+
+def test_user_sethandle_invalid():
+    """
+    Test cases for invalid handles passed to user_profile_sethandle. Invalid
+    handles include handles which are not:
+        - Between 3-20 characters inclusively in length.
+        - Contains upper-case letters.
+    """
+    # Include these in assumptions.md
+    clear()
+
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
+
+    # Empty handle string
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "")
+
+    # 2-character handle string
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "he")
+
+    # 21-character handle string
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "haaaaaaaaaydeneverest")
+
+    # Correct length, but contains upper-case characters.
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "EverestHayden")
+
+    expected = {
+        'u_id': u_id,
+        'email': 'validemail@gmail.com',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+        'handle_str': 'haydeneverest'
+    }
+
+    assert user.user_profile(token, u_id) == {'user': expected}
+
+def test_user_sethandle_handle_taken():
+    """
+    Test case for user_profile_sethandle(), where a user tries to change their
+    handle to one already used by another registered user.
+    """
+    clear()
+
+    token = auth.auth_register(*user1)['token']
+    auth.auth_register(*user2)
+
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "andrasarato")
+
+def test_user_sethandle_repeated():
+    """
+    Test case for user_profile_sethandle(), where the passed handle is the same
+    as the existing handle. Expected to raise an input error.
+    """
+    # Same as other repeated tests.
+    clear()
+
+    token = auth.auth_register(*user1)['token']
+
+    with pytest.raises(InputError):
+        user.user_profile_sethandle(token, "haydeneverest")
+
+# To be added: invalid token tests
+
+clear()

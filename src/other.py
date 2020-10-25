@@ -1,7 +1,7 @@
 '''
 Different Functions used throughout the program
 '''
-
+import re
 from data import data
 from error import InputError, AccessError
 
@@ -12,6 +12,7 @@ def clear():
     data['users'].clear()
     data['channels'].clear()
     data['tokens'].clear()
+    data['messages'].clear()
 
 def get_active(token):
     """
@@ -29,6 +30,22 @@ def get_active(token):
         # Written in this redundant way because token will be changed in the future
         return data['users'][int(token)]['u_id']
     return None
+
+def is_valid(email):
+    """
+    Code provided in project specs, from:
+    https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
+    Checks if email is valid against a regular expression.
+
+    Parameters:
+        email (str) : User's email
+
+    Returns:
+        (bool): Whether or not the email entered is invalid according to the
+                regex standards.
+    """
+    regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
+    return re.search(regex, email)
 
 def users_all(token):
     '''

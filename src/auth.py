@@ -1,10 +1,9 @@
 '''
 Login, logout and register functions
 '''
-import re
 from data import data
 from error import InputError
-from other import get_active
+from other import get_active, is_valid
 
 def auth_login(email, password):
     """
@@ -95,8 +94,13 @@ def auth_register(email, password, name_first, name_last):
         'password': password,
         'name_first': name_first,
         'name_last': name_last,
-        'handle': (name_first + name_last)[:20]
+        'handle': (name_first + name_last)[:20],
+        'permission_id' : 2,
     }
+
+    # Permission_id for owner (automatically for u_id 0)
+    if u_id == 0:
+        new_user['permission_id'] = 1
 
     if not is_valid(email):
         raise InputError
@@ -128,24 +132,6 @@ def auth_register(email, password, name_first, name_last):
         'u_id': u_id,
         'token': str(u_id),
     }
-
-def is_valid(email):
-    """
-    Code provided in project specs, from:
-    https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
-    Checks if email is valid against a regular expression.
-
-    Parameters:
-        email (str) : User's email
-
-    Returns:
-        (bool): Whether or not the email entered is invalid according to the
-                regex standards.
-    """
-    regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
-    if re.search(regex, email):
-        return True
-    return False
 
 def new_handle(handle, num):
     """
