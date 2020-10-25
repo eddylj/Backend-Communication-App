@@ -55,10 +55,13 @@ def users_all(token):
     '''
     Function for returning all the information of the users
     '''
+    u_id = get_active(token)
+    if u_id is None:
+        raise InputError
     users = []
     for info in data['users']:
         users.append(info)
-    
+
     for user in users:
         del user['password']
     return {
@@ -69,7 +72,7 @@ def admin_userpermission_change(token, u_id, permission_id):
     '''
     Function for changing admin user permission
     '''
-    
+
     # Invalid u_id
     owner_id = get_active(token)
     if owner_id is None:
@@ -95,7 +98,7 @@ def search(token, query_str):
     u_id = get_active(token)
     if u_id is None:
         raise InputError
-    
+
     result = []
 
     for channel in data['channels']:
@@ -104,7 +107,7 @@ def search(token, query_str):
             # Check through all messages
             for message in channel['messages']:
                 # Check if in the current message
-                if query_str in message['message']: 
+                if query_str in message['message']:
                     # append if query_str is in
                     result.append(message)
 
