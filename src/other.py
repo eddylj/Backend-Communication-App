@@ -78,7 +78,7 @@ def admin_userpermission_change(token, u_id, permission_id):
         raise InputError
 
     # Not an owner of flockr
-    if data['users'][owner_id] == 2:
+    if data['users'][owner_id]['permission_id'] == 2:
         raise AccessError
 
     # Change permission_id of u_id
