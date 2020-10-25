@@ -7,12 +7,13 @@ import json
 import requests
 from echo_http_test import url
 
-BASE_URL = 'http://127.0.0.1:9557'
+# BASE_URL = 'http://127.0.0.1:9557'
 
 def test_auth_base(url):
     '''
     Base test for auth functions
     '''
+    BASE_URL = url
 
     # Create user1
     dataIn = {
@@ -98,6 +99,7 @@ def test_channels_base(url):
     '''
     Base test for channel functions
     '''
+    BASE_URL = url
     
     # Create user1
     dataIn = {
@@ -196,6 +198,7 @@ def test_channel_base(url):
     '''
     Base test for channel functions
     '''
+    BASE_URL = url
 
     # Create user1
     dataIn = {
@@ -427,12 +430,37 @@ def test_channel_base(url):
         ],
     }        
 
+def test_message_base(url):
+    '''
+    Base test for messages functions
+    '''
+    # Create user1
+
+    # Create user2
+
+    # Create channel1 with user1
+
+    # Invite user2 into channel1
+
+    # Send a message into channel1 with user1
+
+    # List channels with user2
+
+    # Edit the message into channel1 with user1
+
+    # List channels with user2
+
+    # Remove the message from channel1 with user1
+
+    # List channels with user2
+
 
 def test_user_base(url):
     
     '''
     Base test for user functions
     '''
+    BASE_URL = url
 
     # Create user1
     dataIn = {
