@@ -14,15 +14,17 @@ user = {
     'name_last': 'Everest',
 }
 
+############################### AUTH_LOGIN TESTS ###############################
+
 # BASE TEST - VALID EMAIL
 def test_auth_login_user_email_http(url):
     '''
     Base test for auth_login
     '''
     r = requests.post(f"{url}/auth/register", json=user)
-    register = r.json()
+    account = r.json()
 
-    requests.post(f"{url}/auth/logout", json={'token': register['token']})
+    requests.post(f"{url}/auth/logout", json={'token': account['token']})
 
     login_payload = {
         'email': user['email'],
@@ -31,7 +33,7 @@ def test_auth_login_user_email_http(url):
     r = requests.post(f"{url}/auth/login", json=login_payload)
     login = r.json()
 
-    assert login['u_id'] == register['u_id']
+    assert login['u_id'] == account['u_id']
 
 # INVALID EMAIL
 def test_auth_login_invalid_email_http(url):
@@ -72,3 +74,147 @@ def test_auth_login_wrong_password_http(url):
     }
     response = requests.post(f"{url}/auth/login", json=wrong_password)
     assert response.status_code == 400
+
+############################## AUTH_REGISTER TESTS #############################
+
+# BASE TEST - Valid user registration
+def test_auth_register_valid_http(url):
+    '''
+    Base test for auth_register
+    '''
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+    token = account['token']
+
+    login_payload = {
+        'email': user['email'],
+        'password': user['password']
+    }
+    requests.post(f"{url}/auth/login", json=login_payload)
+    response = requests.post(f"{url}/auth/logout", json={'token': token})
+    assert response.status_code == 200
+
+# INVALID EMAIL
+def test_auth_register_invalid_email_http(url):
+    '''
+    Test auth_register fails using an invalid email
+    '''
+    invalid_email = dict(user)
+    invalid_email['email'] = 'invalidemail.com'
+    response = requests.post(f"{url}/auth/register", json=invalid_email)
+    assert response.status_code == 400
+
+# EMAIL ALREADY IN USE
+def test_auth_register_email_taken_http(url):
+    '''
+    Test auth_register fails when an email has been registered with before
+    '''
+    requests.post(f"{url}/auth/register", json=user)
+    email_taken = dict(user)
+    email_taken['name_first'] = 'Andras'
+    email_taken['name_last'] = 'Arato'
+
+    response = requests.post(f"{url}/auth/register", json=email_taken)
+    assert response.status_code == 400
+
+# INVALID PASSWORD
+def test_auth_register_invalid_pw_http(url):
+    '''
+    Test auth_register fails with an invalid password
+    '''
+    bad_pw = dict(user)
+
+    # Password too short (5 characters)
+    bad_pw['password'] = '12345'
+    response = requests.post(f"{url}/auth/register", json=bad_pw)
+    assert response.status_code == 400
+
+    # Empty password
+    bad_pw['password'] = ''
+    response = requests.post(f"{url}/auth/register", json=bad_pw)
+    assert response.status_code == 400
+
+# INVALID NAME
+def test_auth_register_invalid_name_http(url):
+    '''
+    Tst auth_register fails with an invalid name
+    '''
+    bad_name = dict(user)
+
+    # Empty name parameters
+    # No names entered
+    bad_name['name_first'] = ""
+    bad_name['name_last'] = ""
+    response = requests.post(f"{url}/auth/register", json=bad_name)
+    assert response.status_code == 400
+    # Only first name entered
+    bad_name['name_first'] = "Hayden"
+    response = requests.post(f"{url}/auth/register", json=bad_name)
+    assert response.status_code == 400
+    # Only last name entered
+    bad_name['name_first'] = ""
+    bad_name['name_last'] = "Everest"
+    response = requests.post(f"{url}/auth/register", json=bad_name)
+    assert response.status_code == 400
+
+    # First name > 50 characters (51 characters)
+    bad_name['name_first'] = "Haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayden"
+    response = requests.post(f"{url}/auth/register", json=bad_name)
+    assert response.status_code == 400
+
+    # Last name > 50 characters (51 characters)
+    bad_name['name_first'] = "Hayden"
+    bad_name['name_last'] = "Eveeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeerest"
+    response = requests.post(f"{url}/auth/register", json=bad_name)
+    assert response.status_code == 400
+
+
+# Will need to check for handle generation, which requires user_profile (not in
+# iteration 1)
+
+############################## AUTH_LOGOUT TESTS ###############################
+
+# BASE CASE
+def test_auth_logout_success_http(url):
+    '''
+    Base test for auth_logout
+    '''
+    # Register user
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
+    status = r.json()
+    assert status['is_success'] is True
+
+# LOGGING OUT WITHOUT LOGGING IN
+def test_auth_logout_fail_http(url):
+    '''
+    Test that logout fails when not logged in
+    '''
+    # Register a user
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    # Try logging out right after registering
+    r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
+    status = r.json()
+    assert status['is_success'] is True
+
+    # Try logging out, without being logged in
+    r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
+    status = r.json()
+    assert status['is_success'] is False
+
+    # Login with user, getting a new active token
+    login_payload = {
+        'email': user['email'],
+        'password': user['password']
+    }
+    r = requests.post(f"{url}/auth/login", json=login_payload)
+    account = r.json()
+
+    # Try logging out right after logging in
+    r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
+    status = r.json()
+    assert status['is_success'] is True

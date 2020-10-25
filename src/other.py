@@ -95,7 +95,7 @@ def search(token, query_str):
     u_id = get_active(token)
     if u_id is None:
         raise InputError
-    
+
     result = []
 
     for channel in data['channels']:
