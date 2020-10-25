@@ -1,6 +1,8 @@
 '''
 Login, logout and register functions
 '''
+import hashlib
+import jwt
 from data import data
 from error import InputError
 from other import get_active, is_valid
@@ -27,7 +29,7 @@ def auth_login(email, password):
                 - Password is not correct.
     """
     for (index, user) in enumerate(data['users']):
-        if user['email'] == email and user['password'] == password:
+        if user['email'] == email and validate_pw(user, password):
             if get_active(index) is None:
                 data['tokens'].append(str(index))
             return {
@@ -35,6 +37,22 @@ def auth_login(email, password):
                 'token': str(index),
             }
     raise InputError
+
+def validate_pw(user, password):
+    """
+    Hashes the provided password with SHA256 and compares the result with the
+    password hash stored in the specified user's data.
+
+    Parameters:
+        user (dict)     : User's stored data.
+        password (str)  : Password being checked against data.
+
+    Returns:
+        (bool): Whether or not the entered password's hash matches the stored
+                hash.
+    """
+    password = hashlib.sha256(password.encode())
+    return password.digest() == user['password'].digest()
 
 def auth_logout(token):
     """
@@ -88,10 +106,31 @@ def auth_register(email, password, name_first, name_last):
                   in length
     """
     u_id = len(data['users'])
+
+    if not is_valid(email):
+        raise InputError
+
+    number = 0
+    for user in data['users']:
+        if user['email'] == email:
+            raise InputError
+        if (user['name_first'] == name_first and
+                user['name_last'] == name_last):
+            number += 1
+
+    if len(password) < 6:
+        raise InputError
+
+    if not 1 <= len(name_first) <= 50:
+        raise InputError
+
+    if not 1 <= len(name_last) <= 50:
+        raise InputError
+
     new_user = {
         'u_id': u_id,
         'email': email,
-        'password': password,
+        'password': hashlib.sha256(password.encode()),
         'name_first': name_first,
         'name_last': name_last,
         'handle': (name_first + name_last)[:20].lower(),
@@ -101,26 +140,6 @@ def auth_register(email, password, name_first, name_last):
     # Permission_id for owner (automatically for u_id 0)
     if u_id == 0:
         new_user['permission_id'] = 1
-
-    if not is_valid(email):
-        raise InputError
-
-    number = 0
-    for user in data['users']:
-        if user['email'] == email:
-            raise InputError
-        if (user['name_first'] == new_user['name_first'] and
-                user['name_last'] == new_user['name_last']):
-            number += 1
-
-    if len(new_user['password']) < 6:
-        raise InputError
-
-    if not 1 <= len(new_user['name_first']) <= 50:
-        raise InputError
-
-    if not 1 <= len(new_user['name_last']) <= 50:
-        raise InputError
 
     if number != 0:
         new_user['handle'] = new_handle(new_user['handle'], number)
