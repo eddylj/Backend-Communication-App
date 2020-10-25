@@ -434,19 +434,90 @@ def test_message_base(url):
     '''
     Base test for messages functions
     '''
+    BASE_URL = url
+
     # Create user1
+    dataIn = {
+        'email' : 'validemail@gmail.com',
+        'password' : 'asdfqwer1234',
+        'name_first' : 'Howard',
+        'name_last' : 'Dwight',
+    }
+
+    r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
+    user1 = r.json()
+
+    assert user1['u_id'] == 0
+    assert user1['token'] == '0'
 
     # Create user2
+    dataIn = {
+        'email' : 'alsovalidemail@gmail.com',
+        'password' : 'asdfqwer1234',
+        'name_first' : 'West',
+        'name_last' : 'Delonte',
+    }
+
+    r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
+    user2 = r.json()
+
+    assert user2['u_id'] == 1
+    assert user2['token'] == '1'
 
     # Create channel1 with user1
+    dataIn = {
+        'token' : user1['token'],
+        'name' : 'Channel 1',
+        'is_public' : False
+    }
+
+    r = requests.post(f"{BASE_URL}/channels/create", json=dataIn)
+    channel_id1 = r.json()['channel_id']
+
+    assert channel_id1 == 0
+
 
     # Invite user2 into channel1
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1,
+        'u_id' : user2['u_id']
+    }
+
+    requests.post(f"{BASE_URL}/channel/invite", json=dataIn)
 
     # Send a message into channel1 with user1
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1,
+        'message' : 'What it dooo'
+    }
 
+    r = request.post(f"{BASE_URL}/message/send", json=dataIn)
+    message = r.json()
+    
     # List channels with user2
 
+    r = requests.get(f"{BASE_URL}/channels/list?token={user2['token']}")
+    payload = r.json()
+    assert payload == {
+        'channels' : [
+            {
+                'channel_id' : 0,
+                'name' : 'Channel 1'
+            }
+        ]
+    }
+
     # Edit the message into channel1 with user1
+    dataIn = {
+        'token' : user1['token'],
+        'message_id' : message['message_id']
+        'message' : "what it dontt"
+    }
+
+    request.put(f"{BASE_URL}/message/edit", json=dataIn)
+
 
     # List channels with user2
 
@@ -518,7 +589,7 @@ def test_user_base(url):
         'name_last' : "Other"
     }
 
-    r = requests.put(f"{BASE_URL}/user/profile/setname", json=dataIn)
+    requests.put(f"{BASE_URL}/user/profile/setname", json=dataIn)
     
     # change email for user1 in profile
     dataIn = {
@@ -526,7 +597,7 @@ def test_user_base(url):
          'email' : "randomemail@gmail.com"
     }
 
-    r = requests.put(f"{BASE_URL}/user/profile/setemail", json=dataIn)
+    requests.put(f"{BASE_URL}/user/profile/setemail", json=dataIn)
     
     # change handle 
     dataIn = {
@@ -534,7 +605,7 @@ def test_user_base(url):
          'handle_str' : "Lavar Ball"
     }
 
-    r = requests.put(f"{BASE_URL}/user/profile/sethandle", json=dataIn)
+    requests.put(f"{BASE_URL}/user/profile/sethandle", json=dataIn)
 
     # show the profile of user1 after change
     # dataIn = {
