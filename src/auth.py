@@ -37,7 +37,7 @@ def auth_login(email, password):
                 data['tokens'].append(token)
             return {
                 'u_id': index,
-                'token': token,
+                'token': str(token),
             }
     raise InputError
 
@@ -155,7 +155,7 @@ def auth_register(email, password, name_first, name_last):
 
     return {
         'u_id': u_id,
-        'token': token,
+        'token': str(token),
     }
 
 def new_handle(handle, num):
