@@ -71,13 +71,22 @@ def search(token, query_str):
     '''
     Function to find the information about messages
     '''
+    u_id = get_active(token)
+    if u_id is None:
+        raise InputError
+    
+    result = []
+
+    for channel in data['channels']:
+        # All channels user is in
+        if u_id in channel['members']:
+            # Check through all messages
+            for message in channel['messages']:
+                # Check if in the current message
+                if query_str in message['message']: 
+                    # append if query_str is in
+                    result.append(message)
+
     return {
-        'messages': [
-            {
-                'message_id': 1,
-                'u_id': 1,
-                'message': 'Hello world',
-                'time_created': 1582426789,
-            }
-        ],
+        'messages': result
     }
