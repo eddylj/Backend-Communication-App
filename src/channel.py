@@ -276,7 +276,7 @@ def channel_addowner(token, channel_id, u_id):
     if is_owner(channel_id, u_id):
         raise InputError
 
-    if not is_owner(channel_id, caller_id) and caller_id != 0:
+    if not is_owner(channel_id, caller_id) and data['users'][caller_id]['permission_id'] != 1:
         raise AccessError
 
     data['channels'][channel_id]['owners'].append(u_id)
@@ -316,7 +316,7 @@ def channel_removeowner(token, channel_id, u_id):
     if not is_owner(channel_id, u_id):
         raise InputError
 
-    if not is_owner(channel_id, caller_id) and caller_id != 0:
+    if not is_owner(channel_id, caller_id) and data['users'][caller_id]['permission_id'] != 1:
         raise AccessError
 
     if caller_id == u_id:
