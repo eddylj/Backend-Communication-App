@@ -218,3 +218,14 @@ def test_auth_logout_fail_http(url):
     r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
     status = r.json()
     assert status['is_success'] is True
+
+
+
+
+### CHANNEL FUNCTIONS
+
+
+
+
+
+### CHANNELS FUNCTIONS
