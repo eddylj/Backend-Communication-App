@@ -66,7 +66,8 @@ def message_remove(token, message_id):
     # If not sender of message / not owner of flockr
     if u_id not in (data['messages'][message_id]['u_id'], 0):
         if u_id not in channel_data['owners']:
-            raise AccessError
+            if data['users'][caller_id]['permission_id'] != 1:
+                raise AccessError
     elif u_id not in channel_data['members']:
         raise AccessError
 
@@ -109,7 +110,8 @@ def message_edit(token, message_id, message):
 
     # If not original sender, not owner and not owner of flockr
     if u_id not in (sender_id, data['messages'][message_id]['u_id'], 0):
-        raise AccessError
+        if data['users'][caller_id]['permission_id'] != 1:
+            raise AccessError
 
     for (index, msg) in enumerate(channel_messages):
         if msg['message_id'] == message_id:
