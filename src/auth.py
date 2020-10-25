@@ -136,7 +136,7 @@ def auth_register(email, password, name_first, name_last):
         'password': hashlib.sha256(password.encode()),
         'name_first': name_first,
         'name_last': name_last,
-        'handle': (name_first + name_last)[:20].lower(),
+        'handle_str': (name_first + name_last)[:20].lower(),
         'permission_id' : 2,
     }
 

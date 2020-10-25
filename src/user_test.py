@@ -27,7 +27,6 @@ def test_user_profile_valid():
         'handle_str': 'haydeneverest'
     }
 
-    print(user.user_profile(token, u_id))
     assert user.user_profile(token, u_id) == {'user': expected}
 
 def test_user_profile_invalid_id():

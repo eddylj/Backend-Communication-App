@@ -118,7 +118,7 @@ def user_profile_sethandle(token, handle_str):
         if user['handle_str'] == handle_str:
             raise InputError
 
-    data['users'][caller_id]['handle'] = handle_str
+    data['users'][caller_id]['handle_str'] = handle_str
 
     return {}
 
