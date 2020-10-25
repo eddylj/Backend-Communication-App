@@ -229,3 +229,180 @@ def test_auth_logout_fail_http(url):
 
 
 ### CHANNELS FUNCTIONS
+
+############################ CHANNELS_CREATE TESTS #############################
+# Base Case
+def test_channels_create_success_http(url):
+    '''
+    Base test for channels_create
+    '''
+    # register
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    # create channel
+    channel_payload ={
+        'token' : account['token'],
+        'name' : 'Channel 1',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = r.json()
+
+    # list channels
+    r = requests.get(f"{url}/channels/list", params={'token' : account['token']})
+    listed = r.json()
+
+    assert len(listed['channels']) == 1
+
+    # create channel2
+    channel_payload ={
+        'token' : account['token'],
+        'name' : 'Channel 2',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel2 = r.json()
+
+    # list channels
+    r = requests.get(f"{url}/channels/list", params={'token' : account['token']})
+    listed = r.json()
+
+    assert len(listed['channels']) == 2
+
+# Channel name > 20 characters
+def test_channels_create_fail_http(url):
+    '''
+    Test channels_create fails with a name too long
+    '''
+    # register
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    # Invalid name (too long)
+    channel_payload = {
+        'token' : account['token'],
+        'name' : 'Channel 1234567890abcdef',
+        'is_public' : True
+    }
+
+    response = requests.post(f"{url}/channels/create", json=channel_payload)
+    assert response.status_code == 400
+
+############################ CHANNELS_LISTALL TESTS ############################
+
+def test_channels_listall_base_http(url):
+    '''
+    Base test for channels_listall
+    '''
+
+    # register
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    # create channel1
+    channel_payload ={
+        'token' : account['token'],
+        'name' : 'Channel 1',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = r.json()
+
+    # create channel2
+    channel_payload ={
+        'token' : account['token'],
+        'name' : 'Channel 2',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel2 = r.json()
+
+    # create channel3
+    channel_payload ={
+        'token' : account['token'],
+        'name' : 'Channel 3',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel3 = r.json()
+
+    # Assertion
+    channel_list = [
+        {
+            'channel_id': channel1['channel_id'],
+            'name': 'Channel 1',
+        },
+        {
+            'channel_id': channel2['channel_id'],
+            'name': 'Channel 2',
+        },
+        {
+            'channel_id': channel3['channel_id'],
+            'name': 'Channel 3',
+        }
+    ]
+
+    r = requests.get(f"{url}/channels/listall", params={'token' : account['token']})
+    lists = r.json()
+
+    assert lists == {'channels': channel_list}
+
+############################# CHANNELS_LIST TESTS ##############################
+
+def test_channels_list_base_http(url):
+    '''
+    Base test for channels_list
+    '''
+
+    # register
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    # register
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+
+
+    # Create 2 users
+    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
+    token1 = auth.auth_register(*user1)['token']
+
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    empty_channels_list = [
+    ]
+
+    # Assert no channels listed right now
+    assert channels.channels_list(token1) == {'channels': empty_channels_list}
+    assert channels.channels_list(token2) == {'channels': empty_channels_list}
+
+    # Create a channel with user1
+    channel_id = channels.channels_create(token1, 'Test Channel', True)
+
+    channel_list = [
+        {
+            'channel_id': channel_id['channel_id'],
+            'name': 'Test Channel',
+        }
+    ]
+
+    # Assert only user 1 can see the channel
+    assert channels.channels_list(token1) == {'channels': channel_list}
+    assert channels.channels_list(token2) == {'channels': empty_channels_list}
+
+    # Invite user 2
+    channel.channel_invite(token1, channel_id['channel_id'], u_id2)
+
+    # Assert both users can see the channel
+    assert channels.channels_list(token1) == {'channels': channel_list}
+#     assert channels.channels_list(token2) == {'channels': channel_list}
