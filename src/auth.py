@@ -6,7 +6,7 @@ import hashlib
 import jwt
 from data import data
 from error import InputError
-from other import get_active, is_valid, SECRET, clear
+from other import get_active, is_valid, SECRET
 
 def auth_login(email, password):
     """
