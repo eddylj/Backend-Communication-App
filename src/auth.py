@@ -94,8 +94,13 @@ def auth_register(email, password, name_first, name_last):
         'password': password,
         'name_first': name_first,
         'name_last': name_last,
-        'handle': (name_first + name_last)[:20].lower()
+        'handle': (name_first + name_last)[:20].lower(),
+        'permission_id' : 2,
     }
+
+    # Permission_id for owner (automatically for u_id 0)
+    if u_id == 0:
+        new_user['permission_id'] = 1
 
     if not is_valid(email):
         raise InputError
