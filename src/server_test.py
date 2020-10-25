@@ -360,49 +360,125 @@ def test_channels_list_base_http(url):
     Base test for channels_list
     '''
 
-    # register
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
 
     # register
     r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    account1 = r.json()
 
+    # register
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
 
+    empty_channels_list = []
 
-    # Create 2 users
-    user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
-    token1 = auth.auth_register(*user1)['token']
-
-    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    empty_channels_list = [
-    ]
 
     # Assert no channels listed right now
-    assert channels.channels_list(token1) == {'channels': empty_channels_list}
-    assert channels.channels_list(token2) == {'channels': empty_channels_list}
+    r = requests.get(f"{url}/channels/listall", params={'token' : account1['token']})
+    lists = r.json()
 
-    # Create a channel with user1
-    channel_id = channels.channels_create(token1, 'Test Channel', True)
+    assert lists == {'channels': empty_channels_list}
+
+    r = requests.get(f"{url}/channels/listall", params={'token' : account2['token']})
+    lists = r.json()
+
+    assert lists == {'channels': empty_channels_list}
+
+
+    # Create a channel1 with user1
+    channel_payload ={
+        'token' : account1['token'],
+        'name' : 'Channel 1',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = r.json()
+
 
     channel_list = [
         {
-            'channel_id': channel_id['channel_id'],
-            'name': 'Test Channel',
+            'channel_id': channel1['channel_id'],
+            'name': 'Channel 1',
         }
     ]
 
     # Assert only user 1 can see the channel
-    assert channels.channels_list(token1) == {'channels': channel_list}
-    assert channels.channels_list(token2) == {'channels': empty_channels_list}
+    r = requests.get(f"{url}/channels/list", params={'token' : account1['token']})
+    lists = r.json()
+
+    assert lists == {'channels': channel_list}
+
+    r = requests.get(f"{url}/channels/list", params={'token' : account2['token']})
+    lists = r.json()
+
+    assert lists == {'channels': empty_channels_list}
+
 
     # Invite user 2
-    channel.channel_invite(token1, channel_id['channel_id'], u_id2)
+    user_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel1['channel_id'],
+        'u_id' : account2['u_id']
+    }
+
+    requests.post(f"{url}/channel/invite", json=user_payload)
+
 
     # Assert both users can see the channel
-    assert channels.channels_list(token1) == {'channels': channel_list}
-#     assert channels.channels_list(token2) == {'channels': channel_list}
+    r = requests.get(f"{url}/channels/list", params={'token' : account1['token']})
+    lists = r.json()
+
+    assert lists == {'channels': channel_list}
+
+    r = requests.get(f"{url}/channels/list", params={'token' : account2['token']})
+    lists = r.json()
+
+    assert lists == {'channels': channel_list}
+
+
+# Calling channels functions with invalid tokens
+def test_channels_invalid_token_http(url):
+    '''
+    Test channels_invalid fails with an invalid token
+    '''
+
+    # register
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+
+    # Create a channel1 with user1
+    channel_payload ={
+        'token' : account['token'],
+        'name' : 'Channel 1',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = r.json()
+
+
+    # Deactivate token by logging out
+    requests.post(f"{url}/auth/logout", json={'token': account['token']})
+
+    # Cannot use when token is invalid
+    channel_payload = {
+        'token' : account['token'],
+        'name' : 'Channel 2',
+        'is_public' : True
+    }
+
+    response = requests.post(f"{url}/channels/create", json=channel_payload)
+    assert response.status_code == 400
+
+    respone = requests.get(f"{url}/channels/list", params={'token' : account['token']})
+    assert response.status_code == 400
+
+    respone = requests.get(f"{url}/channels/listall", params={'token' : account['token']})
+    assert response.status_code == 400
