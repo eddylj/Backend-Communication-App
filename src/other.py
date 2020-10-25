@@ -2,7 +2,13 @@
 Different Functions used throughout the program
 '''
 import re
+import time
+import hashlib
+import jwt
 from data import data
+
+SECRET = hashlib.sha256(str(time.time()).encode()).hexdigest()[:11]
+
 def clear():
     '''
     Function to clear the data
@@ -25,8 +31,8 @@ def get_active(token):
         None        : If token isn't active.
     """
     if token in data['tokens']:
-        # Written in this redundant way because token will be changed in the future
-        return data['users'][int(token)]['u_id']
+        user = jwt.decode(token, SECRET, algorithm='HS256')['u_id']
+        return data['users'][user]['u_id']
     return None
 
 def is_valid(email):

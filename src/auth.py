@@ -5,7 +5,7 @@ import hashlib
 import jwt
 from data import data
 from error import InputError
-from other import get_active, is_valid
+from other import get_active, is_valid, SECRET
 
 def auth_login(email, password):
     """
@@ -30,11 +30,12 @@ def auth_login(email, password):
     """
     for (index, user) in enumerate(data['users']):
         if user['email'] == email and validate_pw(user, password):
-            if get_active(index) is None:
-                data['tokens'].append(str(index))
+            token = jwt.encode({'u_id': index}, SECRET, algorithm='HS256')
+            if get_active(token) is None:
+                data['tokens'].append(token)
             return {
                 'u_id': index,
-                'token': str(index),
+                'token': token,
             }
     raise InputError
 
@@ -145,11 +146,13 @@ def auth_register(email, password, name_first, name_last):
         new_user['handle'] = new_handle(new_user['handle'], number)
 
     data['users'].append(new_user)
-    data['tokens'].append(str(u_id))
+
+    token = jwt.encode({'u_id': u_id}, SECRET, algorithm='HS256')
+    data['tokens'].append(token)
 
     return {
         'u_id': u_id,
-        'token': str(u_id),
+        'token': token,
     }
 
 def new_handle(handle, num):
