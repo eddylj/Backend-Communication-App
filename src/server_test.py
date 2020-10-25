@@ -1,9 +1,6 @@
 '''
-Tests for all functions in user.py
+This module contains tests for auth routes in server.py.
 '''
-import pytest
-import server
-import json
 import requests
 from echo_http_test import url
 

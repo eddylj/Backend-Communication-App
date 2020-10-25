@@ -436,6 +436,30 @@ def test_message_edit_not_member():
     with pytest.raises(AccessError):
         message.message_edit(token2, msg_id, "Hello")
 
-# To be added: invalid token tests
+# Checking invalid token
+def test_message_invalid_token():
+    '''
+    Test for if token is invalid throughout all message functions
+    '''
+    clear()
+
+    # Register a user and create a channel with one message in it.
+    token = auth.auth_register(*user1)['token']
+
+    channel_id = channels.channels_create(token, "Test", True)['channel_id']
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+
+    # Deactivate token by logging out
+    auth.auth_logout(token)
+
+    # Cannot use when token is invalid
+    with pytest.raises(AccessError):
+        message.message_send(token, channel_id, "Hello")
+
+    with pytest.raises(AccessError):
+        message.message_remove(token, msg_id)
+
+    with pytest.raises(AccessError):
+        message.message_edit(token, msg_id, "Goodbye")
 
 clear()

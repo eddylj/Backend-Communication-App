@@ -2,7 +2,7 @@
 import pytest
 import auth
 import user
-from error import InputError#, AccessError <- used for invalid token tests
+from error import InputError, AccessError
 from other import clear
 
 user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -270,6 +270,32 @@ def test_user_sethandle_repeated():
     with pytest.raises(InputError):
         user.user_profile_sethandle(token, "haydeneverest")
 
-# To be added: invalid token tests
+# Checking invalid token
+def test_user_invalid_token():
+    '''
+    Test for if token is invalid throughout all user functions
+    '''
+    clear()
+
+    # Register a user
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
+
+    # Deactivate token by logging out
+    auth.auth_logout(token)
+
+    # Cannot use when token is invalid
+    with pytest.raises(AccessError):
+        user.user_profile(token, u_id)
+
+    with pytest.raises(AccessError):
+        user.user_profile_setname(token, "Andras", "Arato")
+
+    with pytest.raises(AccessError):
+        user.user_profile_setemail(token, "anothervalidemail@gmail.com")
+
+    with pytest.raises(AccessError):
+        user.user_profile_sethandle(token, "andrasarato19")
 
 clear()
