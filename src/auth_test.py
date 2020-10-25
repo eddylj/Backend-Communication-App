@@ -174,8 +174,8 @@ def test_auth_logout_fail():
     # Try logging out, without being logged in
     assert auth.auth_logout(token) == logout_fail
 
-    # Login with user
-    auth.auth_login('validemail@gmail.com', '123abc!@#')
+    # Login with user, getting a new active token
+    token = auth.auth_login('validemail@gmail.com', '123abc!@#')['token']
 
     # Try logging out right after logging in
     assert auth.auth_logout(token) == logout_success

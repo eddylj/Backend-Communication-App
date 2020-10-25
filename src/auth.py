@@ -1,10 +1,12 @@
 '''
 Login, logout and register functions
 '''
-import re
+from time import time
+import hashlib
+import jwt
 from data import data
 from error import InputError
-from other import get_active
+from other import get_active, is_valid, SECRET
 
 def auth_login(email, password):
     """
@@ -28,14 +30,32 @@ def auth_login(email, password):
                 - Password is not correct.
     """
     for (index, user) in enumerate(data['users']):
-        if user['email'] == email and user['password'] == password:
-            if get_active(index) is None:
-                data['tokens'].append(str(index))
+        if user['email'] == email and validate_pw(user, password):
+            payload = {'u_id': index, 'session': time()}
+            token = jwt.encode(payload, SECRET, algorithm='HS256')
+            if get_active(token) is None:
+                data['tokens'].append(token)
             return {
                 'u_id': index,
-                'token': str(index),
+                'token': token,
             }
     raise InputError
+
+def validate_pw(user, password):
+    """
+    Hashes the provided password with SHA256 and compares the result with the
+    password hash stored in the specified user's data.
+
+    Parameters:
+        user (dict)     : User's stored data.
+        password (str)  : Password being checked against data.
+
+    Returns:
+        (bool): Whether or not the entered password's hash matches the stored
+                hash.
+    """
+    password = hashlib.sha256(password.encode())
+    return password.digest() == user['password'].digest()
 
 def auth_logout(token):
     """
@@ -89,14 +109,6 @@ def auth_register(email, password, name_first, name_last):
                   in length
     """
     u_id = len(data['users'])
-    new_user = {
-        'u_id': u_id,
-        'email': email,
-        'password': password,
-        'name_first': name_first,
-        'name_last': name_last,
-        'handle_str': (name_first + name_last)[:20]
-    }
 
     if not is_valid(email):
         raise InputError
@@ -105,47 +117,46 @@ def auth_register(email, password, name_first, name_last):
     for user in data['users']:
         if user['email'] == email:
             raise InputError
-        if (user['name_first'] == new_user['name_first'] and
-                user['name_last'] == new_user['name_last']):
+        if (user['name_first'] == name_first and
+                user['name_last'] == name_last):
             number += 1
 
-    if len(new_user['password']) < 6:
+    if len(password) < 6:
         raise InputError
 
-    if not 1 <= len(new_user['name_first']) <= 50:
+    if not 1 <= len(name_first) <= 50:
         raise InputError
 
-    if not 1 <= len(new_user['name_last']) <= 50:
+    if not 1 <= len(name_last) <= 50:
         raise InputError
+
+    new_user = {
+        'u_id': u_id,
+        'email': email,
+        'password': hashlib.sha256(password.encode()),
+        'name_first': name_first,
+        'name_last': name_last,
+        'handle': (name_first + name_last)[:20].lower(),
+        'permission_id' : 2,
+    }
+
+    # Permission_id for owner (automatically for u_id 0)
+    if u_id == 0:
+        new_user['permission_id'] = 1
 
     if number != 0:
         new_user['handle_str'] = new_handle(new_user['handle_str'], number)
 
     data['users'].append(new_user)
-    data['tokens'].append(str(u_id))
+
+    payload = {'u_id': u_id, 'session': time()}
+    token = jwt.encode(payload, SECRET, algorithm='HS256')
+    data['tokens'].append(token)
 
     return {
         'u_id': u_id,
-        'token': str(u_id),
+        'token': token,
     }
-
-def is_valid(email):
-    """
-    Code provided in project specs, from:
-    https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
-    Checks if email is valid against a regular expression.
-
-    Parameters:
-        email (str) : User's email
-
-    Returns:
-        (bool): Whether or not the email entered is invalid according to the
-                regex standards.
-    """
-    regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
-    if re.search(regex, email):
-        return True
-    return False
 
 def new_handle(handle, num):
     """

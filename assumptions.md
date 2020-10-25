@@ -36,17 +36,26 @@
 ## Message
 - message_id is unique across all channels
 ### message_send()
-- The owner of flockr can send messages into any channel
+- ~~The owner of flockr can send messages into any channel~~ The Flockr owner cannot send messages into a channel without being in it.
+- Message cannot be empty. Raise InputError in that case.
 - Token of the user has to be active
 ### message_remove()
-- Message ID is a number 
 - only the authorised user can remove messages
-- Users can't remove message from another channel
+- Users can't remove message from another channel. 
+- Normal users can't remove a message after leaving the channel where the message was sent. Raise AccessError if attempted.
 - When you remove a message, it keeps the message dictionary, but removes contents inside that dictionary
 - Token of the user has to be active
 ### message_edit()
 - Token of the user has to be active
 - Cannot edit message to be longer than 1000 characters
+- Edit updates the timestamp of the message
+- Edit raises InputError if passed message is the same as the existing message.
+- Edit does not change the original sender's ID if editted by a different user.
 
 ## User
-- user does not have to have an active token for these functions to work
+### user_profile_setname()
+- If the new name passed into setname() is exactly the same as the existing name, InputError is raised.
+### user_profile_setemail()
+- If the new email is the same as the existing email stored in the user's data, InputError is raised.
+### user_profile_sethandle()
+- If the new handle is the same as the existing handle stored in the user's data, InputError is raised.
