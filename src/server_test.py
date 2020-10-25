@@ -7,8 +7,6 @@ import json
 import requests
 from echo_http_test import url
 
-# BASE_URL = 'http://127.0.0.1:9557'
-
 def test_auth_base(url):
     '''
     Base test for auth functions
@@ -468,7 +466,7 @@ def test_message_base(url):
     dataIn = {
         'token' : user1['token'],
         'name' : 'Channel 1',
-        'is_public' : False
+        'is_public' : True
     }
 
     r = requests.post(f"{BASE_URL}/channels/create", json=dataIn)
@@ -493,38 +491,89 @@ def test_message_base(url):
         'message' : 'What it dooo'
     }
 
-    r = request.post(f"{BASE_URL}/message/send", json=dataIn)
+    r = requests.post(f"{BASE_URL}/message/send", json=dataIn)
     message = r.json()
-    
-    # List channels with user2
 
-    r = requests.get(f"{BASE_URL}/channels/list?token={user2['token']}")
+    assert message['message_id'] == 0
+    
+    # # List channels with user2
+
+    # r = requests.get(f"{BASE_URL}/channels/list?token={user2['token']}")
+    # payload = r.json()
+    # assert payload == {
+    #     'channels' : [
+    #         {
+    #             'channel_id' : 0,
+    #             'name' : 'Channel 1'
+    #         }
+    #     ]
+    # }
+
+    # Channel messages with user2
+
+    #    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
+    # payload = r.json()
+
+    r = requests.get(f"{BASE_URL}/channel/messages?token={user1['token']}&channel_id={channel_id1}&start=0")
     payload = r.json()
+
     assert payload == {
-        'channels' : [
-            {
-                'channel_id' : 0,
-                'name' : 'Channel 1'
-            }
-        ]
+        'messages' : [{
+            'channel_id' : 0,
+            'message' : 'What it dooo',
+            'message_id' : 0,
+            'time_created' : 0,
+            'u_id' : 0
+        }],
+        'start' : 0,
+        'end' : -1,
     }
 
     # Edit the message into channel1 with user1
     dataIn = {
         'token' : user1['token'],
-        'message_id' : message['message_id']
-        'message' : "what it dontt"
+        'message_id' : message['message_id'],
+        'message' : 'what it dontt'
     }
 
-    request.put(f"{BASE_URL}/message/edit", json=dataIn)
+    requests.put(f"{BASE_URL}/message/edit", json=dataIn)
 
+    # Channel messages with user2
 
-    # List channels with user2
+    r = requests.get(f"{BASE_URL}/channel/messages?token={user1['token']}&channel_id={channel_id1}&start=0")
+    payload = r.json()
+
+    assert payload == {
+        'messages' : [{
+            'channel_id' : 0,
+            'message' : 'what it dontt',
+            'message_id' : 0,
+            'time_created' : 0,
+            'u_id' : 0
+        }],
+        'start' : 0,
+        'end' : -1,
+    }
 
     # Remove the message from channel1 with user1
 
-    # List channels with user2
+    dataIn = {
+        'token' : user1['token'],
+        'message_id' : message['message_id']
+    }
 
+    requests.delete(f"{BASE_URL}/message/remove", json=dataIn)
+
+    # Channel messages with user2
+
+    r = requests.get(f"{BASE_URL}/channel/messages?token={user1['token']}&channel_id={channel_id1}&start=0")
+    payload = r.json()
+
+    assert payload == {
+        'messages' : [],
+        'start' : 0,
+        'end' : -1,
+    }
 
 def test_user_base(url):
     

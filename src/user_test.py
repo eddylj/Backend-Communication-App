@@ -22,7 +22,7 @@ def test_profile_valid():
     token1 = account1['token']
     u_id1 = account1['u_id']
     email1 = data['users'][u_id1]['email']
-    handle1 = data['users'][u_id1]['handle']
+    handle1 = data['users'][u_id1]['handle_str']
 
 
     user1_details = {
@@ -178,7 +178,7 @@ def test_user_profile_sethandle_valid():
 
     user.user_profile_sethandle(token1, valid_handle)
 
-    assert data['users'][u_id1]['handle'] == valid_handle
+    assert data['users'][u_id1]['handle_str'] == valid_handle
 
 # INVALID HANDLE NAME (< 3 or > 20 characters)
 def test_user_profile_sethandle_invalid_handle():

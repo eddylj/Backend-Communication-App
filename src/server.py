@@ -90,7 +90,8 @@ def messages():
     # start = request.args.get('start')
 
     return dumps(
-        channel.channel_messages(request.args.get('token'), request.args.get('channel_id'),request.args.get('start'))
+        channel.channel_messages(request.args.get('token'), int(request.args.get('channel_id')), \
+            int(request.args.get('start')))
     )
 
 
@@ -154,7 +155,29 @@ def create():
 
 
 # MESSAGES FUNCTIONS
+@APP.route("/message/send", methods=['POST'])
+def send():
+    data = request.get_json('data')
 
+    return dumps(
+        message.message_send(data['token'], data['channel_id'], data['message'])
+    )
+
+@APP.route("/message/remove", methods=['DELETE'])
+def remove():
+    data = request.get_json('data')
+
+    return dumps(
+        message.message_remove(data['token'], data['message_id'])
+    )
+
+@APP.route("/message/edit", methods=['PUT'])
+def edit():
+    data = request.get_json('data')
+
+    return dumps(
+        message.message_edit(data['token'], data['message_id'], data['message'])
+    )
 
 # USER FUNCTIONS
 @APP.route("/user/profile", methods=['GET'])
