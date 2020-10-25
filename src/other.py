@@ -31,8 +31,7 @@ def get_active(token):
         None        : If token isn't active.
     """
     if token in data['tokens']:
-        user = jwt.decode(token, SECRET, algorithms='HS256')['u_id']
-        return data['users'][user]['u_id']
+        return jwt.decode(token, SECRET, algorithms='HS256')['u_id']
     return None
 
 def is_valid(email):
