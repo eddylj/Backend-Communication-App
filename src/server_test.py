@@ -528,29 +528,29 @@ def test_user_base(url):
 
     # list out all the users
 
-    # dataIn = {
-    #     'token' : user1['token']
-    # }
+    dataIn = {
+        'token' : user1['token']
+    }
 
-    # r = requests.get(f"{BASE_URL}/users/all?token={user1['token']}")
-    # payload = r.json()
-    # assert payload == {
-    #     'users' : [
-    #         { 
-    #             'u_id' : 0,
-    #             'email' : 'randomemail@gmail.com',
-    #             'name_first' : 'Dawon',
-    #             'name_last' : 'Other',
-    #             'handle_str' : 'Lavar Ball'
-    #         },
-    #         {
-    #             'u_id' : 1,
-    #             'email' : 'alsovalidemail@gmail.com',
-    #             'name_first' : 'West',
-    #             'name_last' : 'Delonte',
-    #             'handle_str' : 'WestDelonte'
-    #         }
-    #     ]
-    # }
+    r = requests.get(f"{BASE_URL}/users/all?token={user1['token']}")
+    payload = r.json()
+    assert payload == {
+        'users' : [
+            { 
+                'u_id' : 0,
+                'email' : 'randomemail@gmail.com',
+                'name_first' : 'Dawon',
+                'name_last' : 'Other',
+                'handle_str' : 'Lavar Ball'
+            },
+            {
+                'u_id' : 1,
+                'email' : 'alsovalidemail@gmail.com',
+                'name_first' : 'West',
+                'name_last' : 'Delonte',
+                'handle_str' : 'WestDelonte'
+            }
+        ]
+    }
 
 

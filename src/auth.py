@@ -95,7 +95,7 @@ def auth_register(email, password, name_first, name_last):
         'password': password,
         'name_first': name_first,
         'name_last': name_last,
-        'handle': (name_first + name_last)[:20]
+        'handle_str': (name_first + name_last)[:20]
     }
 
     if not is_valid(email):
@@ -119,7 +119,7 @@ def auth_register(email, password, name_first, name_last):
         raise InputError
 
     if number != 0:
-        new_user['handle'] = new_handle(new_user['handle'], number)
+        new_user['handle_str'] = new_handle(new_user['handle_str'], number)
 
     data['users'].append(new_user)
     data['tokens'].append(str(u_id))
