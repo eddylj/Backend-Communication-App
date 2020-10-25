@@ -35,12 +35,10 @@ def message_send(token, channel_id, message):
         'time_created' : timestamp,
     }
 
-    # Adds to channel data WITHOUT channel_id, since output demands that.
-    # This puts the new message at the 0th element, as per requirement in channel_messages
+    # Inserts new message at the start of the messages stored in channel data.
     data['channels'][channel_id]['messages'].insert(0, new_message)
 
     # Storing channel_id and caller_id only in message data
-    # The others aren't relevant and only take up space + need to be updated.
     data['messages'].append({'channel_id': channel_id, 'u_id': caller_id})
 
     return {
@@ -63,11 +61,10 @@ def message_remove(token, message_id):
     channel_id = data['messages'][message_id]['channel_id']
     channel_data = data['channels'][channel_id]
 
-    # If not sender of message / not owner of flockr
+    # If not sender of message and not owner of channel
     if u_id != data['messages'][message_id]['u_id']:
         if u_id not in channel_data['owners']:
-            if data['users'][u_id]['permission_id'] != 1:
-                raise AccessError
+            raise AccessError
     elif u_id not in channel_data['members']:
         raise AccessError
 
@@ -104,14 +101,16 @@ def message_edit(token, message_id, message):
     if len(message) > 1000:
         raise InputError
 
-    sender_id = data['messages'][message_id]['u_id']
     channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
     channel_messages = data['channels'][channel_id]['messages']
 
-    # If not original sender, not owner and not owner of flockr
-    if u_id not in (sender_id, data['messages'][message_id]['u_id']):
-        if data['users'][u_id]['permission_id'] != 1:
+    # If not sender of message and not owner of channel
+    if u_id != data['messages'][message_id]['u_id']:
+        if u_id not in channel_data['owners']:
             raise AccessError
+    elif u_id not in channel_data['members']:
+        raise AccessError
 
     for (index, msg) in enumerate(channel_messages):
         if msg['message_id'] == message_id:

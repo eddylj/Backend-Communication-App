@@ -49,7 +49,7 @@ def register():
 
 @APP.route("/auth/login", methods=['POST'])
 def login():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         auth.auth_login(data['email'], data['password'])
@@ -57,7 +57,7 @@ def login():
 
 @APP.route("/auth/logout", methods=['POST'])
 def logout():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         auth.auth_logout(data['token'])
@@ -67,7 +67,7 @@ def logout():
 # CHANNEL FUNCTIONS
 @APP.route("/channel/invite", methods=['POST'])
 def invite():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         channel.channel_invite(data['token'], data['channel_id'], data['u_id'])
@@ -96,7 +96,7 @@ def messages():
 
 @APP.route("/channel/leave", methods=['POST'])
 def leave():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         channel.channel_leave(data['token'], data['channel_id'])
@@ -104,7 +104,7 @@ def leave():
 
 @APP.route("/channel/join", methods=['POST'])
 def join():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         channel.channel_leave(data['token'], data['channel_id'])
@@ -112,7 +112,7 @@ def join():
 
 @APP.route("/channel/addowner", methods=['POST'])
 def addowner():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         channel.channel_addowner(data['token'], data['channel_id'], data['u_id'])
@@ -120,7 +120,7 @@ def addowner():
 
 @APP.route("/channel/removeowner", methods=['POST'])
 def removeowner():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         channel.channel_removeowner(data['token'], data['channel_id'], data['u_id'])
@@ -146,7 +146,7 @@ def listall():
 
 @APP.route("/channels/create", methods=['POST'])
 def create():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         channels.channels_create(data['token'], data['name'], data['is_public'])
@@ -156,7 +156,7 @@ def create():
 # MESSAGES FUNCTIONS
 @APP.route("/message/send", methods=['POST'])
 def send():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         message.message_send(data['token'], data['channel_id'], data['message'])
@@ -164,7 +164,7 @@ def send():
 
 @APP.route("/message/remove", methods=['DELETE'])
 def remove():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         message.message_remove(data['token'], data['message_id'])
@@ -172,7 +172,7 @@ def remove():
 
 @APP.route("/message/edit", methods=['PUT'])
 def edit():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         message.message_edit(data['token'], data['message_id'], data['message'])
@@ -190,7 +190,7 @@ def profile():
 
 @APP.route("/user/profile/setname", methods=['PUT'])
 def setname():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         user.user_profile_setname(data['token'], data['name_first'], data['name_last'])
@@ -198,7 +198,7 @@ def setname():
 
 @APP.route("/user/profile/setemail", methods=['PUT'])
 def setemail():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         user.user_profile_setemail(data['token'], data['email'])
@@ -206,7 +206,7 @@ def setemail():
 
 @APP.route("/user/profile/sethandle", methods=['PUT'])
 def sethandle():
-    data = request.get_json('data')
+    data = request.get_json()
 
     return dumps(
         user.user_profile_sethandle(data['token'], data['handle_str'])

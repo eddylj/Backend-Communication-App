@@ -38,7 +38,6 @@ def test_message_send_valid():
     channel.channel_invite(token1, channel_id, u_id2)
 
     # Send messages
-    # Processing time could potentially affect pytest results
     timestamp1 = int(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
@@ -122,8 +121,6 @@ def test_message_send_not_member():
 
 ############################# MESSAGE_REMOVE TESTS #############################
 
-# Can't call channel_messages if start < number of messages in channel.
-# Keep this in mind if tests break.
 def test_message_remove_valid():
     """ Base case for message_remove() """
     clear()
@@ -243,7 +240,7 @@ def test_message_remove_as_owner():
 def test_message_remove_not_member():
     """
     Edge case for message_remove(), where the caller isn't even in the channel
-    where the message is sent. This does not includes the Flockr owner.
+    where the message is sent. This includes the Flockr owner.
     """
     clear()
 
@@ -255,16 +252,14 @@ def test_message_remove_not_member():
     token2 = account2['token']
 
     # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
 
-    msg_id = message.message_send(token1, channel_id, "Goodbye")['message_id']
+    msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
 
     with pytest.raises(AccessError):
-        message.message_remove(token2, msg_id)
+        message.message_remove(token1, msg_id)
 
 ############################## MESSAGE_EDIT TESTS ##############################
-
-# Assumed that edit updates the timestamp.
 
 def test_message_edit_valid():
     """
@@ -401,7 +396,6 @@ def test_message_edit_as_owner():
     expected = [
         {
             'message_id': msg_id,
-            # Should we replace the u_id with the one of the latest editor?
             'u_id': u_id2,
             'message': "Hello",
             'time_created': timestamp
@@ -417,7 +411,7 @@ def test_message_edit_as_owner():
 def test_message_edit_not_member():
     """
     Edge case for message_edit(), where the caller isn't even in the channel
-    where the message is sent. This does not includes the Flockr owner.
+    where the message is sent. This includes the Flockr owner.
     """
     clear()
 
@@ -429,12 +423,12 @@ def test_message_edit_not_member():
     token2 = account2['token']
 
     # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
 
-    msg_id = message.message_send(token1, channel_id, "Goodbye")['message_id']
+    msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
 
     with pytest.raises(AccessError):
-        message.message_edit(token2, msg_id, "Hello")
+        message.message_edit(token1, msg_id, "Hello")
 
 # Checking invalid token
 def test_message_invalid_token():
