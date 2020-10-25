@@ -94,7 +94,7 @@ def auth_register(email, password, name_first, name_last):
         'password': password,
         'name_first': name_first,
         'name_last': name_last,
-        'handle': (name_first + name_last)[:20].lower(),
+        'handle': (name_first + name_last)[:20],
         'permission_id' : 2,
     }
 
