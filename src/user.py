@@ -61,8 +61,8 @@ def user_profile_setname(token, name_first, name_last):
     # data['users'][caller_id]['name_first'] = name_first
     # data['users'][caller_id]['name_last'] = name_last
 
-    if data['users'][caller_id]['name_first'] == name_first:
-        if data['users'][caller_id]['name_last'] == name_last:
+    if (data['users'][caller_id]['name_first'] == name_first and
+        data['users'][caller_id]['name_last'] == name_last):
             raise InputError
     else:
         data['users'][caller_id]['name_first'] = name_first
