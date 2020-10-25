@@ -6,6 +6,7 @@ import time
 import hashlib
 import jwt
 from data import data
+from error import InputError, AccessError
 
 SECRET = hashlib.sha256(str(time.time()).encode()).hexdigest()[:11]
 
