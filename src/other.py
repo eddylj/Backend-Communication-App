@@ -66,23 +66,49 @@ def users_all(token):
         ],
     }
 
-# def admin_userpermission_change(token, u_id, permission_id):
-#     '''
-#     Function for changing admin user permission
-#     '''
-#     pass
+def admin_userpermission_change(token, u_id, permission_id):
+    '''
+    Function for changing admin user permission
+    '''
+    
+    # Invalid u_id
+    owner_id = get_active(token)
+    if owner_id is None:
+        raise InputError
+
+    # Invalid permission_id
+    if permission_id not in (1, 2):
+        raise InputError
+
+    # Not an owner of flockr
+    if data['users'][owner_id]['permission_id'] == 2:
+        raise AccessError
+
+    # Change permission_id of u_id
+    data['users'][u_id]['permission_id'] = permission_id
+
+    return {}
 
 def search(token, query_str):
     '''
     Function to find the information about messages
     '''
+    u_id = get_active(token)
+    if u_id is None:
+        raise InputError
+    
+    result = []
+
+    for channel in data['channels']:
+        # All channels user is in
+        if u_id in channel['members']:
+            # Check through all messages
+            for message in channel['messages']:
+                # Check if in the current message
+                if query_str in message['message']: 
+                    # append if query_str is in
+                    result.append(message)
+
     return {
-        'messages': [
-            {
-                'message_id': 1,
-                'u_id': 1,
-                'message': 'Hello world',
-                'time_created': 1582426789,
-            }
-        ],
+        'messages': result
     }
