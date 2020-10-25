@@ -126,6 +126,8 @@ def removeowner():
         channel.channel_removeowner(data['token'], data['channel_id'], data['u_id'])
     )
 
+
+# CHANNELS FUNCTIONS
 @APP.route("/channels/list", methods=['GET'])
 def clist():
     # token = request.args.get('token')
@@ -149,6 +151,53 @@ def create():
     return dumps(
         channels.channels_create(data['token'], data['name'], data['is_public'])
     )
+
+
+# MESSAGES FUNCTIONS
+
+
+# USER FUNCTIONS
+@APP.route("/user/profile", methods=['GET'])
+def profile():
+    # token = request.args.get('token')
+    # u_id = request.args.get('u_id')
+
+    return dumps(
+        user.user_profile(request.args.get('token'), int(request.args.get('u_id')))
+    )
+
+@APP.route("/user/profile/setname", methods=['PUT'])
+def setname():
+    data = request.get_json('data')
+
+    return dumps(
+        user.user_profile_setname(data['token'], data['name_first'], data['name_last'])
+    )
+
+@APP.route("/user/profile/setemail", methods=['PUT'])
+def setemail():
+    data = request.get_json('data')
+
+    return dumps(
+        user.user_profile_setemail(data['token'], data['email'])
+    )
+
+@APP.route("/user/profile/sethandle", methods=['PUT'])
+def sethandle():
+    data = request.get_json('data')
+
+    return dumps(
+        user.user_profile_sethandle(data['token'], data['handle_str'])
+    )
+
+@APP.route("/users/all", methods=['GET'])
+def usersall():
+    # token = request.args.get('token')
+
+    return dumps(
+        other.users_all(request.args.get('token'))
+    )
+
 
 if __name__ == "__main__":
     APP.run(port=9557) # Do not edit this port
