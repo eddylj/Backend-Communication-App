@@ -42,11 +42,11 @@ def users_all(token):
         'users': users
     }
 
-# def admin_userpermission_change(token, u_id, permission_id):
-#     '''
-#     Function for changing admin user permission
-#     '''
-#     pass
+def admin_userpermission_change(token, u_id, permission_id):
+    '''
+    Function for changing admin user permission
+    '''
+    
 
 def search(token, query_str):
     '''
