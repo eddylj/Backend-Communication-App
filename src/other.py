@@ -3,6 +3,8 @@ Different Functions used throughout the program
 '''
 
 from data import data
+from error import InputError, AccessError
+
 def clear():
     '''
     Function to clear the data
@@ -44,11 +46,28 @@ def users_all(token):
         ],
     }
 
-# def admin_userpermission_change(token, u_id, permission_id):
-#     '''
-#     Function for changing admin user permission
-#     '''
-#     pass
+def admin_userpermission_change(token, u_id, permission_id):
+    '''
+    Function for changing admin user permission
+    '''
+    
+    # Invalid u_id
+    owner_id = get_active(token)
+    if owner_id is None:
+        raise InputError
+
+    # Invalid permission_id
+    if permission_id not in (1, 2):
+        raise InputError
+
+    # Not an owner of flockr
+    if data['users'][owner_id] == 2:
+        raise AccessError
+
+    # Change permission_id of u_id
+    data['users'][u_id]['permission_id'] = permission_id
+
+    return {}
 
 def search(token, query_str):
     '''
