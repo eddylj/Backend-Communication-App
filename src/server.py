@@ -38,6 +38,8 @@ def echo():
         'data': data
     })
 
+
+# AUTH FUNCTIONS
 @APP.route("/auth/register", methods=['POST'])
 def register():
     data = request.get_json('data')
@@ -63,7 +65,162 @@ def logout():
     )
 
 
+# CHANNEL FUNCTIONS
+@APP.route("/channel/invite", methods=['POST'])
+def invite():
+    data = request.get_json('data')
+
+    return dumps(
+        channel.channel_invite(data['token'], data['channel_id'], data['u_id'])
+    )
+
+@APP.route("/channel/details", methods=['GET'])
+def details():
+    # token = request.args.get('token')
+    # channel_id = request.args.get('channel_id')
+
+    return dumps(
+        channel.channel_details(request.args.get('token'), int(request.args.get('channel_id')))
+    )
+
+@APP.route("/channel/messages", methods=['GET'])
+def messages():
+    # token = request.args.get('token')
+    # channel_id = request.args.get('channel_id')
+    # start = request.args.get('start')
+
+    return dumps(
+        channel.channel_messages(request.args.get('token'), int(request.args.get('channel_id')), \
+            int(request.args.get('start')))
+    )
+
+
+@APP.route("/channel/leave", methods=['POST'])
+def leave():
+    data = request.get_json('data')
+
+    return dumps(
+        channel.channel_leave(data['token'], data['channel_id'])
+    )
+
+@APP.route("/channel/join", methods=['POST'])
+def join():
+    data = request.get_json('data')
+
+    return dumps(
+        channel.channel_leave(data['token'], data['channel_id'])
+    )
+
+@APP.route("/channel/addowner", methods=['POST'])
+def addowner():
+    data = request.get_json('data')
+
+    return dumps(
+        channel.channel_addowner(data['token'], data['channel_id'], data['u_id'])
+    )
+
+@APP.route("/channel/removeowner", methods=['POST'])
+def removeowner():
+    data = request.get_json('data')
+
+    return dumps(
+        channel.channel_removeowner(data['token'], data['channel_id'], data['u_id'])
+    )
+
+
+# CHANNELS FUNCTIONS
+@APP.route("/channels/list", methods=['GET'])
+def clist():
+    # token = request.args.get('token')
+
+    return dumps(
+        channels.channels_list(request.args.get('token'))
+    )
+
+@APP.route("/channels/listall", methods=['GET'])
+def listall():
+    # token = request.args.get('token')
+
+    return dumps(
+        channels.channels_listall(request.args.get('token'))
+    )
+
+@APP.route("/channels/create", methods=['POST'])
+def create():
+    data = request.get_json('data')
+
+    return dumps(
+        channels.channels_create(data['token'], data['name'], data['is_public'])
+    )
+
+
+# MESSAGES FUNCTIONS
+@APP.route("/message/send", methods=['POST'])
+def send():
+    data = request.get_json('data')
+
+    return dumps(
+        message.message_send(data['token'], data['channel_id'], data['message'])
+    )
+
+@APP.route("/message/remove", methods=['DELETE'])
+def remove():
+    data = request.get_json('data')
+
+    return dumps(
+        message.message_remove(data['token'], data['message_id'])
+    )
+
+@APP.route("/message/edit", methods=['PUT'])
+def edit():
+    data = request.get_json('data')
+
+    return dumps(
+        message.message_edit(data['token'], data['message_id'], data['message'])
+    )
+
+# USER FUNCTIONS
+@APP.route("/user/profile", methods=['GET'])
+def profile():
+    # token = request.args.get('token')
+    # u_id = request.args.get('u_id')
+
+    return dumps(
+        user.user_profile(request.args.get('token'), int(request.args.get('u_id')))
+    )
+
+@APP.route("/user/profile/setname", methods=['PUT'])
+def setname():
+    data = request.get_json('data')
+
+    return dumps(
+        user.user_profile_setname(data['token'], data['name_first'], data['name_last'])
+    )
+
+@APP.route("/user/profile/setemail", methods=['PUT'])
+def setemail():
+    data = request.get_json('data')
+
+    return dumps(
+        user.user_profile_setemail(data['token'], data['email'])
+    )
+
+@APP.route("/user/profile/sethandle", methods=['PUT'])
+def sethandle():
+    data = request.get_json('data')
+
+    return dumps(
+        user.user_profile_sethandle(data['token'], data['handle_str'])
+    )
+
+@APP.route("/users/all", methods=['GET'])
+def usersall():
+    # token = request.args.get('token')
+
+    return dumps(
+        other.users_all(request.args.get('token'))
+    )
 
 
 if __name__ == "__main__":
-    APP.run(port=9557) # Do not edit this port
+    APP.run(port=0) # Do not edit this port

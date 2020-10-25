@@ -7,12 +7,11 @@ import json
 import requests
 from echo_http_test import url
 
-BASE_URL = 'http://127.0.0.1:9557'
-
 def test_auth_base(url):
     '''
     Base test for auth functions
     '''
+    BASE_URL = url
 
     # Create user1
     dataIn = {
@@ -98,6 +97,7 @@ def test_channels_base(url):
     '''
     Base test for channel functions
     '''
+    BASE_URL = url
     
     # Create user1
     dataIn = {
@@ -156,18 +156,20 @@ def test_channels_base(url):
 
     # List user2 channels
 
-    dataIn = {
-        'token' : user2['token']
-    }
+    # dataIn = {
+    #     'token' : user2['token']
+    # }
 
-    r = requests.get(f"{BASE_URL}/channels/list", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channels/list?token={user2['token']}")
     payload = r.json()
-    assert payload == [
-        {
-            'channel_id' : 1,
-            'name' : 'Channel 2'
-        }
-    ]
+    assert payload == {
+        'channels' : [
+            {
+                'channel_id' : 1,
+                'name' : 'Channel 2'
+            }
+        ]
+    }
 
     # Listall channels
 
@@ -175,23 +177,26 @@ def test_channels_base(url):
         'token' : user2['token']
     }
 
-    r = requests.get(f"{BASE_URL}/channels/listall", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channels/listall?token={user2['token']}")
     payload = r.json()
-    assert payload == [
-        {
-            'channel_id' : 0,
-            'name' : 'Channel 1'
-        },
-        {
-            'channel_id' : 1,
-            'name' : 'Channel 2'
-        }
-    ]
+    assert payload == {
+        'channels' : [
+            {
+                'channel_id' : 0,
+                'name' : 'Channel 1'
+            },
+            {
+                'channel_id' : 1,
+                'name' : 'Channel 2'
+            }
+        ]
+    }
 
 def test_channel_base(url):
     '''
     Base test for channel functions
     '''
+    BASE_URL = url
 
     # Create user1
     dataIn = {
@@ -249,12 +254,12 @@ def test_channel_base(url):
 
     # List details of channel1 with user1 
 
-    dataIn = {
-        'token' : user1['token'],
-        'channel_id' : channel_id1
-    }
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'channel_id' : channel_id1
+    # }
 
-    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
     payload = r.json()
     assert payload == {
         'name' : 'Channel 1',
@@ -286,12 +291,12 @@ def test_channel_base(url):
 
     # List details of channel1 with user2
 
-    dataIn = {
-        'token' : user1['token'],
-        'channel_id' : channel_id1
-    }
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'channel_id' : channel_id1
+    # }
 
-    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
     payload = r.json()
     assert payload == {
         'name' : 'Channel 1',
@@ -356,12 +361,12 @@ def test_channel_base(url):
 
     # List details with user1 channel1
 
-    dataIn = {
-        'token' : user1['token'],
-        'channel_id' : channel_id1
-    }
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'channel_id' : channel_id1
+    # }
 
-    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
     payload = r.json()
     assert payload == {
         'name' : 'Channel 1',
@@ -398,12 +403,12 @@ def test_channel_base(url):
 
     # List details with user1 channel
 
-    dataIn = {
-        'token' : user1['token'],
-        'channel_id' : channel_id1
-    }
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'channel_id' : channel_id1
+    # }
 
-    r = requests.get(f"{BASE_URL}/channel/details", json=dataIn)
+    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
     payload = r.json()
     assert payload == {
         'name' : 'Channel 1',
@@ -422,3 +427,278 @@ def test_channel_base(url):
             }
         ],
     }        
+
+def test_message_base(url):
+    '''
+    Base test for messages functions
+    '''
+    BASE_URL = url
+
+    # Create user1
+    dataIn = {
+        'email' : 'validemail@gmail.com',
+        'password' : 'asdfqwer1234',
+        'name_first' : 'Howard',
+        'name_last' : 'Dwight',
+    }
+
+    r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
+    user1 = r.json()
+
+    assert user1['u_id'] == 0
+    assert user1['token'] == '0'
+
+    # Create user2
+    dataIn = {
+        'email' : 'alsovalidemail@gmail.com',
+        'password' : 'asdfqwer1234',
+        'name_first' : 'West',
+        'name_last' : 'Delonte',
+    }
+
+    r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
+    user2 = r.json()
+
+    assert user2['u_id'] == 1
+    assert user2['token'] == '1'
+
+    # Create channel1 with user1
+    dataIn = {
+        'token' : user1['token'],
+        'name' : 'Channel 1',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{BASE_URL}/channels/create", json=dataIn)
+    channel_id1 = r.json()['channel_id']
+
+    assert channel_id1 == 0
+
+
+    # Invite user2 into channel1
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1,
+        'u_id' : user2['u_id']
+    }
+
+    requests.post(f"{BASE_URL}/channel/invite", json=dataIn)
+
+    # Send a message into channel1 with user1
+    dataIn = {
+        'token' : user1['token'],
+        'channel_id' : channel_id1,
+        'message' : 'What it dooo'
+    }
+
+    r = requests.post(f"{BASE_URL}/message/send", json=dataIn)
+    message = r.json()
+
+    assert message['message_id'] == 0
+    
+    # # List channels with user2
+
+    # r = requests.get(f"{BASE_URL}/channels/list?token={user2['token']}")
+    # payload = r.json()
+    # assert payload == {
+    #     'channels' : [
+    #         {
+    #             'channel_id' : 0,
+    #             'name' : 'Channel 1'
+    #         }
+    #     ]
+    # }
+
+    # Channel messages with user2
+
+    #    r = requests.get(f"{BASE_URL}/channel/details?token={user1['token']}&channel_id={channel_id1}")
+    # payload = r.json()
+
+    r = requests.get(f"{BASE_URL}/channel/messages?token={user1['token']}&channel_id={channel_id1}&start=0")
+    payload = r.json()
+
+    assert payload == {
+        'messages' : [{
+            'channel_id' : 0,
+            'message' : 'What it dooo',
+            'message_id' : 0,
+            'time_created' : 0,
+            'u_id' : 0
+        }],
+        'start' : 0,
+        'end' : -1,
+    }
+
+    # Edit the message into channel1 with user1
+    dataIn = {
+        'token' : user1['token'],
+        'message_id' : message['message_id'],
+        'message' : 'what it dontt'
+    }
+
+    requests.put(f"{BASE_URL}/message/edit", json=dataIn)
+
+    # Channel messages with user2
+
+    r = requests.get(f"{BASE_URL}/channel/messages?token={user1['token']}&channel_id={channel_id1}&start=0")
+    payload = r.json()
+
+    assert payload == {
+        'messages' : [{
+            'channel_id' : 0,
+            'message' : 'what it dontt',
+            'message_id' : 0,
+            'time_created' : 0,
+            'u_id' : 0
+        }],
+        'start' : 0,
+        'end' : -1,
+    }
+
+    # Remove the message from channel1 with user1
+
+    dataIn = {
+        'token' : user1['token'],
+        'message_id' : message['message_id']
+    }
+
+    requests.delete(f"{BASE_URL}/message/remove", json=dataIn)
+
+    # Channel messages with user2
+
+    r = requests.get(f"{BASE_URL}/channel/messages?token={user1['token']}&channel_id={channel_id1}&start=0")
+    payload = r.json()
+
+    assert payload == {
+        'messages' : [],
+        'start' : 0,
+        'end' : -1,
+    }
+
+def test_user_base(url):
+    
+    '''
+    Base test for user functions
+    '''
+    BASE_URL = url
+
+    # Create user1
+    dataIn = {
+        'email' : 'validemail@gmail.com',
+        'password' : 'asdfqwer1234',
+        'name_first' : 'Howard',
+        'name_last' : 'Dwight',
+    }
+
+    r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
+    user1 = r.json()
+
+    assert user1['u_id'] == 0
+    assert user1['token'] == '0'
+
+    # Create user2
+    dataIn = {
+        'email' : 'alsovalidemail@gmail.com',
+        'password' : 'asdfqwer1234',
+        'name_first' : 'West',
+        'name_last' : 'Delonte',
+    }
+
+    r = requests.post(f"{BASE_URL}/auth/register", json=dataIn)
+    user2 = r.json()
+
+    assert user2['u_id'] == 1
+    assert user2['token'] == '1'
+
+
+    # Get profile of user1
+
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'u_id' : user1['u_id']
+    # }
+
+    r = requests.get(f"{BASE_URL}/user/profile?token={user1['token']}&u_id={user1['u_id']}")
+    payload = r.json()
+    assert payload == {
+        'user' : {
+            'u_id' : 0,
+            'email' : 'validemail@gmail.com',
+            'name_first' : 'Howard',
+            'name_last' : 'Dwight',
+            'handle_str' : 'HowardDwight'  
+        }
+    }
+
+    # change name for user1 in profile
+
+    dataIn = {
+        'token' : user1['token'],
+        'name_first' : "Dawon",
+        'name_last' : "Other"
+    }
+
+    requests.put(f"{BASE_URL}/user/profile/setname", json=dataIn)
+    
+    # change email for user1 in profile
+    dataIn = {
+         'token' : user1['token'],
+         'email' : "randomemail@gmail.com"
+    }
+
+    requests.put(f"{BASE_URL}/user/profile/setemail", json=dataIn)
+    
+    # change handle 
+    dataIn = {
+         'token' : user1['token'],
+         'handle_str' : "Lavar Ball"
+    }
+
+    requests.put(f"{BASE_URL}/user/profile/sethandle", json=dataIn)
+
+    # show the profile of user1 after change
+    # dataIn = {
+    #     'token' : user1['token'],
+    #     'u_id' : user1['u_id']
+    # }
+
+    r = requests.get(f"{BASE_URL}/user/profile?token={user1['token']}&u_id={user1['u_id']}")
+    payload = r.json()
+    assert payload == {
+        'user' : {
+            'u_id' : 0,
+            'email' : 'randomemail@gmail.com',
+            'name_first' : 'Dawon',
+            'name_last' : 'Other',
+            'handle_str' : 'Lavar Ball' 
+        }
+    }
+
+    # list out all the users
+
+    dataIn = {
+        'token' : user1['token']
+    }
+
+    r = requests.get(f"{BASE_URL}/users/all?token={user1['token']}")
+    payload = r.json()
+    assert payload == {
+        'users' : [
+            { 
+                'u_id' : 0,
+                'email' : 'randomemail@gmail.com',
+                'name_first' : 'Dawon',
+                'name_last' : 'Other',
+                'handle_str' : 'Lavar Ball'
+            },
+            {
+                'u_id' : 1,
+                'email' : 'alsovalidemail@gmail.com',
+                'name_first' : 'West',
+                'name_last' : 'Delonte',
+                'handle_str' : 'WestDelonte'
+            }
+        ]
+    }
+
+

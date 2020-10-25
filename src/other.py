@@ -55,16 +55,14 @@ def users_all(token):
     '''
     Function for returning all the information of the users
     '''
+    users = []
+    for info in data['users']:
+        users.append(info)
+    
+    for user in users:
+        del user['password']
     return {
-        'users': [
-            {
-                'u_id': 1,
-                'email': 'cs1531@cse.unsw.edu.au',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'hjacobs',
-            },
-        ],
+        'users': users
     }
 
 def admin_userpermission_change(token, u_id, permission_id):

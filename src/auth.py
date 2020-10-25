@@ -145,7 +145,7 @@ def auth_register(email, password, name_first, name_last):
         new_user['permission_id'] = 1
 
     if number != 0:
-        new_user['handle'] = new_handle(new_user['handle'], number)
+        new_user['handle_str'] = new_handle(new_user['handle_str'], number)
 
     data['users'].append(new_user)
 

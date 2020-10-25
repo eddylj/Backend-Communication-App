@@ -26,7 +26,7 @@ def user_profile(token, u_id):
         'email' : user['email'],
         'name_first' : user['name_first'],
         'name_last' : user['name_last'],
-        'handle_str' : user['handle'],
+        'handle_str' : user['handle_str'],
     }
 
     return {'user': return_user}
@@ -115,7 +115,7 @@ def user_profile_sethandle(token, handle_str):
 
     # Not used by another account
     for user in data['users']:
-        if user['handle'] == handle_str:
+        if user['handle_str'] == handle_str:
             raise InputError
 
     data['users'][caller_id]['handle'] = handle_str
