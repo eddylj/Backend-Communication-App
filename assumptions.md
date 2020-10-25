@@ -53,4 +53,9 @@
 - Edit does not change the original sender's ID if editted by a different user.
 
 ## User
-- user does not have to have an active token for these functions to work
+### user_profile_setname()
+- If the new name passed into setname() is exactly the same as the existing name, InputError is raised.
+### user_profile_setemail()
+- If the new email is the same as the existing email stored in the user's data, InputError is raised.
+### user_profile_sethandle()
+- If the new handle is the same as the existing handle stored in the user's data, InputError is raised.

@@ -27,7 +27,8 @@ def test_user_profile_valid():
         'handle_str': 'haydeneverest'
     }
 
-    assert user.user_profile(token, u_id) == {expected}
+    print(user.user_profile(token, u_id))
+    assert user.user_profile(token, u_id) == {'user': expected}
 
 def test_user_profile_invalid_id():
     """
@@ -41,6 +42,10 @@ def test_user_profile_invalid_id():
 
     with pytest.raises(InputError):
         user.user_profile(token, u_id + 1)
+
+    # White-box? test for negative u_ids
+    with pytest.raises(InputError):
+        user.user_profile(token, -1)
 
 ########################## USER_PROFILE_SETNAME TESTS ##########################
 
@@ -63,7 +68,7 @@ def test_user_setname_valid():
         'handle_str': 'haydeneverest'
     }
 
-    assert user.user_profile(token, u_id) == {expected}
+    assert user.user_profile(token, u_id) == {'user': expected}
 
 def test_user_setname_invalid():
     """
@@ -98,7 +103,7 @@ def test_user_setname_repeated():
     Test case for user_profile_setname(), where the passed name is the same as
     the existing name. Expected to raise an input error.
     """
-    # Assumed to raise an InputError. Probably easier to implement + efficiency.
+    # Assumed to raise an InputError to maintain consistency with other set functions.
     clear()
 
     token = auth.auth_register(*user1)['token']
@@ -126,7 +131,7 @@ def test_user_setemail_valid():
         'handle_str': 'haydeneverest'
     }
 
-    assert user.user_profile(token, u_id) == expected
+    assert user.user_profile(token, u_id) == {'user': expected}
 
 def test_user_setemail_invalid():
     """
@@ -150,7 +155,7 @@ def test_user_setemail_invalid():
         'handle_str': 'haydeneverest'
     }
 
-    assert user.user_profile(token, u_id) == {expected}
+    assert user.user_profile(token, u_id) == {'user': expected}
 
 def test_user_setemail_email_taken():
     """
@@ -170,7 +175,7 @@ def test_user_setemail_repeated():
     Test case for user_profile_setemail(), where the passed email is the same as
     the existing email. Expected to raise an input error.
     """
-    # Assumed to raise an InputError. Probably easier to implement + efficiency.
+    # Assumed to raise an InputError. No need for additional check if matching email is user's.
     clear()
 
     token = auth.auth_register(*user1)['token']
@@ -198,7 +203,7 @@ def test_user_sethandle_valid():
         'handle_str': 'everesthayden'
     }
 
-    assert user.user_profile(token, u_id) == expected
+    assert user.user_profile(token, u_id) == {'user': expected}
 
 def test_user_sethandle_invalid():
     """
@@ -238,7 +243,7 @@ def test_user_sethandle_invalid():
         'handle_str': 'haydeneverest'
     }
 
-    assert user.user_profile(token, u_id) == expected
+    assert user.user_profile(token, u_id) == {'user': expected}
 
 def test_user_sethandle_handle_taken():
     """
@@ -258,6 +263,7 @@ def test_user_sethandle_repeated():
     Test case for user_profile_sethandle(), where the passed handle is the same
     as the existing handle. Expected to raise an input error.
     """
+    # Same as other repeated tests.
     clear()
 
     token = auth.auth_register(*user1)['token']
