@@ -831,6 +831,428 @@ def test_channel_details_invalid_channel_http(url):
     response = requests.get(f"{url}/channel/details", params=details_payload)
     assert response.status_code ==400
 
+# USER NOT A MEMBER
+def test_channel_details_not_member_http(url):
+    '''
+    Test channel_details fails when the user is not a member of the channel
+    '''
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : False
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    details_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    response = requests.get(f"{url}/channel/details", params=details_payload)
+    assert response.status_code == 400
+
+############################# CHANNEL_JOIN TESTS ###############################
+
+# BASE CASE
+def test_channel_join_valid_http(url):
+    '''
+    Base test for channel_join
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    join_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    requests.post(f"{url}/channel/join", json=join_payload)
+
+
+    user1_details = {
+        'u_id': account1['u_id'],
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+    }
+    user2_details = {
+        'u_id': account2['u_id'],
+        'name_first': 'Goat',
+        'name_last': 'James',
+    }
+    passed = {
+        'name': 'test channel',
+        'owner_members': [user1_details],
+        'all_members': [user1_details, user2_details]
+    }
+
+    details_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    r = requests.get(f"{url}/channel/details", params=details_payload)
+    details = r.json()
+
+    assert details == passed
+
+# INVALID CHANNEL
+def test_channel_join_invalid_channel_http(url):
+    '''
+    Test channel_join fails when and invalid channel is used
+    '''
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    channel_id = 123
+
+    join_payload = {
+        'token' : account['token'],
+        'channel_id' : channel_id
+    }
+
+    response = requests.post(f"{url}/channel/join", json=join_payload)
+    assert response.status_code == 400
+
+# PRIVATE CHANNEL
+def test_channel_join_private_channel_http(url):
+    '''
+    Test channel_join fails when the channel is private
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    join_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    response = requests.post(f"{url}/channel/join", json=join_payload)
+    assert response.status_code == 200
+
+# JOINING A CHANNEL USER IS ALREADY IN
+def test_channel_join_already_member_http(url):
+    '''
+    Test channel_join fails when user is already a member
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    channel_payload = {
+        'token' : account['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    join_payload = {
+        'token' : account['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    response = requests.post(f"{url}/channel/join", json=join_payload)
+    assert response.status_code == 400
+
+########################### CHANNEL_ADDOWNER TESTS #############################
+
+# BASE CASE
+def test_channel_addowner_valid_http(url):
+    '''
+    Base test for channel_addowner
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    join_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    requests.post(f"{url}/channel/join", json=join_payload)
+
+    addowner_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id'],
+        'u_id' : account2['u_id']
+    }
+
+    requests.post(f"{url}/channel/addowner", json=addowner_payload)
+
+    user1_details = {
+        'u_id': account1['u_id'],
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+    }
+    user2_details = {
+        'u_id': account2['u_id'],
+        'name_first': 'Goat',
+        'name_last': 'James',
+    }
+    passed = {
+        'name': 'test channel',
+        'owner_members': [user1_details, user2_details],
+        'all_members': [user1_details, user2_details]
+    }
+
+    details_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    r = requests.get(f"{url}/channel/details", params=details_payload)
+    details = r.json()
+
+    assert details == passed
+
+
+# INVALID CHANNEL
+def test_channel_addowner_invalid_channel_http(url):
+    '''
+    Test channel_addowner fails when invalid channel
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    channel_id = 123
+
+    addowner_payload = {
+        'token' : account['token'],
+        'channel_id' : channel_id,
+        'u_id' : account['u_id']
+    }
+
+    response = requests.post(f"{url}/channel/addowner", json=addowner_payload)
+    assert response.status_code == 400
+
+# WHEN USER IS ALREADY AN OWNER OF THE CHANNEL
+def test_channel_addowner_already_owner_http(url):
+    '''
+    Test channel_addowner fails when user is already an owner
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    channel_payload = {
+        'token' : account['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    addowner_payload = {
+        'token' : account['token'],
+        'channel_id' : channel['channel_id'],
+        'u_id' : account['u_id']
+    }
+
+    response = requests.post(f"{url}/channel/addowner", json=addowner_payload)
+    assert response.status_code == 400
+
+
+# WHEN AUTHORISED USER IS NOT AN OWNER AND ADDOWNERS THEMSELF
+def test_channel_addowner_auth_self_http(url):
+    '''
+    Test channel_addowner fails when adding oneself
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    join_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id']
+    }    
+
+    requests.post(f"{url}/channel/join", json=join_payload)
+
+    addowner_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id'],
+        'u_id' : account2['u_id']
+    }
+
+    response = requests.post(f"{url}/channel/addowner", json=addowner_payload)
+    assert response.status_code == 400
+
+# WHEN AUTHORISED USER IS NOT AN OWNER AND ADDOWNERS ANOTHER USER
+def test_channel_addowner_auth_not_owner_http(url):
+    '''
+    Test channel_addowner fails when the a non-owner tries to addowner
+    '''
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    user3 = {
+    'email': 'anothervalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Howard',
+    'name_last': 'Dwight',
+    }
+
+    # Register user3
+    r = requests.post(f"{url}/auth/register", json=user3)
+    account3 = r.json()
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    join_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    requests.post(f"{url}/channel/join", json=join_payload)
+
+    join_payload = {
+        'token' : account3['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    requests.post(f"{url}/channel/join", json=join_payload)
+
+
+    addowner_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id'],
+        'u_id' : account3['u_id']
+    }
+
+    response = requests.post(f"{url}/channel/addowner", json=addowner_payload)
+    assert response.status_code == 400
+
 ### CHANNELS FUNCTIONS
 
 ############################ CHANNELS_CREATE TESTS #############################
@@ -1082,8 +1504,8 @@ def test_channels_invalid_token_http(url):
     response = requests.post(f"{url}/channels/create", json=channel_payload)
     assert response.status_code == 400
 
-    respone = requests.get(f"{url}/channels/list", params={'token' : account['token']})
+    response = requests.get(f"{url}/channels/list", params={'token' : account['token']})
     assert response.status_code == 400
 
-    respone = requests.get(f"{url}/channels/listall", params={'token' : account['token']})
+    response = requests.get(f"{url}/channels/listall", params={'token' : account['token']})
     assert response.status_code == 400
