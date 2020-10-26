@@ -233,10 +233,10 @@ def test_channel_invite_valid_http(url):
     '''
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user1
@@ -248,7 +248,7 @@ def test_channel_invite_valid_http(url):
     account2 = r.json()
 
     # create channel
-    channel_payload ={
+    channel_payload = {
         'token' : account1['token'],
         'name' : 'Channel 1',
         'is_public' : True
@@ -327,7 +327,7 @@ def test_channel_invite_self_invite_http(url):
     account = r.json()
 
     # create channel
-    channel_payload ={
+    channel_payload = {
         'token' : account['token'],
         'name' : 'Channel 1',
         'is_public' : True
@@ -356,10 +356,10 @@ def test_channel_invite_non_member_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -367,10 +367,10 @@ def test_channel_invite_non_member_http(url):
     account2 = r.json()
 
     user3 = {
-    'email': 'anothervalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Howard',
-    'name_last': 'Dwight',
+        'email': 'anothervalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Howard',
+        'name_last': 'Dwight',
     }
 
     # Register user3
@@ -407,10 +407,10 @@ def test_channel_invite_already_member_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -546,10 +546,10 @@ def test_channel_messages_no_access_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -604,10 +604,10 @@ def test_channel_leave_valid_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -697,10 +697,10 @@ def test_channel_leave_not_member_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -739,10 +739,10 @@ def test_channel_details_valid_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -841,10 +841,10 @@ def test_channel_details_not_member_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
