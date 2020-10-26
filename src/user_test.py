@@ -1,4 +1,6 @@
-""" This module contains test functions for user.py """
+""" 
+Tests to test the profile, setname, setemail and sethandle functions in user.py
+"""
 import pytest
 import auth
 import user
