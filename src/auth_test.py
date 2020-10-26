@@ -67,9 +67,9 @@ def test_auth_register_valid():
     clear()
     account = auth.auth_register(*user)
     token = account['token']
+    assert auth.auth_logout(token) == {'is_success': True}
     email, password, *_ = user
     auth.auth_login(email, password)
-    assert auth.auth_logout(token) == {'is_success': True}
 
 # INVALID EMAIL
 def test_auth_register_invalid_email():
@@ -115,10 +115,17 @@ def test_auth_register_invalid_name():
     clear()
     email, password, *_ = user
 
+    # Empty name parameters
     # No names entered
     with pytest.raises(InputError):
         auth.auth_register(email, password, '', '')
-    print(data)
+    # Only first name entered
+    with pytest.raises(InputError):
+        auth.auth_register(email, password, 'Hayden', '')
+    # Only last name entered
+    with pytest.raises(InputError):
+        auth.auth_register(email, password, '', 'Everest')
+
     # First name > 50 characters
     with pytest.raises(InputError):
         auth.auth_register(email, password,
@@ -126,7 +133,7 @@ def test_auth_register_invalid_name():
                             aaaaaaaaaaaaaaaaaa\
                             aaaaaaaaaaaaaaaaaa\
                             aaaaaaaaaaaaaayden', 'Everest')
-    print(data)
+
     # Last name > 50 characters
     with pytest.raises(InputError):
         auth.auth_register(email, password, 'Hayden',
@@ -148,9 +155,6 @@ def test_auth_logout_success():
     clear()
     # Register user
     token = auth.auth_register(*user)['token']
-
-    # Login
-    auth.auth_login('validemail@gmail.com', '123abc!@#')
 
     logout_success = {'is_success' : True}
     # Logout after logging in

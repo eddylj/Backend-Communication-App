@@ -42,8 +42,7 @@ def echo():
 # AUTH FUNCTIONS
 @APP.route("/auth/register", methods=['POST'])
 def register():
-    data = request.get_json('data')
-
+    data = request.get_json()
     return dumps(
         auth.auth_register(data['email'], data['password'], data['name_first'], data['name_last'])
     )

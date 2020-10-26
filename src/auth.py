@@ -32,7 +32,7 @@ def auth_login(email, password):
     for (index, user) in enumerate(data['users']):
         if user['email'] == email and validate_pw(user, password):
             payload = {'u_id': index, 'session': time()}
-            token = jwt.encode(payload, SECRET, algorithm='HS256')
+            token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
             if get_active(token) is None:
                 data['tokens'].append(token)
             return {
@@ -70,11 +70,11 @@ def auth_logout(token):
         {is_success (bool)}:
             Whether or not token does correspond to an active token.
     """
-    for (index, active_token) in enumerate(data['tokens']):
-        if token == active_token:
-            data['tokens'].pop(index)
-            return {'is_success': True}
-    return {'is_success': False}
+    try:
+        data['tokens'].remove(token)
+        return {'is_success': True}
+    except ValueError:
+        return {'is_success': False}
 
 def auth_register(email, password, name_first, name_last):
     """
@@ -150,7 +150,7 @@ def auth_register(email, password, name_first, name_last):
     data['users'].append(new_user)
 
     payload = {'u_id': u_id, 'session': time()}
-    token = jwt.encode(payload, SECRET, algorithm='HS256')
+    token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
     data['tokens'].append(token)
 
     return {

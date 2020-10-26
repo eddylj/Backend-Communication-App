@@ -6,7 +6,7 @@ import auth
 import channel
 import channels
 from error import InputError, AccessError
-from other import clear
+from other import clear, SECRET
 
 user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -23,10 +23,13 @@ def test_channel_invite_valid():
     clear()
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
+    print(SECRET)
+    print(token1)
     u_id1 = account1['u_id']
 
     account2 = auth.auth_register(*user2)
     token2 = account2['token']
+    print(token2)
     u_id2 = account2['u_id']
 
     channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
