@@ -224,9 +224,612 @@ def test_auth_logout_fail_http(url):
 
 ### CHANNEL FUNCTIONS
 
+############################# CHANNEL_INVITE TESTS #############################
+
+# BASE CASE
+def test_channel_invite_valid_http(url):
+    '''
+    Base test for channel_invite
+    '''
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    # create channel
+    channel_payload ={
+        'token' : account1['token'],
+        'name' : 'Channel 1',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = r.json()
 
 
+    user1_details = {
+        'u_id': account1['u_id'],
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+    }
 
+    user2_details = {
+        'u_id': account2['u_id'],
+        'name_first': 'Goat',
+        'name_last': 'James',
+    }
+
+    passed = {
+        'name': 'Channel 1',
+        'owner_members': [user1_details],
+        'all_members': [user1_details, user2_details]
+    }
+
+    join_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel1['channel_id']
+    }
+
+    requests.post(f"{url}/channel/join", json=join_payload)
+
+
+    details_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel1['channel_id']
+    }
+
+    r = requests.get(f"{url}/channel/details", params=details_payload)
+    details = r.json()
+
+    assert details == passed
+
+
+# # INVALID CHANNEL_ID
+def test_channel_invite_channel_invalid_http(url):
+    '''
+    Test channel_invite fails if the channel is invalid
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    channel_id = 1231512
+
+    payload = {
+        'token' : account['token'],
+        'channel_id' : channel_id,
+        'u_id' : account['u_id']
+    }
+
+    response = requests.post(f"{url}/channel/invite", json=payload)
+    assert response.status_code == 400
+
+# INVITING YOURSELF
+def test_channel_invite_self_invite_http(url):
+    '''
+    Test channel_invite fails if you invite yourself
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    # create channel
+    channel_payload ={
+        'token' : account['token'],
+        'name' : 'Channel 1',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = r.json()
+
+    # invite yourself
+    invite_payload = {
+        'token' : account['token'],
+        'channel_id' : channel1['channel_id'],
+        'u_id' : account['u_id']
+    }
+
+    response = requests.post(f"{url}/channel/invite", json=invite_payload)
+    assert response.status_code == 400
+
+# INVITING WHILE NOT BEING A MEMBER
+def test_channel_invite_non_member_http(url):
+    '''
+    Test channel_invite fails when you aren't a member of the channel being invite to
+    '''
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    user3 = {
+    'email': 'anothervalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Howard',
+    'name_last': 'Dwight',
+    }
+
+    # Register user3
+    r = requests.post(f"{url}/auth/register", json=user3)
+    account3 = r.json()
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : False
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    # invite yourself
+    invite_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id'],
+        'u_id' : account3['u_id']
+    }
+
+    response = requests.post(f"{url}/channel/invite", json=invite_payload)
+    assert response.status_code == 400
+
+# INVITING A PERSON THAT'S ALREADY A MEMBER
+def test_channel_invite_already_member_http(url):
+    '''
+    Test channel_invite fails when you invite an existing member
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    join_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    # invite yourself
+    invite_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id'],
+        'u_id' : account2['u_id']
+    }
+
+    response = requests.post(f"{url}/channel/invite", json=invite_payload)
+    assert response.status_code == 200
+
+
+############################ CHANNEL_MESSAGES TESTS ############################
+
+# BASE CASE - Valid channel with no messages
+def test_channel_messages_valid_http(url):
+    '''
+    Base test for channel_messages
+    '''
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    channel_payload = {
+        'token' : account['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+
+    passed = {'messages': [], 'start': 0, 'end': -1}
+
+    messages_payload = {
+        'token' : account['token'],
+        'channel_id' : channel['channel_id'],
+        'start' : 0
+    }
+
+    r = requests.get(f"{url}/channel/messages", params=messages_payload)
+    messages = r.json()
+
+    assert messages == passed
+
+# INVALID CHANNEL
+def test_channel_messages_invalid_channel_http(url):
+    '''
+    Test channel_messages fails when using an invalid channel
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    channel_id = 123
+
+    messages_payload = {
+        'token' : account['token'],
+        'channel_id' : channel_id,
+        'start' : 0
+    }
+
+    response = requests.get(f"{url}/channel/messages", params=messages_payload)
+    assert response.status_code == 400
+
+# INVALID START PARAMETER
+def test_channel_messages_invalid_start_http(url):
+    '''
+    Test channel_messages fails when having an invalid start
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    channel_payload = {
+        'token' : account['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+
+    messages_payload = {
+        'token' : account['token'],
+        'channel_id' : channel['channel_id'],
+        'start' : 50
+    }
+
+    response = requests.get(f"{url}/channel/messages", params=messages_payload)
+    assert response.status_code == 400
+
+    messages_payload = {
+        'token' : account['token'],
+        'channel_id' : channel['channel_id'],
+        'start' : -1
+    }
+
+    response = requests.get(f"{url}/channel/messages", params=messages_payload)
+    assert response.status_code == 400
+
+
+# INACCESSBILE CHANNEL
+def test_channel_messages_no_access_http(url):
+    '''
+    Test channel_messages fails when channel is not public
+    '''
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : False
+    }
+    # Create channel
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    passed = {'messages': [], 'start': 0, 'end': -1}
+
+    # pass
+    messages_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id'],
+        'start' : 0
+    }
+
+    r = requests.get(f"{url}/channel/messages", params=messages_payload)
+    messages = r.json()
+
+    assert messages == passed
+
+    # fail
+    messages_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id'],
+        'start' : 0
+    }
+
+    response = requests.get(f"{url}/channel/messages", params=messages_payload)
+    assert response.status_code == 400
+
+
+############################# CHANNEL_LEAVE TESTS ##############################
+
+# BASE CASE
+def test_channel_leave_valid_http(url):
+    '''
+    Base test for channel_leave
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+    # Create channel
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    user2_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    requests.post(f"{url}/channel/join", json=user2_payload)
+    requests.post(f"{url}/channel/leave", json=user2_payload)
+
+    user1_details = {
+        'u_id': account1['u_id'],
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+    }
+    passed = {
+        'name': 'test channel',
+        'owner_members': [user1_details],
+        'all_members': [user1_details]
+    }
+
+    details_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    r = requests.get(f"{url}/channel/details", params=details_payload)
+    details = r.json()
+
+    assert details == passed
+
+# INVALID CHANNEL
+def test_channel_leave_invalid_channel_http(url):
+    '''
+    Test channel_leave fails when invalid channel
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+
+    channel_payload = {
+        'token' : account['token'],
+        'name' : 'test channel',
+        'is_public' : True
+    }
+
+    # Create channel
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    leave_payload = {
+        'token' : account['token'],
+        'channel_id' : channel['channel_id'] + 1
+    }
+
+    response = requests.post(f"{url}/channel/leave", json=leave_payload)
+    assert response.status_code == 400
+
+    # new_channel = channels.channels_create(token, 'test channel', True)
+    # channel_id = new_channel['channel_id'] + 1 # Does this work?
+    # with pytest.raises(InputError):
+    #     channel.channel_leave(token, channel_id)
+
+# TRYING TO LEAVE A CHANNEL WHICH USER IS NOT IN
+def test_channel_leave_not_member_http(url):
+    '''
+    Test channel_leave fails when a user is not in it already
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'test channel',
+        'is_public' : False
+    }
+
+    # Create channel
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+    leave_payload = {
+        'token' : account2['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    response = requests.post(f"{url}/channel/leave", json=leave_payload)
+    assert response.status_code == 400
+
+
+############################ CHANNEL_DETAILS TESTS #############################
+
+# BASE CASE
+def test_channel_details_valid_http(url):
+    '''
+    Base test for channel_details
+    '''
+
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    user2 = {
+    'email': 'alsovalidemail@gmail.com',
+    'password': '123abc!@#',
+    'name_first': 'Goat',
+    'name_last': 'James',
+    }
+
+    # Register user2
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account2 = r.json()
+
+    channel_payload = {
+        'token' : account1['token'],
+        'name' : 'Test Channel',
+        'is_public' : True
+    }
+
+    # Create channel
+    r = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = r.json()
+
+
+    user1_details = {
+        'u_id': account1['u_id'],
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+    }
+    user2_details = {
+        'u_id': account2['u_id'],
+        'name_first': 'Goat',
+        'name_last': 'James',
+    }
+
+    passed = {
+        'name': 'Test Channel',
+        'owner_members': [user1_details],
+        'all_members': [user1_details],
+    }
+
+    details_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    r = requests.get(f"{url}/channel/details", params=details_payload)
+    details = r.json()
+
+    assert details == passed
+
+    # invite user2
+    invite_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id'],
+        'u_id' : account2['u_id']
+    }
+
+    requests.post(f"{url}/channel/invite", json=invite_payload)
+
+    passed = {
+        'name': 'Test Channel',
+        'owner_members': [user1_details],
+        'all_members': [user1_details, user2_details],
+    }
+
+    details_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id']
+    }
+
+    r = requests.get(f"{url}/channel/details", params=details_payload)
+    details = r.json()
+
+    assert details == passed
+
+# INVALID CHANNEL
+def test_channel_details_invalid_channel_http(url):
+    '''
+    Test channel_details fails when invalid channel
+    '''
+    # Register user1
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+
+    channel_id = 1231
+
+    details_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel_id
+    }
+
+    response = requests.get(f"{url}/channel/details", params=details_payload)
+    assert response.status_code ==400
 
 ### CHANNELS FUNCTIONS
 
@@ -290,6 +893,8 @@ def test_channels_create_fail_http(url):
 
     response = requests.post(f"{url}/channels/create", json=channel_payload)
     assert response.status_code == 400
+
+
 
 ############################ CHANNELS_LISTALL TESTS ############################
 
