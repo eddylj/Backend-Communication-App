@@ -7,7 +7,24 @@ from other import get_active, is_valid
 
 def user_profile(token, u_id):
     '''
-    Return information on the user (u_id, email, first name, last name, handle)
+    For a valid user, returns information about their user_id, email,
+    first name, last name, and handle.
+
+    Parameters:
+        token(str): User's authorisation hash.
+        u_id(int): User's unique identification number
+    Returns:
+        {user(dict)}:
+            A dictionary that contains all the user details including their
+            user id, email, first name and last name.
+    Raises:
+        InputError:
+            When:
+                - user id entered is invalid
+        AccessError:
+            When:
+                - the token is invalid and is inactive
+
     '''
 
     # Why would you change it to InputError? Token's going to get changed but error handling won't.
@@ -33,7 +50,23 @@ def user_profile(token, u_id):
 
 def user_profile_setname(token, name_first, name_last):
     '''
-    Change first or last name of the user if valid
+    Update the authorised user's first and last name.
+
+    Parameters:
+        token(str): User's authorisation hash.
+        name_first(str): User's first name.
+        name_last(str): User's last name.
+    Returns:
+        {}: empty dictionary if the user's name was successfully changed in their profile
+    Raises:
+        InputError:
+            When:
+                - the first name exceeds the length of 50 letters
+                - the last name exceeds the length of 50 letters
+                - if the changed name is exactly the same as the previous name
+        AccessError:
+            When:
+                - the token is invalid and is inactive
     '''
 
     # InputError as this only confirms that the token exists, not necessarily active or not
@@ -72,7 +105,21 @@ def user_profile_setname(token, name_first, name_last):
 
 def user_profile_setemail(token, email):
     '''
-    Change email of the user
+    Update the authorised user's email address.
+
+    Parameters:
+        token(str): User's authorisation hash
+        email(str): User's email address
+    Returns:
+        {}: empty dictionary if the user's email was successfully changed in their profile
+    Raises:
+        InputError:
+            When:
+                - the email is invalid
+                - the email is already used by another account
+        AccessError:
+            When:
+                - the token is invalid and inactive
     '''
 
     caller_id = get_active(token)
@@ -98,7 +145,23 @@ def user_profile_setemail(token, email):
 
 def user_profile_sethandle(token, handle_str):
     '''
-    Change handle of the user
+    Update the authorised user's handle (i.e. display name).
+
+    Parameters:
+        token(str): User's authorisation hash
+        handle_str(str): User's name displayed on flockr
+    Returns:
+        {}: empty dictionary if the user's handle was successfully changed in their profile
+    Raises:
+        InputError:
+            When:
+                - the handle exceeds the length of 20 letters or less than 3 letters
+                - the handle has upper case letters
+                - if the handle is already used by another account/user
+        AccessError:
+            When:
+                - the token is invalid and inactive
+
     '''
 
     caller_id = get_active(token)
@@ -124,6 +187,11 @@ def user_profile_sethandle(token, handle_str):
 
 def is_user(u_id):
     '''
-    Check for valid user ID
+    Checks for a valid user ID
+
+    Parameters:
+        u_id(int): User's unique identification number
+    Returns:
+        (bool): whether or not the user id is valid or not
     '''
     return -1 < u_id < len(data['users'])
