@@ -1142,27 +1142,6 @@ def test_channel_removeowner_invalid_channel_http(url):
     response = requests.post(f"{url}/channel/removeowner", json=removeowner_payload)
     assert response.status_code == 400
 
-# INVALID CHANNEL
-def test_channel_removeowner_invalid_channel_http(url):
-    """
-    Test channel_removeowner fails when invalid channel
-    """
-
-    # Register user1
-    req = requests.post(f"{url}/auth/register", json=user)
-    account = req.json()
-
-    channel_id = 123
-
-    removeowner_payload = {
-        'token' : account['token'],
-        'channel_id' : channel_id,
-        'u_id' : account['u_id']
-    }
-
-    response = requests.post(f"{url}/channel/removeowner", json=removeowner_payload)
-    assert response.status_code == 400
-
 # WHEN AUTHORISED USER IS NOT AN OWNER REMOVE ANOTHER OWNER
 def test_channel_removeowner_not_owner_http(url):
     """
