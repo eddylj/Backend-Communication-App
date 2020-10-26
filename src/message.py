@@ -1,16 +1,34 @@
-'''
+"""
 Functions to send, remove and edit messages
-'''
+"""
 import time
 from data import data
 from error import InputError, AccessError
 from other import get_active
 
 def message_send(token, channel_id, message):
-    '''
-    Send a message and create a new entry in the messages database and also inside the channels
-    messages database
-    '''
+    """
+    Send a message and create a new entry in the messages database and also in
+    the channel's messages database.
+
+    Parameters:
+        token (str)         : User's authorisation hash.
+        channel_id (int)    : Destination channel.
+        message (str)       : Message to be sent.
+
+    Returns:
+        {'message_id'(int)}:
+            A dictionary containing the unique identifier of the newly sent
+            message.
+
+    Raises:
+        AccessError:
+            When:
+                - the caller is not a member of the channel.
+                - token is invalid.
+        InputError:
+            - When message isn't between 1 and 1000 characters in length.
+    """
     # Keeping the timestamp as close to the start of function as possible.
     timestamp = int(time.time())
 
@@ -46,9 +64,29 @@ def message_send(token, channel_id, message):
     }
 
 def message_remove(token, message_id):
-    '''
-    Remove a message inside the messages database and channels database
-    '''
+    """
+    Removes a message from the channel's database that is storing it. Replaces
+    the data stored in the messages data with an empty dictionary to preserve
+    the generation of unique message_ids.
+
+    Parameters:
+        token (str)         : User's authorisation hash.
+        message_id (int)    : Target message's identifier.
+
+    Returns:
+        {}: An empty dictionary if message_remove succeeds.
+
+    Raises:
+        AccessError:
+            - When token is invalid.
+            - When none of these conditions are met:
+                - Message with message_id was sent by the caller making this
+                request.
+                - The caller isn't an owner of the channel where the message
+                was sent.
+        InputError:
+            - When the message doesn't exist (never sent/already deleted).
+    """
     # Check if token is valid
     u_id = get_active(token)
     if u_id is None:
@@ -84,11 +122,33 @@ def message_remove(token, message_id):
     return {} # pragma: no cover
 
 def message_edit(token, message_id, message):
-    '''
-    Edit a message
-    This changes the message inside the data['messages'] database and also
-    inside the data['channels'][channel_id]['messages'] database
-    '''
+    """
+    Edits the contents of a message stored in channel data and updates the
+    timestamp. If an empty string is passed as the message string, the message
+    is deleted instead.
+
+    Parameters:
+        token (str)         : User's authorisation hash.
+        message_id (int)    : Target message's identifier.
+        message (str)       : New message to be edited in.
+
+    Returns:
+        {}: An empty dictionary if message_edit succeeds.
+
+    Raises:
+        AccessError:
+            - When token is invalid.
+            - When none of these conditions are met:
+                - Message with message_id was sent by the caller making this
+                request.
+                - The caller isn't an owner of the channel where the message
+                was sent.
+        InputError:
+            When:
+                - The message to be edited in is longer than 1000 characters.
+                - The message is exactly the same as the one stored in data.
+                - Message_id doesn't correspond to an existing message.
+    """
     # Keeping the timestamp as close to the start of function as possible.
     timestamp = int(time.time())
 
@@ -134,10 +194,10 @@ def message_edit(token, message_id, message):
     return {} # pragma: no cover
 
 def is_message(message_id):
-    '''
+    """
     Checks if message_id corresponds to a sent message. Also checks if the
     message has already been deleted.
-    '''
+    """
     return (
         -1 < message_id < len(data['messages']) and
         data['messages'][message_id] != {}

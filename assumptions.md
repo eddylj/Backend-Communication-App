@@ -36,16 +36,11 @@
 ### message_send()
 - The Flockr owner cannot send messages into a channel without being in it.
 - Message cannot be empty. Raise InputError in that case.
-- Token of the user has to be active
 ### message_remove()
-- only the authorised user can remove messages
 - Users can't remove message from another channel. 
 - Flockr owner cannot remove messages without being in the channel.
 - Users can't remove a message after leaving the channel where the message was sent. Raise AccessError if attempted.
-- When you remove a message, it keeps the message dictionary, but removes contents inside that dictionary
-- Token of the user has to be active
 ### message_edit()
-- Token of the user has to be active
 - Cannot edit message to be longer than 1000 characters
 - Flockr owner cannot edit messages without being in the channel.
 - Edit updates the timestamp of the message
