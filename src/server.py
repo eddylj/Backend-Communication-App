@@ -1,3 +1,6 @@
+"""
+Creating routes for the flask server
+"""
 import sys
 from json import dumps
 from flask import Flask, request
@@ -33,7 +36,7 @@ APP.register_error_handler(Exception, defaultHandler)
 def echo():
     data = request.args.get('data')
     if data == 'echo':
-   	    raise InputError(description='Cannot echo "echo"')
+        raise InputError(description='Cannot echo "echo"')
     return dumps({
         'data': data
     })
@@ -104,6 +107,9 @@ def leave():
 
 @APP.route("/channel/join", methods=['POST'])
 def join():
+    '''
+    Route to flask server to 
+    '''
     data = request.get_json('data')
 
     return dumps(
@@ -112,6 +118,9 @@ def join():
 
 @APP.route("/channel/addowner", methods=['POST'])
 def addowner():
+    '''
+    Route to flask server to add owner to a channel
+    '''
     data = request.get_json('data')
 
     return dumps(
