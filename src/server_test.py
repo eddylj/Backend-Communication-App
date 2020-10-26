@@ -829,7 +829,7 @@ def test_channel_details_invalid_channel_http(url):
     }
 
     response = requests.get(f"{url}/channel/details", params=details_payload)
-    assert response.status_code ==400
+    assert response.status_code == 400
 
 # USER NOT A MEMBER
 def test_channel_details_not_member_http(url):
@@ -881,10 +881,10 @@ def test_channel_join_valid_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -964,10 +964,10 @@ def test_channel_join_private_channel_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -1032,10 +1032,10 @@ def test_channel_addowner_valid_http(url):
     account1 = r.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
