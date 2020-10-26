@@ -113,7 +113,7 @@ def join():
     data = request.get_json('data')
 
     return dumps(
-        channel.channel_leave(data['token'], data['channel_id'])
+        channel.channel_join(data['token'], data['channel_id'])
     )
 
 @APP.route("/channel/addowner", methods=['POST'])
