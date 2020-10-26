@@ -944,10 +944,10 @@ def test_channel_addowner_auth_self_http(url):
     account1 = req.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -966,7 +966,7 @@ def test_channel_addowner_auth_self_http(url):
     join_payload = {
         'token' : account2['token'],
         'channel_id' : channel['channel_id']
-    }    
+    }
 
     requests.post(f"{url}/channel/join", json=join_payload)
 
@@ -989,10 +989,10 @@ def test_channel_addowner_auth_not_owner_http(url):
     account1 = req.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
@@ -1000,10 +1000,10 @@ def test_channel_addowner_auth_not_owner_http(url):
     account2 = req.json()
 
     user3 = {
-    'email': 'anothervalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Howard',
-    'name_last': 'Dwight',
+        'email': 'anothervalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Howard',
+        'name_last': 'Dwight',
     }
 
     # Register user3
@@ -1050,21 +1050,21 @@ def test_channel_removeowner_valid_http(url):
     '''
     Base test for channel_removeowner
     '''
-    
+
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -1072,8 +1072,8 @@ def test_channel_removeowner_valid_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account2['token'],
@@ -1119,8 +1119,8 @@ def test_channel_removeowner_valid_http(url):
         'channel_id' : channel['channel_id']
     }
 
-    r = requests.get(f"{url}/channel/details", params=details_payload)
-    details = r.json()
+    req = requests.get(f"{url}/channel/details", params=details_payload)
+    details = req.json()
 
     assert details == passed
 
@@ -1130,8 +1130,8 @@ def test_channel_removeowner_invalid_channel_http(url):
     Test channel_removeowner fails when invalid channel
     '''
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_id = 123
 
@@ -1151,8 +1151,8 @@ def test_channel_removeowner_invalid_channel_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_id = 123
 
@@ -1170,32 +1170,32 @@ def test_channel_removeowner_not_owner_http(url):
     '''
     Test channel_removeowner fails when not an owner
     '''
-    
+
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     user3 = {
-    'email': 'alsoalsovalidemail@gmail.com',
-    'password': '23Goat!@#',
-    'name_first': 'Calf',
-    'name_last': 'James',
+        'email': 'alsoalsovalidemail@gmail.com',
+        'password': '23Goat!@#',
+        'name_first': 'Calf',
+        'name_last': 'James',
     }
 
     # Register user3
-    r = requests.post(f"{url}/auth/register", json=user3)
-    account3 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user3)
+    account3 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -1203,8 +1203,8 @@ def test_channel_removeowner_not_owner_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account2['token'],
@@ -1212,14 +1212,14 @@ def test_channel_removeowner_not_owner_http(url):
     }
 
     requests.post(f"{url}/channel/join", json=join_payload)
-    
+
     addowner_payload = {
         'token' : account1['token'],
         'channel_id' : channel['channel_id'],
         'u_id' : account2['u_id']
     }
     requests.post(f"{url}/channel/addowner", json=addowner_payload)
-    
+
     join_payload = {
         'token' : account3['token'],
         'channel_id' : channel['channel_id']
@@ -1242,19 +1242,19 @@ def test_channel_removeowner_auth_self_http(url):
     Test channel_removeowner fails when removing themselves as owner
     '''
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -1262,8 +1262,8 @@ def test_channel_removeowner_auth_self_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account2['token'],
@@ -1271,7 +1271,7 @@ def test_channel_removeowner_auth_self_http(url):
     }
 
     requests.post(f"{url}/channel/join", json=join_payload)
-    
+
     addowner_payload = {
         'token' : account1['token'],
         'channel_id' : channel['channel_id'],
@@ -1295,19 +1295,19 @@ def test_channel_removeowner_last_owner_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
-    'email': 'alsovalidemail@gmail.com',
-    'password': '123abc!@#',
-    'name_first': 'Goat',
-    'name_last': 'James',
+        'email': 'alsovalidemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Goat',
+        'name_last': 'James',
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account2['token'],
@@ -1315,8 +1315,8 @@ def test_channel_removeowner_last_owner_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account1['token'],
@@ -1339,8 +1339,8 @@ def test_channel_removeowner_last_owner_http(url):
         'channel_id' : channel['channel_id']
     }
 
-    r = requests.get(f"{url}/channel/details", params=details_payload)
-    details = r.json()
+    req = requests.get(f"{url}/channel/details", params=details_payload)
+    details = req.json()
 
     assert len(details['owner_members']) == 0
 
