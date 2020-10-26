@@ -191,10 +191,6 @@ def test_auth_register_invalid_name_http(url):
     response = requests.post(f"{url}/auth/register", json=bad_name)
     assert response.status_code == 400
 
-
-# Will need to check for handle generation, which requires user_profile (not in
-# iteration 1)
-
 ############################## AUTH_LOGOUT TESTS ###############################
 
 # BASE CASE
