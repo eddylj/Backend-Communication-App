@@ -1,9 +1,6 @@
 """
 Tests for all functions in user.py
 """
-import pytest
-import server
-import json
 import requests
 from echo_http_test import url
 

@@ -1,6 +1,6 @@
-'''
+"""
 Login, logout and register functions
-'''
+"""
 from time import time
 import hashlib
 import jwt
