@@ -17,11 +17,13 @@ def test_auth_login_user_email():
     Base test for auth_login
     """
     clear()
-    token = auth.auth_register(*user)['token']
-    auth.auth_logout(token)
+    token1 = auth.auth_register(*user)['token']
+    auth.auth_logout(token1)
 
     email, password, *_ = user
-    auth.auth_login(email, password)
+    token2 = auth.auth_login(email, password)['token']
+
+    assert token1 != token2
 
 # INVALID EMAIL
 def test_auth_login_invalid_email():
@@ -56,6 +58,22 @@ def test_auth_login_wrong_password():
     wrong_password = ('validemail@gmail.com', '12345abc!@#')
     with pytest.raises(InputError):
         auth.auth_login(*wrong_password)
+
+def test_auth_login_repeated():
+    """
+    Test case when a user tries to log in when already logged in.
+    """
+    clear()
+    user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
+    auth.auth_register(*user2)
+
+    token1 = auth.auth_register(*user)['token']
+
+    email, password, *_ = user
+    token2 = auth.auth_login(email, password)['token']
+
+    assert token1 == token2
+
 
 ############################## AUTH_REGISTER TESTS #############################
 

@@ -2,7 +2,7 @@
 
 ## Auth
 ### auth_login()
-- A user can login while already being logged in. Auth_login just returns the current active token in that case.
+- A user can "login" while already being logged in. Auth_login just returns the current active token in that case.
 ### auth_logout()
 - Auth_logout returns {'is_success': False} if invalid token is passed. Conflicting statements in project specs:
     - 6.2: "If a valid token is given, and the user is successfully logged out, it returns true, otherwise false."
