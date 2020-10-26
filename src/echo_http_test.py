@@ -13,7 +13,7 @@ import requests
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
 @pytest.fixture
-def createurl():
+def url():
     '''
     Fixture for creating a server
     '''
