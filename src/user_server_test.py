@@ -1,35 +1,8 @@
 """
 This module contains tests for user routes in server.py.
 """
-import re
-from subprocess import Popen, PIPE
-from time import sleep
-import signal
-import pytest
 import requests
-
-@pytest.fixture
-def url():
-    '''
-    Fixture for creating a server
-    '''
-    url_re = re.compile(r' \* Running on ([^ ]*)')
-    server = Popen(["python3", "server.py"], stderr=PIPE, stdout=PIPE)
-    line = server.stderr.readline()
-    local_url = url_re.match(line.decode())
-    if local_url:
-        yield local_url.group(1)
-        # Terminate the server
-        server.send_signal(signal.SIGINT)
-        waited = 0
-        while server.poll() is None and waited < 5:
-            sleep(0.1)
-            waited += 0.1
-        if server.poll() is None:
-            server.kill()
-    else:
-        server.kill()
-        raise Exception("Couldn't get URL from local server")
+from echo_http_test import url
 
 user1 = {
     'email': 'validemail@gmail.com',
