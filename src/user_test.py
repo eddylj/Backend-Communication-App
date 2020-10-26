@@ -266,9 +266,9 @@ def test_user_sethandle_repeated():
 
 # Checking invalid token
 def test_user_invalid_token():
-    '''
-    Test for if token is invalid throughout all user functions
-    '''
+    """
+    Test for invalid tokens throughout all user functions
+    """
     clear()
 
     # Register a user

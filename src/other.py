@@ -1,6 +1,6 @@
-'''
+"""
 Different Functions used throughout the program
-'''
+"""
 import re
 import time
 import hashlib
@@ -11,9 +11,9 @@ from error import InputError, AccessError
 SECRET = hashlib.sha256(str(time.time()).encode()).hexdigest()[:11]
 
 def clear():
-    '''
+    """
     Function to clear the data
-    '''
+    """
     data['users'].clear()
     data['channels'].clear()
     data['tokens'].clear()
@@ -52,36 +52,43 @@ def is_valid(email):
     return re.search(regex, email)
 
 def users_all(token):
-    '''
+    """
     Function for returning all the information of the users
-    '''
+    """
+    if get_active(token) is None:
+        raise AccessError
+
     users = []
     for info in data['users']:
         users.append(info)
-    
+
     for user in users:
         del user['password']
-    return {
-        'users': users
-    }
+        del user['permission_id']
+
+    return {'users': users}
 
 def admin_userpermission_change(token, u_id, permission_id):
-    '''
+    """
     Function for changing admin user permission
-    '''
-    
-    # Invalid u_id
+    """
+
+    # If token is invalid
     owner_id = get_active(token)
     if owner_id is None:
+        raise AccessError
+
+    # Not an owner of flockr
+    if data['users'][owner_id]['permission_id'] == 2:
+        raise AccessError
+
+    # Invalid u_id
+    if not -1 < u_id < len(data['users']):
         raise InputError
 
     # Invalid permission_id
     if permission_id not in (1, 2):
         raise InputError
-
-    # Not an owner of flockr
-    if data['users'][owner_id]['permission_id'] == 2:
-        raise AccessError
 
     # Change permission_id of u_id
     data['users'][u_id]['permission_id'] = permission_id
@@ -89,12 +96,13 @@ def admin_userpermission_change(token, u_id, permission_id):
     return {}
 
 def search(token, query_str):
-    '''
-    Function to find the information about messages
-    '''
+    """
+    Function to find messages similar to query_str in all channels the caller is
+    in. Case insensitive.
+    """
     u_id = get_active(token)
     if u_id is None:
-        raise InputError
+        raise AccessError
 
     result = []
 
@@ -103,11 +111,8 @@ def search(token, query_str):
         if u_id in channel['members']:
             # Check through all messages
             for message in channel['messages']:
-                # Check if in the current message
-                if query_str in message['message']: 
-                    # append if query_str is in
+                # Check if current message matches query_str
+                if re.search(query_str, message['message'], re.IGNORECASE):
                     result.append(message)
 
-    return {
-        'messages': result
-    }
+    return {'messages': result}

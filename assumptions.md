@@ -63,6 +63,10 @@
     - Between 3-20 characters in length.
     - No uppercase characters.
 
+## Other
+### search()
+- Searches for messages which contain the query_str, not limited to an exact match.
+- Case insensitive.
 ## Server
 ### /message
 - Some black-box HTTP message tests which need to call /channel/messages for comparison cannot be done because of the latency affecting the accuracy of the timestamp.

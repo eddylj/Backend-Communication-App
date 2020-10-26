@@ -517,9 +517,9 @@ def test_message_edit_identical():
 
 # Checking invalid token
 def test_message_invalid_token():
-    '''
-    Test for if token is invalid throughout all message functions
-    '''
+    """
+    Test for invalid tokens throughout all message functions
+    """
     clear()
 
     # Register a user and create a channel with one message in it.

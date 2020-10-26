@@ -1,6 +1,6 @@
-'''
+"""
 Tests to test the create, listall and list functions in auth.py
-'''
+"""
 import pytest
 import auth
 import channel
@@ -14,9 +14,9 @@ user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 
 # Base Case
 def test_channels_create_success():
-    '''
+    """
     Base test for channels_create
-    '''
+    """
     clear()
 
     # Create a user
@@ -30,9 +30,9 @@ def test_channels_create_success():
 
 # Channel name > 20 characters
 def test_channels_create_fail():
-    '''
+    """
     Test channels_create fails with a name too long
-    '''
+    """
     clear()
 
     # Create a user
@@ -46,9 +46,9 @@ def test_channels_create_fail():
 ############################ CHANNELS_LISTALL TESTS ############################
 
 def test_channels_listall_base():
-    '''
+    """
     Base test for channels_listall
-    '''
+    """
     clear()
 
     # Create a user
@@ -85,9 +85,9 @@ def test_channels_listall_base():
 ############################# CHANNELS_LIST TESTS ##############################
 
 def test_channels_list_base():
-    '''
+    """
     Base test for channels_list
-    '''
+    """
     clear()
 
     # Create 2 users
@@ -129,9 +129,9 @@ def test_channels_list_base():
 
 # Calling channels functions with invalid tokens
 def test_channels_invalid_token():
-    '''
+    """
     Test channels_invalid fails with an invalid token
-    '''
+    """
     clear()
 
     # Create a user

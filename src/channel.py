@@ -50,8 +50,9 @@ def channel_invite(token, channel_id, u_id):
         raise AccessError
 
     data['channels'][channel_id]['members'].append(u_id)
-    return {
-    }
+    if data['users'][u_id]['permission_id'] == 1:
+        data['channels'][channel_id]['owners'].append(u_id)
+    return {}
 
 def channel_details(token, channel_id):
     """
@@ -240,6 +241,8 @@ def channel_join(token, channel_id):
         raise InputError
 
     data['channels'][channel_id]['members'].append(caller_id)
+    if data['users'][caller_id]['permission_id'] == 1:
+        data['channels'][channel_id]['owners'].append(caller_id)
     return {}
 
 def channel_addowner(token, channel_id, u_id):
