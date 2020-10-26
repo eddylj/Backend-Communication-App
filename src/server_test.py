@@ -21,8 +21,8 @@ def test_auth_login_user_email_http(url):
     '''
     Base test for auth_login
     '''
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     requests.post(f"{url}/auth/logout", json={'token': account['token']})
 
@@ -30,8 +30,8 @@ def test_auth_login_user_email_http(url):
         'email': user['email'],
         'password': user['password']
     }
-    r = requests.post(f"{url}/auth/login", json=login_payload)
-    login = r.json()
+    req = requests.post(f"{url}/auth/login", json=login_payload)
+    login = req.json()
 
     assert login['u_id'] == account['u_id']
 
@@ -82,8 +82,8 @@ def test_auth_register_valid_http(url):
     '''
     Base test for auth_register
     '''
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
     token = account['token']
 
     login_payload = {
@@ -180,11 +180,11 @@ def test_auth_logout_success_http(url):
     Base test for auth_logout
     '''
     # Register user
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
-    r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
-    status = r.json()
+    req = requests.post(f"{url}/auth/logout", json={'token': account['token']})
+    status = req.json()
     assert status['is_success'] is True
 
 # LOGGING OUT WITHOUT LOGGING IN
@@ -193,17 +193,17 @@ def test_auth_logout_fail_http(url):
     Test that logout fails when not logged in
     '''
     # Register a user
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     # Try logging out right after registering
-    r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
-    status = r.json()
+    req = requests.post(f"{url}/auth/logout", json={'token': account['token']})
+    status = req.json()
     assert status['is_success'] is True
 
     # Try logging out, without being logged in
-    r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
-    status = r.json()
+    req = requests.post(f"{url}/auth/logout", json={'token': account['token']})
+    status = req.json()
     assert status['is_success'] is False
 
     # Login with user, getting a new active token
@@ -211,12 +211,12 @@ def test_auth_logout_fail_http(url):
         'email': user['email'],
         'password': user['password']
     }
-    r = requests.post(f"{url}/auth/login", json=login_payload)
-    account = r.json()
+    req = requests.post(f"{url}/auth/login", json=login_payload)
+    account = req.json()
 
     # Try logging out right after logging in
-    r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
-    status = r.json()
+    req = requests.post(f"{url}/auth/logout", json={'token': account['token']})
+    status = req.json()
     assert status['is_success'] is True
 
 
@@ -240,12 +240,12 @@ def test_channel_invite_valid_http(url):
     }
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     # create channel
     channel_payload = {
@@ -254,8 +254,8 @@ def test_channel_invite_valid_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel1 = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = req.json()
 
 
     user1_details = {
@@ -289,8 +289,8 @@ def test_channel_invite_valid_http(url):
         'channel_id' : channel1['channel_id']
     }
 
-    r = requests.get(f"{url}/channel/details", params=details_payload)
-    details = r.json()
+    req = requests.get(f"{url}/channel/details", params=details_payload)
+    details = req.json()
 
     assert details == passed
 
@@ -302,8 +302,8 @@ def test_channel_invite_channel_invalid_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_id = 1231512
 
@@ -323,8 +323,8 @@ def test_channel_invite_self_invite_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     # create channel
     channel_payload = {
@@ -333,8 +333,8 @@ def test_channel_invite_self_invite_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel1 = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = req.json()
 
     # invite yourself
     invite_payload = {
@@ -352,8 +352,8 @@ def test_channel_invite_non_member_http(url):
     Test channel_invite fails when you aren't a member of the channel being invite to
     '''
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -363,8 +363,8 @@ def test_channel_invite_non_member_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     user3 = {
         'email': 'anothervalidemail@gmail.com',
@@ -374,8 +374,8 @@ def test_channel_invite_non_member_http(url):
     }
 
     # Register user3
-    r = requests.post(f"{url}/auth/register", json=user3)
-    account3 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user3)
+    account3 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -383,8 +383,8 @@ def test_channel_invite_non_member_http(url):
         'is_public' : False
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     # invite yourself
     invite_payload = {
@@ -403,8 +403,8 @@ def test_channel_invite_already_member_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -414,8 +414,8 @@ def test_channel_invite_already_member_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -423,8 +423,8 @@ def test_channel_invite_already_member_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account1['token'],
@@ -450,8 +450,8 @@ def test_channel_messages_valid_http(url):
     Base test for channel_messages
     '''
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_payload = {
         'token' : account['token'],
@@ -459,8 +459,8 @@ def test_channel_messages_valid_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
 
     passed = {'messages': [], 'start': 0, 'end': -1}
@@ -471,8 +471,8 @@ def test_channel_messages_valid_http(url):
         'start' : 0
     }
 
-    r = requests.get(f"{url}/channel/messages", params=messages_payload)
-    messages = r.json()
+    req = requests.get(f"{url}/channel/messages", params=messages_payload)
+    messages = req.json()
 
     assert messages == passed
 
@@ -483,8 +483,8 @@ def test_channel_messages_invalid_channel_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_id = 123
 
@@ -504,8 +504,8 @@ def test_channel_messages_invalid_start_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_payload = {
         'token' : account['token'],
@@ -513,8 +513,8 @@ def test_channel_messages_invalid_start_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
 
     messages_payload = {
@@ -542,8 +542,8 @@ def test_channel_messages_no_access_http(url):
     Test channel_messages fails when channel is not public
     '''
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -553,8 +553,8 @@ def test_channel_messages_no_access_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
 
     channel_payload = {
@@ -563,8 +563,8 @@ def test_channel_messages_no_access_http(url):
         'is_public' : False
     }
     # Create channel
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     passed = {'messages': [], 'start': 0, 'end': -1}
 
@@ -575,8 +575,8 @@ def test_channel_messages_no_access_http(url):
         'start' : 0
     }
 
-    r = requests.get(f"{url}/channel/messages", params=messages_payload)
-    messages = r.json()
+    req = requests.get(f"{url}/channel/messages", params=messages_payload)
+    messages = req.json()
 
     assert messages == passed
 
@@ -600,8 +600,8 @@ def test_channel_leave_valid_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -611,8 +611,8 @@ def test_channel_leave_valid_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
 
     channel_payload = {
@@ -621,8 +621,8 @@ def test_channel_leave_valid_http(url):
         'is_public' : True
     }
     # Create channel
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     user2_payload = {
         'token' : account2['token'],
@@ -648,8 +648,8 @@ def test_channel_leave_valid_http(url):
         'channel_id' : channel['channel_id']
     }
 
-    r = requests.get(f"{url}/channel/details", params=details_payload)
-    details = r.json()
+    req = requests.get(f"{url}/channel/details", params=details_payload)
+    details = req.json()
 
     assert details == passed
 
@@ -660,8 +660,8 @@ def test_channel_leave_invalid_channel_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_payload = {
         'token' : account['token'],
@@ -670,8 +670,8 @@ def test_channel_leave_invalid_channel_http(url):
     }
 
     # Create channel
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     leave_payload = {
         'token' : account['token'],
@@ -693,8 +693,8 @@ def test_channel_leave_not_member_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -704,8 +704,8 @@ def test_channel_leave_not_member_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -714,8 +714,8 @@ def test_channel_leave_not_member_http(url):
     }
 
     # Create channel
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     leave_payload = {
         'token' : account2['token'],
@@ -735,8 +735,8 @@ def test_channel_details_valid_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -746,8 +746,8 @@ def test_channel_details_valid_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -756,8 +756,8 @@ def test_channel_details_valid_http(url):
     }
 
     # Create channel
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
 
     user1_details = {
@@ -782,8 +782,8 @@ def test_channel_details_valid_http(url):
         'channel_id' : channel['channel_id']
     }
 
-    r = requests.get(f"{url}/channel/details", params=details_payload)
-    details = r.json()
+    req = requests.get(f"{url}/channel/details", params=details_payload)
+    details = req.json()
 
     assert details == passed
 
@@ -807,8 +807,8 @@ def test_channel_details_valid_http(url):
         'channel_id' : channel['channel_id']
     }
 
-    r = requests.get(f"{url}/channel/details", params=details_payload)
-    details = r.json()
+    req = requests.get(f"{url}/channel/details", params=details_payload)
+    details = req.json()
 
     assert details == passed
 
@@ -818,8 +818,8 @@ def test_channel_details_invalid_channel_http(url):
     Test channel_details fails when invalid channel
     '''
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     channel_id = 1231
 
@@ -837,8 +837,8 @@ def test_channel_details_not_member_http(url):
     Test channel_details fails when the user is not a member of the channel
     '''
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -848,8 +848,8 @@ def test_channel_details_not_member_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -857,8 +857,8 @@ def test_channel_details_not_member_http(url):
         'is_public' : False
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     details_payload = {
         'token' : account2['token'],
@@ -877,8 +877,8 @@ def test_channel_join_valid_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -888,8 +888,8 @@ def test_channel_join_valid_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -897,8 +897,8 @@ def test_channel_join_valid_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account2['token'],
@@ -929,8 +929,8 @@ def test_channel_join_valid_http(url):
         'channel_id' : channel['channel_id']
     }
 
-    r = requests.get(f"{url}/channel/details", params=details_payload)
-    details = r.json()
+    req = requests.get(f"{url}/channel/details", params=details_payload)
+    details = req.json()
 
     assert details == passed
 
@@ -940,8 +940,8 @@ def test_channel_join_invalid_channel_http(url):
     Test channel_join fails when and invalid channel is used
     '''
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_id = 123
 
@@ -960,8 +960,8 @@ def test_channel_join_private_channel_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -971,8 +971,8 @@ def test_channel_join_private_channel_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
 
     channel_payload = {
@@ -981,8 +981,8 @@ def test_channel_join_private_channel_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account2['token'],
@@ -999,8 +999,8 @@ def test_channel_join_already_member_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_payload = {
         'token' : account['token'],
@@ -1008,8 +1008,8 @@ def test_channel_join_already_member_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account['token'],
@@ -1028,8 +1028,8 @@ def test_channel_addowner_valid_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -1039,8 +1039,8 @@ def test_channel_addowner_valid_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -1048,8 +1048,8 @@ def test_channel_addowner_valid_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account2['token'],
@@ -1087,8 +1087,8 @@ def test_channel_addowner_valid_http(url):
         'channel_id' : channel['channel_id']
     }
 
-    r = requests.get(f"{url}/channel/details", params=details_payload)
-    details = r.json()
+    req = requests.get(f"{url}/channel/details", params=details_payload)
+    details = req.json()
 
     assert details == passed
 
@@ -1100,8 +1100,8 @@ def test_channel_addowner_invalid_channel_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_id = 123
 
@@ -1121,8 +1121,8 @@ def test_channel_addowner_already_owner_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     channel_payload = {
         'token' : account['token'],
@@ -1130,8 +1130,8 @@ def test_channel_addowner_already_owner_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     addowner_payload = {
         'token' : account['token'],
@@ -1150,8 +1150,8 @@ def test_channel_addowner_auth_self_http(url):
     '''
 
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
     'email': 'alsovalidemail@gmail.com',
@@ -1161,8 +1161,8 @@ def test_channel_addowner_auth_self_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -1170,8 +1170,8 @@ def test_channel_addowner_auth_self_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account2['token'],
@@ -1195,8 +1195,8 @@ def test_channel_addowner_auth_not_owner_http(url):
     Test channel_addowner fails when the a non-owner tries to addowner
     '''
     # Register user1
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     user2 = {
     'email': 'alsovalidemail@gmail.com',
@@ -1206,8 +1206,8 @@ def test_channel_addowner_auth_not_owner_http(url):
     }
 
     # Register user2
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     user3 = {
     'email': 'anothervalidemail@gmail.com',
@@ -1217,8 +1217,8 @@ def test_channel_addowner_auth_not_owner_http(url):
     }
 
     # Register user3
-    r = requests.post(f"{url}/auth/register", json=user3)
-    account3 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user3)
+    account3 = req.json()
 
     channel_payload = {
         'token' : account1['token'],
@@ -1226,8 +1226,8 @@ def test_channel_addowner_auth_not_owner_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel = req.json()
 
     join_payload = {
         'token' : account2['token'],
@@ -1262,8 +1262,8 @@ def test_channels_create_success_http(url):
     Base test for channels_create
     '''
     # register
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     # create channel
     channel_payload ={
@@ -1272,12 +1272,12 @@ def test_channels_create_success_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel1 = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = req.json()
 
     # list channels
-    r = requests.get(f"{url}/channels/list", params={'token' : account['token']})
-    listed = r.json()
+    req = requests.get(f"{url}/channels/list", params={'token' : account['token']})
+    listed = req.json()
 
     assert len(listed['channels']) == 1
 
@@ -1288,12 +1288,12 @@ def test_channels_create_success_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel2 = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel2 = req.json()
 
     # list channels
-    r = requests.get(f"{url}/channels/list", params={'token' : account['token']})
-    listed = r.json()
+    req = requests.get(f"{url}/channels/list", params={'token' : account['token']})
+    listed = req.json()
 
     assert len(listed['channels']) == 2
 
@@ -1303,8 +1303,8 @@ def test_channels_create_fail_http(url):
     Test channels_create fails with a name too long
     '''
     # register
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     # Invalid name (too long)
     channel_payload = {
@@ -1326,8 +1326,8 @@ def test_channels_listall_base_http(url):
     '''
 
     # register
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
     # create channel1
     channel_payload ={
@@ -1336,8 +1336,8 @@ def test_channels_listall_base_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel1 = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = req.json()
 
     # create channel2
     channel_payload ={
@@ -1346,8 +1346,8 @@ def test_channels_listall_base_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel2 = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel2 = req.json()
 
     # create channel3
     channel_payload ={
@@ -1356,8 +1356,8 @@ def test_channels_listall_base_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel3 = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel3 = req.json()
 
     # Assertion
     channel_list = [
@@ -1375,8 +1375,8 @@ def test_channels_listall_base_http(url):
         }
     ]
 
-    r = requests.get(f"{url}/channels/listall", params={'token' : account['token']})
-    lists = r.json()
+    req = requests.get(f"{url}/channels/listall", params={'token' : account['token']})
+    lists = req.json()
 
     assert lists == {'channels': channel_list}
 
@@ -1395,24 +1395,24 @@ def test_channels_list_base_http(url):
     }
 
     # register
-    r = requests.post(f"{url}/auth/register", json=user)
-    account1 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account1 = req.json()
 
     # register
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account2 = r.json()
+    req = requests.post(f"{url}/auth/register", json=user2)
+    account2 = req.json()
 
     empty_channels_list = []
 
 
     # Assert no channels listed right now
-    r = requests.get(f"{url}/channels/listall", params={'token' : account1['token']})
-    lists = r.json()
+    req = requests.get(f"{url}/channels/listall", params={'token' : account1['token']})
+    lists = req.json()
 
     assert lists == {'channels': empty_channels_list}
 
-    r = requests.get(f"{url}/channels/listall", params={'token' : account2['token']})
-    lists = r.json()
+    req = requests.get(f"{url}/channels/listall", params={'token' : account2['token']})
+    lists = req.json()
 
     assert lists == {'channels': empty_channels_list}
 
@@ -1424,8 +1424,8 @@ def test_channels_list_base_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel1 = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = req.json()
 
 
     channel_list = [
@@ -1436,13 +1436,13 @@ def test_channels_list_base_http(url):
     ]
 
     # Assert only user 1 can see the channel
-    r = requests.get(f"{url}/channels/list", params={'token' : account1['token']})
-    lists = r.json()
+    req = requests.get(f"{url}/channels/list", params={'token' : account1['token']})
+    lists = req.json()
 
     assert lists == {'channels': channel_list}
 
-    r = requests.get(f"{url}/channels/list", params={'token' : account2['token']})
-    lists = r.json()
+    req = requests.get(f"{url}/channels/list", params={'token' : account2['token']})
+    lists = req.json()
 
     assert lists == {'channels': empty_channels_list}
 
@@ -1458,13 +1458,13 @@ def test_channels_list_base_http(url):
 
 
     # Assert both users can see the channel
-    r = requests.get(f"{url}/channels/list", params={'token' : account1['token']})
-    lists = r.json()
+    req = requests.get(f"{url}/channels/list", params={'token' : account1['token']})
+    lists = req.json()
 
     assert lists == {'channels': channel_list}
 
-    r = requests.get(f"{url}/channels/list", params={'token' : account2['token']})
-    lists = r.json()
+    req = requests.get(f"{url}/channels/list", params={'token' : account2['token']})
+    lists = req.json()
 
     assert lists == {'channels': channel_list}
 
@@ -1476,8 +1476,8 @@ def test_channels_invalid_token_http(url):
     '''
 
     # register
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
+    req = requests.post(f"{url}/auth/register", json=user)
+    account = req.json()
 
 
     # Create a channel1 with user1
@@ -1487,8 +1487,8 @@ def test_channels_invalid_token_http(url):
         'is_public' : True
     }
 
-    r = requests.post(f"{url}/channels/create", json=channel_payload)
-    channel1 = r.json()
+    req = requests.post(f"{url}/channels/create", json=channel_payload)
+    channel1 = req.json()
 
 
     # Deactivate token by logging out
