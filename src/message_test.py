@@ -122,7 +122,9 @@ def test_message_send_not_member():
 ############################# MESSAGE_REMOVE TESTS #############################
 
 def test_message_remove_valid():
-    """ Base case for message_remove() """
+    """
+    Base case for message_remove(). Ensures that correct message was deleted.
+    """
     clear()
 
     account = auth.auth_register(*user)
@@ -130,15 +132,15 @@ def test_message_remove_valid():
 
     channel_id = channels.channels_create(token, "Testing", True)['channel_id']
 
-    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+    msg_id1 = message.message_send(token, channel_id, "Hello")['message_id']
+    msg_id2 = message.message_send(token, channel_id, "Goodbye")['message_id']
 
-    message.message_remove(token, msg_id)
+    message.message_remove(token, msg_id1)
 
-    assert channel.channel_messages(token, channel_id, 0) == {
-        'messages': [],
-        'start': 0,
-        'end': -1
-    }
+    # Check that message with msg_id2 still remains.
+    messages = channel.channel_messages(token, channel_id, 0)['messages']
+    assert len(messages) == 1
+    assert messages[0]['message_id'] == msg_id2
 
 def test_message_remove_nonexistent():
     """
@@ -256,8 +258,14 @@ def test_message_remove_not_member():
 
     msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
 
+    # User 1 tries to delete user 2's message
     with pytest.raises(AccessError):
         message.message_remove(token1, msg_id)
+
+    # User 2 leaves the channel then tries to delete their message.
+    channel.channel_leave(token2, channel_id)
+    with pytest.raises(AccessError):
+        message.message_remove(token2, msg_id)
 
 ############################## MESSAGE_EDIT TESTS ##############################
 
@@ -429,6 +437,83 @@ def test_message_edit_not_member():
 
     with pytest.raises(AccessError):
         message.message_edit(token1, msg_id, "Hello")
+
+    # User 2 leaves the channel then tries to edit their message.
+    channel.channel_leave(token2, channel_id)
+    with pytest.raises(AccessError):
+        message.message_edit(token2, msg_id, "Hello")
+
+def test_message_edit_removed():
+    """
+    Test case for message_edit(), where the target message to be edited has
+    already been removed.
+    """
+    clear()
+
+    account = auth.auth_register(*user)
+    token = account['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+
+    message.message_remove(token, msg_id)
+    with pytest.raises(InputError):
+        message.message_edit(token, msg_id, "Goodbye")
+
+def test_message_edit_too_long():
+    """
+    Test case for message_edit(), where the passed message exceeds the 1000
+    character limit.
+    """
+    clear()
+
+    account = auth.auth_register(*user)
+    token = account['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+
+    # 1008-character string
+    long_message = (
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean "
+        "commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus "
+        "et magnis dis parturient montes, nascetur ridiculus mus. Donec quam "
+        "felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla "
+        "consequat massa quis enim. Donec pede justo, fringilla vel, aliquet "
+        "nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, "
+        "venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. "
+        "Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. "
+        "Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, "
+        "consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, "
+        "viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus "
+        "varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies "
+        "nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. "
+        "Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem "
+        "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam."
+    )
+
+    with pytest.raises(InputError):
+        message.message_edit(token, msg_id, long_message)
+
+def test_message_edit_identical():
+    """
+    Test case where message passed into message_edit is the same as the existing
+    message stored in data.
+    """
+    clear()
+
+    account = auth.auth_register(*user)
+    token = account['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+    message.message_send(token, channel_id, "What?")
+    message.message_send(token, channel_id, "Goodbye")
+
+    with pytest.raises(InputError):
+        message.message_edit(token, msg_id, "Hello")
 
 # Checking invalid token
 def test_message_invalid_token():

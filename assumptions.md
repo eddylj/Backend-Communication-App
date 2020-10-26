@@ -31,9 +31,6 @@
 ### channels_create()
 - Creator of a channel automatically joins that channel.
 
-
-
-
 ## Message
 - message_id is unique across all channels
 ### message_send()
