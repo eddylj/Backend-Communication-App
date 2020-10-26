@@ -61,6 +61,9 @@
 - If the new email is the same as the existing email stored in the user's data, InputError is raised.
 ### user_profile_sethandle()
 - If the new handle is the same as the existing handle stored in the user's data, InputError is raised.
+- The new handle must comply by the original handle rules, raise InputError otherwise.
+    - Between 3-20 characters in length.
+    - No uppercase characters.
 
 ## Server
 ### /message
