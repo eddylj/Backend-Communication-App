@@ -1,8 +1,23 @@
+"""
+Different Functions used throughout the program
+"""
+import re
+import time
+import hashlib
+import jwt
 from data import data
+from error import InputError, AccessError
+
+SECRET = hashlib.sha256(str(time.time()).encode()).hexdigest()[:11]
+
 def clear():
+    """
+    Function to clear the data
+    """
     data['users'].clear()
     data['channels'].clear()
     data['tokens'].clear()
+    data['messages'].clear()
 
 def get_active(token):
     """
@@ -17,34 +32,87 @@ def get_active(token):
         None        : If token isn't active.
     """
     if token in data['tokens']:
-        # Written in this redundant way because token will be changed in the future
-        return data['users'][token]['u_id']
+        return jwt.decode(token, SECRET, algorithms='HS256')['u_id']
     return None
 
+def is_valid(email):
+    """
+    Code provided in project specs, from:
+    https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
+    Checks if email is valid against a regular expression.
+
+    Parameters:
+        email (str) : User's email
+
+    Returns:
+        (bool): Whether or not the email entered is invalid according to the
+                regex standards.
+    """
+    regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
+    return re.search(regex, email)
+
 def users_all(token):
-    return {
-        'users': [
-            {
-                'u_id': 1,
-                'email': 'cs1531@cse.unsw.edu.au',
-                'name_first': 'Hayden',
-                'name_last': 'Jacobs',
-                'handle_str': 'hjacobs',
-            },
-        ],
-    }
+    """
+    Function for returning all the information of the users
+    """
+    if get_active(token) is None:
+        raise AccessError
+
+    users = []
+    for info in data['users']:
+        users.append(info)
+
+    for user in users:
+        del user['password']
+        del user['permission_id']
+
+    return {'users': users}
 
 def admin_userpermission_change(token, u_id, permission_id):
-    pass
+    """
+    Function for changing admin user permission
+    """
+
+    # If token is invalid
+    owner_id = get_active(token)
+    if owner_id is None:
+        raise AccessError
+
+    # Not an owner of flockr
+    if data['users'][owner_id]['permission_id'] == 2:
+        raise AccessError
+
+    # Invalid u_id
+    if not -1 < u_id < len(data['users']):
+        raise InputError
+
+    # Invalid permission_id
+    if permission_id not in (1, 2):
+        raise InputError
+
+    # Change permission_id of u_id
+    data['users'][u_id]['permission_id'] = permission_id
+
+    return {}
 
 def search(token, query_str):
-    return {
-        'messages': [
-            {
-                'message_id': 1,
-                'u_id': 1,
-                'message': 'Hello world',
-                'time_created': 1582426789,
-            }
-        ],
-    }
+    """
+    Function to find messages similar to query_str in all channels the caller is
+    in. Case insensitive.
+    """
+    u_id = get_active(token)
+    if u_id is None:
+        raise AccessError
+
+    result = []
+
+    for channel in data['channels']:
+        # All channels user is in
+        if u_id in channel['members']:
+            # Check through all messages
+            for message in channel['messages']:
+                # Check if current message matches query_str
+                if re.search(query_str, message['message'], re.IGNORECASE):
+                    result.append(message)
+
+    return {'messages': result}

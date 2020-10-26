@@ -1,6 +1,10 @@
-import auth, channel, channels
+"""
+Tests to test the create, listall and list functions in auth.py
+"""
 import pytest
-from data import data
+import auth
+import channel
+import channels
 from error import InputError, AccessError
 from other import clear
 
@@ -10,6 +14,9 @@ user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 
 # Base Case
 def test_channels_create_success():
+    """
+    Base test for channels_create
+    """
     clear()
 
     # Create a user
@@ -23,6 +30,9 @@ def test_channels_create_success():
 
 # Channel name > 20 characters
 def test_channels_create_fail():
+    """
+    Test channels_create fails with a name too long
+    """
     clear()
 
     # Create a user
@@ -36,6 +46,9 @@ def test_channels_create_fail():
 ############################ CHANNELS_LISTALL TESTS ############################
 
 def test_channels_listall_base():
+    """
+    Base test for channels_listall
+    """
     clear()
 
     # Create a user
@@ -65,13 +78,16 @@ def test_channels_listall_base():
             'name': name3,
         }
     ]
-    
+
     assert channels.channels_listall(token) == {'channels': channel_list}
 
 
 ############################# CHANNELS_LIST TESTS ##############################
 
 def test_channels_list_base():
+    """
+    Base test for channels_list
+    """
     clear()
 
     # Create 2 users
@@ -103,7 +119,7 @@ def test_channels_list_base():
     # Assert only user 1 can see the channel
     assert channels.channels_list(token1) == {'channels': channel_list}
     assert channels.channels_list(token2) == {'channels': empty_channels_list}
-    
+
     # Invite user 2
     channel.channel_invite(token1, channel_id['channel_id'], u_id2)
 
@@ -113,13 +129,16 @@ def test_channels_list_base():
 
 # Calling channels functions with invalid tokens
 def test_channels_invalid_token():
+    """
+    Test channels_invalid fails with an invalid token
+    """
     clear()
 
     # Create a user
     token = auth.auth_register(*user)['token']
 
     # Create a channel
-    channels.channels_create(token, 'Channel 1', True) 
+    channels.channels_create(token, 'Channel 1', True)
 
     # Deactivate token by logging out
     auth.auth_logout(token)

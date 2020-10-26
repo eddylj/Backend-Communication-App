@@ -1,3 +1,6 @@
+'''
+List, listall and create functions
+'''
 from data import data
 from error import InputError, AccessError
 from other import get_active
@@ -12,8 +15,8 @@ def channels_list(token):
 
     Returns:
         {
-            channels: A list of dictionaries with types {channel_id, name} of 
-                      all channels the caller is part of. If the caller isn't 
+            channels: A list of dictionaries with types {channel_id, name} of
+                      all channels the caller is part of. If the caller isn't
                       part of any channels, an empty list is returned.
         }
 
@@ -21,7 +24,7 @@ def channels_list(token):
         AccessError: if token is invalid.
     """
     u_id = get_active(token)
-    if u_id == None:
+    if u_id is None:
         raise AccessError
 
     channel_list = []
@@ -48,7 +51,7 @@ def channels_listall(token):
 
     Returns:
         {
-            channels: A list of dictionaries with types {channel_id, name} of 
+            channels: A list of dictionaries with types {channel_id, name} of
                       all channels. If no channels exists, an empty list is
                       returned.
         }
@@ -56,7 +59,7 @@ def channels_listall(token):
     Raises:
         AccessError: if token is invalid.
     """
-    if get_active(token) == None:
+    if get_active(token) is None:
         raise AccessError
 
     channel_list = []
@@ -72,7 +75,7 @@ def channels_listall(token):
 
 def channels_create(token, name, is_public):
     """
-    Creates a new channel with a specified name that is either a public or 
+    Creates a new channel with a specified name that is either a public or
     private.
 
     Parameters:
@@ -91,9 +94,9 @@ def channels_create(token, name, is_public):
         raise InputError
 
     u_id = get_active(token)
-    if u_id == None:
+    if u_id is None:
         raise AccessError
-    
+
     channel_id = len(data['channels'])
     new_channel = {
         'channel_id' : channel_id,
@@ -103,7 +106,7 @@ def channels_create(token, name, is_public):
         'is_public' : is_public,
         'messages': [],
     }
-    
+
     data['channels'].append(new_channel)
 
     return {'channel_id': channel_id}

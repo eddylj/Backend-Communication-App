@@ -2,7 +2,7 @@
 
 ## Auth
 ### auth_login()
-- A user can login while already being logged in. Auth_login just returns the current active token in that case.
+- A user can "login" while already being logged in. Auth_login just returns the current active token in that case.
 ### auth_logout()
 - Auth_logout returns {'is_success': False} if invalid token is passed. Conflicting statements in project specs:
     - 6.2: "If a valid token is given, and the user is successfully logged out, it returns true, otherwise false."
@@ -25,7 +25,43 @@
 - Flockr owner (global permissions) can join private channels.
 ### channel_removeowner()
 - The flockr owner can remove the last owner in a channel. 
+- If removeowner() is called on a normal member/non-owner, InputError is raised.
 
 ## Channels
 ### channels_create()
 - Creator of a channel automatically joins that channel.
+
+## Message
+- message_id is unique across all channels
+### message_send()
+- The Flockr owner cannot send messages into a channel without being in it.
+- Message cannot be empty. Raise InputError in that case.
+### message_remove()
+- Users can't remove message from another channel. 
+- Flockr owner cannot remove messages without being in the channel.
+- Users can't remove a message after leaving the channel where the message was sent. Raise AccessError if attempted.
+### message_edit()
+- Cannot edit message to be longer than 1000 characters
+- Flockr owner cannot edit messages without being in the channel.
+- Edit updates the timestamp of the message
+- Edit raises InputError if passed message is the same as the existing message.
+- Edit does not change the original sender's ID if edited by a different user.
+
+## User
+### user_profile_setname()
+- If the new name passed into setname() is exactly the same as the existing name, InputError is raised.
+### user_profile_setemail()
+- If the new email is the same as the existing email stored in the user's data, InputError is raised.
+### user_profile_sethandle()
+- If the new handle is the same as the existing handle stored in the user's data, InputError is raised.
+- The new handle must comply by the original handle rules, raise InputError otherwise.
+    - Between 3-20 characters in length.
+    - No uppercase characters.
+
+## Other
+### search()
+- Searches for messages which contain the query_str, not limited to an exact match.
+- Case insensitive.
+## Server
+### /message
+- Some black-box HTTP message tests which need to call /channel/messages for comparison cannot be done because of the latency affecting the accuracy of the timestamp.
