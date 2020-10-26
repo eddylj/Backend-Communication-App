@@ -25,6 +25,7 @@
 - Flockr owner (global permissions) can join private channels.
 ### channel_removeowner()
 - The flockr owner can remove the last owner in a channel. 
+- If removeowner() is called on a normal member/non-owner, InputError is raised.
 
 ## Channels
 ### channels_create()

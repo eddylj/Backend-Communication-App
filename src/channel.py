@@ -40,7 +40,7 @@ def channel_invite(token, channel_id, u_id):
     if not is_valid_channel(channel_id):
         raise InputError
 
-    if len(data['users']) <= u_id:
+    if not 0 <= u_id < len(data['users']):
         raise InputError
 
     if is_member(channel_id, u_id):

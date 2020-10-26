@@ -5,6 +5,7 @@ import pytest
 import auth
 import channel
 import channels
+import message
 from error import InputError, AccessError
 from other import clear, SECRET
 
@@ -64,12 +65,32 @@ def test_channel_invite_channel_invalid():
     clear()
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
-    u_id1 = account1['u_id']
+
+    account2 = auth.auth_register(*user2)
+    u_id2 = account2['u_id']
 
     channel_id = 1231512
 
     with pytest.raises(InputError):
-        channel.channel_invite(token1, channel_id, u_id1)
+        channel.channel_invite(token1, channel_id, u_id2)
+
+# INVALID U_ID
+def test_channel_invite_user_invalid():
+    '''
+    Test if channel_invite fails if the u_id is invalid
+    '''
+    clear()
+    account = auth.auth_register(*user)
+    token = account['token']
+    u_id = account['u_id']
+
+    channel_id = channels.channels_create(token, 'test channel', True)['channel_id']
+
+    with pytest.raises(InputError):
+        channel.channel_invite(token, channel_id, u_id + 1)
+
+    with pytest.raises(InputError):
+        channel.channel_invite(token, channel_id, u_id * -1)
 
 # INVITING YOURSELF
 def test_channel_invite_self_invite():
@@ -191,12 +212,24 @@ def test_channel_messages_no_access():
     with pytest.raises(AccessError):
         channel.channel_messages(token2, channel_id, 0)
 
-# Can't implement other cases without messages_send(), which isn't in iter1?
+def test_channel_messages_pagination():
+    """
+    Test case when start + 50 is less than total number of messages in channel.
+    Non-negative end expected in that case.
+    """
+    clear()
+    token = auth.auth_register(*user)['token']
 
-# VALID CHANNEL WITH MESSAGES
-# START > NON-ZERO NUMBER OF MESSAGES IN CHANNEL
-# CHECKING IF RETURNED START/END IS CORRECT
-# CHECKING RETURNED MESSAGES ATTRIBUTES
+    new_channel = channels.channels_create(token, 'test channel', False)
+    channel_id = new_channel['channel_id']
+
+    for _ in range(80):
+        message.message_send(token, channel_id, "HELLO *ELLO HELLO")
+
+    channel_messages = channel.channel_messages(token, channel_id, 20)
+    assert len(channel_messages['messages']) == 50
+    assert channel_messages['start'] == 20
+    assert channel_messages['end'] == 70
 
 ############################# CHANNEL_LEAVE TESTS ##############################
 
@@ -212,11 +245,21 @@ def test_channel_leave_valid():
 
     account2 = auth.auth_register(*user2)
     token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    account3 = auth.auth_register(*user3)
+    token3 = account3['token']
 
     new_channel = channels.channels_create(token1, 'test channel', True)
     channel_id = new_channel.get('channel_id')
     channel.channel_join(token2, channel_id)
+    channel.channel_join(token3, channel_id)
+
+    # Adds user2 to owners to check if they remain after they leave the channel.
+    channel.channel_addowner(token1, channel_id, u_id2)
     channel.channel_leave(token2, channel_id)
+    # User3 remains a normal member
+    channel.channel_leave(token3, channel_id)
 
     user1_details = {
         'u_id': u_id1,
@@ -598,7 +641,7 @@ def test_channel_removeowner_invalid_channel():
     with pytest.raises(InputError):
         channel.channel_removeowner(token, channel_id, u_id)
 
-# WHEN AUTHORISED USER IS NOT AN OWNER REMOVE ANOTHER OWNER
+# WHEN AUTHORISED USER IS NOT AN OWNER
 def test_channel_removeowner_not_owner():
     '''
     Test channel_removeowner fails when not an owner
@@ -667,6 +710,26 @@ def test_channel_removeowner_last_owner():
 
     channel.channel_removeowner(token1, channel_id, u_id2)
     assert len(channel.channel_details(token2, channel_id)['owner_members']) == 0
+
+def test_channel_removeowner_nonowner():
+    """
+    Attempting to remove a non-owner/normal member.
+    """
+    clear()
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    new_channel = channels.channels_create(token1, 'test channel', True)
+    channel_id = new_channel['channel_id']
+
+    channel.channel_join(token2, channel_id)
+
+    with pytest.raises(InputError):
+        channel.channel_removeowner(token1, channel_id, u_id2)
 
 # Checking invalid token
 def test_channel_invalid_token():
