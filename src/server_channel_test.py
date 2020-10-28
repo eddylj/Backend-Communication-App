@@ -211,11 +211,6 @@ def test_channel_invite_already_member_http(url):
     req = requests.post(f"{url}/channels/create", json=channel_payload)
     channel = req.json()
 
-    join_payload = {
-        'token' : account1['token'],
-        'channel_id' : channel['channel_id']
-    }
-
     # invite yourself
     invite_payload = {
         'token' : account1['token'],
