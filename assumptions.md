@@ -10,6 +10,8 @@
 ### auth_register()
 - If a handle is already taken (multiple people with same name), a number is added at the end to differentiate individual accounts.
     - If the number puts the handle over the 20 character limit, the number would replace characters at the end of the handle string instead.
+### auth_passwordreset_request()
+- If an email is given which does not refer to a registered account, then raise InputError
 
 ## Channel
 ### channel_invite()
