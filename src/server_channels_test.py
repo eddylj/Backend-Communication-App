@@ -1,9 +1,12 @@
 '''
 Tests for all functions in user.py
 '''
+<<<<<<< HEAD
 import pytest
 import server
 import json
+=======
+>>>>>>> master
 import requests
 from echo_http_test import url
 
@@ -32,8 +35,12 @@ def test_channels_create_success_http(url):
         'is_public' : True
     }
 
+<<<<<<< HEAD
     req = requests.post(f"{url}/channels/create", json=channel_payload)
     channel1 = req.json()
+=======
+    requests.post(f"{url}/channels/create", json=channel_payload)
+>>>>>>> master
 
     # list channels
     req = requests.get(f"{url}/channels/list", params={'token' : account['token']})
@@ -48,8 +55,12 @@ def test_channels_create_success_http(url):
         'is_public' : True
     }
 
+<<<<<<< HEAD
     req = requests.post(f"{url}/channels/create", json=channel_payload)
     channel2 = req.json()
+=======
+    requests.post(f"{url}/channels/create", json=channel_payload)
+>>>>>>> master
 
     # list channels
     req = requests.get(f"{url}/channels/list", params={'token' : account['token']})
@@ -247,9 +258,13 @@ def test_channels_invalid_token_http(url):
         'is_public' : True
     }
 
+<<<<<<< HEAD
     req = requests.post(f"{url}/channels/create", json=channel_payload)
     channel1 = req.json()
 
+=======
+    requests.post(f"{url}/channels/create", json=channel_payload)
+>>>>>>> master
 
     # Deactivate token by logging out
     requests.post(f"{url}/auth/logout", json={'token': account['token']})

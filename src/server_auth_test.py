@@ -1,9 +1,6 @@
-'''
-Tests for all functions in user.py
-'''
-import pytest
-import server
-import json
+"""
+This module contains tests for auth routes in server.py.
+"""
 import requests
 from echo_http_test import url
 
@@ -18,11 +15,17 @@ user = {
 
 # BASE TEST - VALID EMAIL
 def test_auth_login_user_email_http(url):
-    '''
+    """
     Base test for auth_login
+<<<<<<< HEAD:src/server_auth_test.py
     '''
     req = requests.post(f"{url}/auth/register", json=user)
     account = req.json()
+=======
+    """
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+>>>>>>> master:src/server_auth_test.py
 
     requests.post(f"{url}/auth/logout", json={'token': account['token']})
 
@@ -30,16 +33,21 @@ def test_auth_login_user_email_http(url):
         'email': user['email'],
         'password': user['password']
     }
+<<<<<<< HEAD:src/server_auth_test.py
     req = requests.post(f"{url}/auth/login", json=login_payload)
     login = req.json()
 
+=======
+    r = requests.post(f"{url}/auth/login", json=login_payload)
+    login = r.json()
+>>>>>>> master:src/server_auth_test.py
     assert login['u_id'] == account['u_id']
 
 # INVALID EMAIL
 def test_auth_login_invalid_email_http(url):
-    '''
+    """
     Test auth_login fails using an invalid email
-    '''
+    """
     invalid_email = {
         'email': 'invalidemail.com',
         'password': '123abc!@#'
@@ -49,9 +57,9 @@ def test_auth_login_invalid_email_http(url):
 
 # NON USER EMAIL
 def test_auth_login_non_user_email_http(url):
-    '''
+    """
     Test auth_login fails using using an email belonging to noone
-    '''
+    """
     requests.post(f"{url}/auth/register", json=user)
 
     non_user_email = {
@@ -63,9 +71,9 @@ def test_auth_login_non_user_email_http(url):
 
 # WRONG PASSWORD
 def test_auth_login_wrong_password_http(url):
-    '''
+    """
     Test auth_login fails using the wrong password
-    '''
+    """
     requests.post(f"{url}/auth/register", json=user)
 
     wrong_password = {
@@ -79,11 +87,17 @@ def test_auth_login_wrong_password_http(url):
 
 # BASE TEST - Valid user registration
 def test_auth_register_valid_http(url):
-    '''
+    """
     Base test for auth_register
+<<<<<<< HEAD:src/server_auth_test.py
     '''
     req = requests.post(f"{url}/auth/register", json=user)
     account = req.json()
+=======
+    """
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+>>>>>>> master:src/server_auth_test.py
     token = account['token']
 
     login_payload = {
@@ -96,9 +110,9 @@ def test_auth_register_valid_http(url):
 
 # INVALID EMAIL
 def test_auth_register_invalid_email_http(url):
-    '''
+    """
     Test auth_register fails using an invalid email
-    '''
+    """
     invalid_email = dict(user)
     invalid_email['email'] = 'invalidemail.com'
     response = requests.post(f"{url}/auth/register", json=invalid_email)
@@ -106,9 +120,9 @@ def test_auth_register_invalid_email_http(url):
 
 # EMAIL ALREADY IN USE
 def test_auth_register_email_taken_http(url):
-    '''
+    """
     Test auth_register fails when an email has been registered with before
-    '''
+    """
     requests.post(f"{url}/auth/register", json=user)
     email_taken = dict(user)
     email_taken['name_first'] = 'Andras'
@@ -119,9 +133,9 @@ def test_auth_register_email_taken_http(url):
 
 # INVALID PASSWORD
 def test_auth_register_invalid_pw_http(url):
-    '''
+    """
     Test auth_register fails with an invalid password
-    '''
+    """
     bad_pw = dict(user)
 
     # Password too short (5 characters)
@@ -136,9 +150,9 @@ def test_auth_register_invalid_pw_http(url):
 
 # INVALID NAME
 def test_auth_register_invalid_name_http(url):
-    '''
+    """
     Tst auth_register fails with an invalid name
-    '''
+    """
     bad_name = dict(user)
 
     # Empty name parameters
@@ -168,17 +182,13 @@ def test_auth_register_invalid_name_http(url):
     response = requests.post(f"{url}/auth/register", json=bad_name)
     assert response.status_code == 400
 
-
-# Will need to check for handle generation, which requires user_profile (not in
-# iteration 1)
-
 ############################## AUTH_LOGOUT TESTS ###############################
 
 # BASE CASE
 def test_auth_logout_success_http(url):
-    '''
+    """
     Base test for auth_logout
-    '''
+    """
     # Register user
     req = requests.post(f"{url}/auth/register", json=user)
     account = req.json()
@@ -189,9 +199,9 @@ def test_auth_logout_success_http(url):
 
 # LOGGING OUT WITHOUT LOGGING IN
 def test_auth_logout_fail_http(url):
-    '''
+    """
     Test that logout fails when not logged in
-    '''
+    """
     # Register a user
     req = requests.post(f"{url}/auth/register", json=user)
     account = req.json()

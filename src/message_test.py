@@ -38,7 +38,6 @@ def test_message_send_valid():
     channel.channel_invite(token1, channel_id, u_id2)
 
     # Send messages
-    # Processing time could potentially affect pytest results
     timestamp1 = int(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
@@ -122,10 +121,10 @@ def test_message_send_not_member():
 
 ############################# MESSAGE_REMOVE TESTS #############################
 
-# Can't call channel_messages if start < number of messages in channel.
-# Keep this in mind if tests break.
 def test_message_remove_valid():
-    """ Base case for message_remove() """
+    """
+    Base case for message_remove(). Ensures that correct message was deleted.
+    """
     clear()
 
     account = auth.auth_register(*user)
@@ -133,15 +132,15 @@ def test_message_remove_valid():
 
     channel_id = channels.channels_create(token, "Testing", True)['channel_id']
 
-    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+    msg_id1 = message.message_send(token, channel_id, "Hello")['message_id']
+    msg_id2 = message.message_send(token, channel_id, "Goodbye")['message_id']
 
-    message.message_remove(token, msg_id)
+    message.message_remove(token, msg_id1)
 
-    assert channel.channel_messages(token, channel_id, 0) == {
-        'messages': [],
-        'start': 0,
-        'end': -1
-    }
+    # Check that message with msg_id2 still remains.
+    messages = channel.channel_messages(token, channel_id, 0)['messages']
+    assert len(messages) == 1
+    assert messages[0]['message_id'] == msg_id2
 
 def test_message_remove_nonexistent():
     """
@@ -243,7 +242,7 @@ def test_message_remove_as_owner():
 def test_message_remove_not_member():
     """
     Edge case for message_remove(), where the caller isn't even in the channel
-    where the message is sent. This does not includes the Flockr owner.
+    where the message is sent. This includes the Flockr owner.
     """
     clear()
 
@@ -255,16 +254,20 @@ def test_message_remove_not_member():
     token2 = account2['token']
 
     # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
 
-    msg_id = message.message_send(token1, channel_id, "Goodbye")['message_id']
+    msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
 
+    # User 1 tries to delete user 2's message
+    with pytest.raises(AccessError):
+        message.message_remove(token1, msg_id)
+
+    # User 2 leaves the channel then tries to delete their message.
+    channel.channel_leave(token2, channel_id)
     with pytest.raises(AccessError):
         message.message_remove(token2, msg_id)
 
 ############################## MESSAGE_EDIT TESTS ##############################
-
-# Assumed that edit updates the timestamp.
 
 def test_message_edit_valid():
     """
@@ -401,7 +404,6 @@ def test_message_edit_as_owner():
     expected = [
         {
             'message_id': msg_id,
-            # Should we replace the u_id with the one of the latest editor?
             'u_id': u_id2,
             'message': "Hello",
             'time_created': timestamp
@@ -417,7 +419,7 @@ def test_message_edit_as_owner():
 def test_message_edit_not_member():
     """
     Edge case for message_edit(), where the caller isn't even in the channel
-    where the message is sent. This does not includes the Flockr owner.
+    where the message is sent. This includes the Flockr owner.
     """
     clear()
 
@@ -429,13 +431,114 @@ def test_message_edit_not_member():
     token2 = account2['token']
 
     # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
 
-    msg_id = message.message_send(token1, channel_id, "Goodbye")['message_id']
+    msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
 
+    with pytest.raises(AccessError):
+        message.message_edit(token1, msg_id, "Hello")
+
+    # User 2 leaves the channel then tries to edit their message.
+    channel.channel_leave(token2, channel_id)
     with pytest.raises(AccessError):
         message.message_edit(token2, msg_id, "Hello")
 
-# To be added: invalid token tests
+def test_message_edit_removed():
+    """
+    Test case for message_edit(), where the target message to be edited has
+    already been removed.
+    """
+    clear()
+
+    account = auth.auth_register(*user)
+    token = account['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+
+    message.message_remove(token, msg_id)
+    with pytest.raises(InputError):
+        message.message_edit(token, msg_id, "Goodbye")
+
+def test_message_edit_too_long():
+    """
+    Test case for message_edit(), where the passed message exceeds the 1000
+    character limit.
+    """
+    clear()
+
+    account = auth.auth_register(*user)
+    token = account['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+
+    # 1008-character string
+    long_message = (
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean "
+        "commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus "
+        "et magnis dis parturient montes, nascetur ridiculus mus. Donec quam "
+        "felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla "
+        "consequat massa quis enim. Donec pede justo, fringilla vel, aliquet "
+        "nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, "
+        "venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. "
+        "Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. "
+        "Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, "
+        "consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, "
+        "viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus "
+        "varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies "
+        "nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. "
+        "Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem "
+        "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam."
+    )
+
+    with pytest.raises(InputError):
+        message.message_edit(token, msg_id, long_message)
+
+def test_message_edit_identical():
+    """
+    Test case where message passed into message_edit is the same as the existing
+    message stored in data.
+    """
+    clear()
+
+    account = auth.auth_register(*user)
+    token = account['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+    message.message_send(token, channel_id, "What?")
+    message.message_send(token, channel_id, "Goodbye")
+
+    with pytest.raises(InputError):
+        message.message_edit(token, msg_id, "Hello")
+
+# Checking invalid token
+def test_message_invalid_token():
+    """
+    Test for invalid tokens throughout all message functions
+    """
+    clear()
+
+    # Register a user and create a channel with one message in it.
+    token = auth.auth_register(*user1)['token']
+
+    channel_id = channels.channels_create(token, "Test", True)['channel_id']
+    msg_id = message.message_send(token, channel_id, "Hello")['message_id']
+
+    # Deactivate token by logging out
+    auth.auth_logout(token)
+
+    # Cannot use when token is invalid
+    with pytest.raises(AccessError):
+        message.message_send(token, channel_id, "Hello")
+
+    with pytest.raises(AccessError):
+        message.message_remove(token, msg_id)
+
+    with pytest.raises(AccessError):
+        message.message_edit(token, msg_id, "Goodbye")
 
 clear()

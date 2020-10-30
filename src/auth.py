@@ -1,12 +1,12 @@
-'''
+"""
 Login, logout and register functions
-'''
+"""
 from time import time
 import hashlib
 import jwt
 from data import data
 from error import InputError
-from other import get_active, is_valid, SECRET
+from other import is_valid, SECRET
 
 def auth_login(email, password):
     """
@@ -31,10 +31,15 @@ def auth_login(email, password):
     """
     for (index, user) in enumerate(data['users']):
         if user['email'] == email and validate_pw(user, password):
+            for token in data['tokens']:
+                if jwt.decode(token, SECRET, algorithms='HS256')['u_id'] == index:
+                    return {
+                        'u_id': index,
+                        'token': token,
+                    }
             payload = {'u_id': index, 'session': time()}
             token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
-            if get_active(token) is None:
-                data['tokens'].append(token)
+            data['tokens'].append(token)
             return {
                 'u_id': index,
                 'token': token,

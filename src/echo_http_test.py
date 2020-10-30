@@ -9,7 +9,6 @@ import signal
 import pytest
 import requests
 
-
 # Use this fixture to get the URL of the server. It starts the server for you,
 # so you don't need to.
 @pytest.fixture
@@ -18,7 +17,7 @@ def url():
     Fixture for creating a server
     '''
     url_re = re.compile(r' \* Running on ([^ ]*)')
-    server = Popen(["python3", "server.py"], stderr=PIPE, stdout=PIPE)
+    server = Popen(["python3", "src/server.py"], stderr=PIPE, stdout=PIPE)
     line = server.stderr.readline()
     local_url = url_re.match(line.decode())
     if local_url:

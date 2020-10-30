@@ -15,9 +15,15 @@ import other
 
 
 def default_handler(err):
+<<<<<<< HEAD
     '''
     Function for wher there is an error in the code, it will output an error
     '''
+=======
+    """
+    Function for wher there is an error in the code, it will output an error
+    """
+>>>>>>> master
     response = err.get_response()
     print('response', err, err.get_response())
     response.data = dumps({
@@ -37,9 +43,15 @@ APP.register_error_handler(Exception, default_handler)
 # Example
 @APP.route("/echo", methods=['GET'])
 def echo():
+<<<<<<< HEAD
     '''
     Route to flask server to repeat what the user inputs
     '''
+=======
+    """
+    Route to flask server to repeat what the user inputs
+    """
+>>>>>>> master
     data = request.args.get('data')
     if data == 'echo':
         raise InputError(description='Cannot echo "echo"')
@@ -51,9 +63,15 @@ def echo():
 # AUTH FUNCTIONS
 @APP.route("/auth/register", methods=['POST'])
 def register():
+<<<<<<< HEAD
     '''
     Route to flask server to register a user to the flockr
     '''
+=======
+    """
+    Route to flask server to register a user to the flockr
+    """
+>>>>>>> master
     data = request.get_json()
     return dumps(
         auth.auth_register(data['email'], data['password'], data['name_first'], data['name_last'])
@@ -61,10 +79,17 @@ def register():
 
 @APP.route("/auth/login", methods=['POST'])
 def login():
+<<<<<<< HEAD
     '''
     Route to flask server to login a user to the flockr
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to login a user to the flockr
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         auth.auth_login(data['email'], data['password'])
@@ -72,10 +97,17 @@ def login():
 
 @APP.route("/auth/logout", methods=['POST'])
 def logout():
+<<<<<<< HEAD
     '''
     Route to flask server to logout a user from the flockr
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to logout a user from the flockr
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         auth.auth_logout(data['token'])
@@ -85,10 +117,17 @@ def logout():
 # CHANNEL FUNCTIONS
 @APP.route("/channel/invite", methods=['POST'])
 def invite():
+<<<<<<< HEAD
     '''
     Route to flask server to invite a user to a channel
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to invite a user to a channel
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         channel.channel_invite(data['token'], data['channel_id'], data['u_id'])
@@ -96,10 +135,17 @@ def invite():
 
 @APP.route("/channel/details", methods=['GET'])
 def details():
+<<<<<<< HEAD
     '''
     Route to flask server to get all the details of a channel including name of
     the channel and all the members of the channel
     '''
+=======
+    """
+    Route to flask server to get all the details of a channel including name of
+    the channel and all the members of the channel
+    """
+>>>>>>> master
     # token = request.args.get('token')
     # channel_id = request.args.get('channel_id')
 
@@ -109,9 +155,15 @@ def details():
 
 @APP.route("/channel/messages", methods=['GET'])
 def messages():
+<<<<<<< HEAD
     '''
     Route to flask server to get all the messages in the channel
     '''
+=======
+    """
+    Route to flask server to get all the messages in the channel
+    """
+>>>>>>> master
     # token = request.args.get('token')
     # channel_id = request.args.get('channel_id')
     # start = request.args.get('start')
@@ -127,7 +179,11 @@ def leave():
     """
     Route to flask server to allow users to leave a channel
     """
+<<<<<<< HEAD
     data = request.get_json('data')
+=======
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         channel.channel_leave(data['token'], data['channel_id'])
@@ -135,10 +191,17 @@ def leave():
 
 @APP.route("/channel/join", methods=['POST'])
 def join():
+<<<<<<< HEAD
     '''
     Route to flask server to allow users to join a channel
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to allow users to join a channel
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         channel.channel_join(data['token'], data['channel_id'])
@@ -146,10 +209,17 @@ def join():
 
 @APP.route("/channel/addowner", methods=['POST'])
 def addowner():
+<<<<<<< HEAD
     '''
     Route to flask server to add owner to a channel
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to add owner to a channel
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         channel.channel_addowner(data['token'], data['channel_id'], data['u_id'])
@@ -157,10 +227,17 @@ def addowner():
 
 @APP.route("/channel/removeowner", methods=['POST'])
 def removeowner():
+<<<<<<< HEAD
     '''
     Route to flask server to remove an owner from a channel
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to remove an owner from a channel
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         channel.channel_removeowner(data['token'], data['channel_id'], data['u_id'])
@@ -170,10 +247,17 @@ def removeowner():
 # CHANNELS FUNCTIONS
 @APP.route("/channels/list", methods=['GET'])
 def clist():
+<<<<<<< HEAD
     '''
     Route to flask server to list all the channels in the flockr that the user is
     a part of
     '''
+=======
+    """
+    Route to flask server to list all the channels in the flockr that the user is
+    a part of
+    """
+>>>>>>> master
     # token = request.args.get('token')
 
     return dumps(
@@ -182,10 +266,17 @@ def clist():
 
 @APP.route("/channels/listall", methods=['GET'])
 def listall():
+<<<<<<< HEAD
     '''
     Route to flask server to list out all the channels in the flockr and their
     associated details
     '''
+=======
+    """
+    Route to flask server to list out all the channels in the flockr and their
+    associated details
+    """
+>>>>>>> master
     # token = request.args.get('token')
 
     return dumps(
@@ -194,10 +285,17 @@ def listall():
 
 @APP.route("/channels/create", methods=['POST'])
 def create():
+<<<<<<< HEAD
     '''
     Route to flask server to create a channel in the flockr
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to create a channel in the flockr
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         channels.channels_create(data['token'], data['name'], data['is_public'])
@@ -207,10 +305,17 @@ def create():
 # MESSAGES FUNCTIONS
 @APP.route("/message/send", methods=['POST'])
 def send():
+<<<<<<< HEAD
     '''
     Route to server to allow a user to send a message in a channel
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to server to allow a user to send a message in a channel
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         message.message_send(data['token'], data['channel_id'], data['message'])
@@ -218,10 +323,17 @@ def send():
 
 @APP.route("/message/remove", methods=['DELETE'])
 def remove():
+<<<<<<< HEAD
     '''
     Route to flask server to allow a user to remove a message in a channel
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to allow a user to remove a message in a channel
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         message.message_remove(data['token'], data['message_id'])
@@ -229,10 +341,17 @@ def remove():
 
 @APP.route("/message/edit", methods=['PUT'])
 def edit():
+<<<<<<< HEAD
     '''
     Route to flask server to allow a user to edit a message in a channel
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to allow a user to edit a message in a channel
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         message.message_edit(data['token'], data['message_id'], data['message'])
@@ -241,9 +360,15 @@ def edit():
 # USER FUNCTIONS
 @APP.route("/user/profile", methods=['GET'])
 def profile():
+<<<<<<< HEAD
     '''
     Route to flask server to allow a user to look at their profile on flockr
     '''
+=======
+    """
+    Route to flask server to allow a user to look at their profile on flockr
+    """
+>>>>>>> master
     # token = request.args.get('token')
     # u_id = request.args.get('u_id')
 
@@ -253,10 +378,17 @@ def profile():
 
 @APP.route("/user/profile/setname", methods=['PUT'])
 def setname():
+<<<<<<< HEAD
     '''
     Route to flask server to allow a user to change their name in their profile on flockr
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to allow a user to change their name in their profile on flockr
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         user.user_profile_setname(data['token'], data['name_first'], data['name_last'])
@@ -264,10 +396,17 @@ def setname():
 
 @APP.route("/user/profile/setemail", methods=['PUT'])
 def setemail():
+<<<<<<< HEAD
     '''
     Route to flask server to allow a user to change their email in their profile on flockr
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to allow a user to change their email in their profile on flockr
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         user.user_profile_setemail(data['token'], data['email'])
@@ -275,10 +414,17 @@ def setemail():
 
 @APP.route("/user/profile/sethandle", methods=['PUT'])
 def sethandle():
+<<<<<<< HEAD
     '''
     Route to flask server to allow a user to change their handle in their profile on flockr
     '''
     data = request.get_json('data')
+=======
+    """
+    Route to flask server to allow a user to change their handle in their profile on flockr
+    """
+    data = request.get_json()
+>>>>>>> master
 
     return dumps(
         user.user_profile_sethandle(data['token'], data['handle_str'])
@@ -286,16 +432,22 @@ def sethandle():
 
 @APP.route("/users/all", methods=['GET'])
 def usersall():
+<<<<<<< HEAD
     '''
     Route to flask server to list out all the users in the flockr and their associated
     details
     '''
+=======
+    """
+    Route to flask server to list out all the users in the flockr and their associated
+    details
+    """
+>>>>>>> master
     # token = request.args.get('token')
 
     return dumps(
         other.users_all(request.args.get('token'))
     )
-
 
 if __name__ == "__main__":
     APP.run(port=0) # Do not edit this port

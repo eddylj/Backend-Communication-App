@@ -27,7 +27,6 @@ def user_profile(token, u_id):
 
     '''
 
-    # Why would you change it to InputError? Token's going to get changed but error handling won't.
     caller_id = get_active(token)
     if caller_id is None:
         raise AccessError
@@ -69,7 +68,6 @@ def user_profile_setname(token, name_first, name_last):
                 - the token is invalid and is inactive
     '''
 
-    # InputError as this only confirms that the token exists, not necessarily active or not
     caller_id = get_active(token)
     if caller_id is None:
         raise AccessError
@@ -82,20 +80,12 @@ def user_profile_setname(token, name_first, name_last):
     if not 1 <= len(name_last) <= 50:
         raise InputError
 
-    # # Don't use get_active function as user doesn't have to be active
-    # u_id = int(token)
-    # Where did you get this from? Because assignment specs say in 6.3:
-    # "for all functions except auth/register and auth/login, an AccessError is
-    # thrown when the token passed in is not a valid token."
-
-    # Proposed change: have InputError be thrown if passed name is the same as
-    # existing. This keeps the code consistent to the logic for the other
-    # profile_set functions.
-    # data['users'][caller_id]['name_first'] = name_first
-    # data['users'][caller_id]['name_last'] = name_last
-
     if (data['users'][caller_id]['name_first'] == name_first and
+<<<<<<< HEAD
             data['users'][caller_id]['name_last'] == name_last):
+=======
+        data['users'][caller_id]['name_last'] == name_last):
+>>>>>>> master
         raise InputError
 
     data['users'][caller_id]['name_first'] = name_first
@@ -134,10 +124,6 @@ def user_profile_setemail(token, email):
     for user in data['users']:
         if user['email'] == email:
             raise InputError
-
-    # Don't use get_active function as user doesn't have to be active
-    # lines 53-55
-    # u_id = int(token)
 
     data['users'][caller_id]['email'] = email
 

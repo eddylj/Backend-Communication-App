@@ -4,13 +4,11 @@ Tests to test the profile, setname, setemail and sethandle functions in user.py
 import pytest
 import auth
 import user
-from error import InputError#, AccessError <- used for invalid token tests
+from error import InputError, AccessError
 from other import clear
 
 user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
-
-# Consider changing user registration to fixtures
 
 ############################# USER_PROFILE TESTS ###############################
 
@@ -44,7 +42,7 @@ def test_user_profile_invalid_id():
     with pytest.raises(InputError):
         user.user_profile(token, u_id + 1)
 
-    # White-box? test for negative u_ids
+    # White-box test for negative u_ids
     with pytest.raises(InputError):
         user.user_profile(token, -1)
 
@@ -104,7 +102,6 @@ def test_user_setname_repeated():
     Test case for user_profile_setname(), where the passed name is the same as
     the existing name. Expected to raise an input error.
     """
-    # Assumed to raise an InputError to maintain consistency with other set functions.
     clear()
 
     token = auth.auth_register(*user1)['token']
@@ -176,7 +173,6 @@ def test_user_setemail_repeated():
     Test case for user_profile_setemail(), where the passed email is the same as
     the existing email. Expected to raise an input error.
     """
-    # Assumed to raise an InputError. No need for additional check if matching email is user's.
     clear()
 
     token = auth.auth_register(*user1)['token']
@@ -213,7 +209,6 @@ def test_user_sethandle_invalid():
         - Between 3-20 characters inclusively in length.
         - Contains upper-case letters.
     """
-    # Include these in assumptions.md
     clear()
 
     account = auth.auth_register(*user1)
@@ -232,7 +227,7 @@ def test_user_sethandle_invalid():
     with pytest.raises(InputError):
         user.user_profile_sethandle(token, "haaaaaaaaaydeneverest")
 
-    # Correct length, but contains upper-case characters.
+    # Valid length, but contains upper-case characters.
     with pytest.raises(InputError):
         user.user_profile_sethandle(token, "EverestHayden")
 
@@ -264,7 +259,6 @@ def test_user_sethandle_repeated():
     Test case for user_profile_sethandle(), where the passed handle is the same
     as the existing handle. Expected to raise an input error.
     """
-    # Same as other repeated tests.
     clear()
 
     token = auth.auth_register(*user1)['token']
@@ -272,6 +266,32 @@ def test_user_sethandle_repeated():
     with pytest.raises(InputError):
         user.user_profile_sethandle(token, "haydeneverest")
 
-# To be added: invalid token tests
+# Checking invalid token
+def test_user_invalid_token():
+    """
+    Test for invalid tokens throughout all user functions
+    """
+    clear()
+
+    # Register a user
+    account = auth.auth_register(*user1)
+    token = account['token']
+    u_id = account['u_id']
+
+    # Deactivate token by logging out
+    auth.auth_logout(token)
+
+    # Cannot use when token is invalid
+    with pytest.raises(AccessError):
+        user.user_profile(token, u_id)
+
+    with pytest.raises(AccessError):
+        user.user_profile_setname(token, "Andras", "Arato")
+
+    with pytest.raises(AccessError):
+        user.user_profile_setemail(token, "anothervalidemail@gmail.com")
+
+    with pytest.raises(AccessError):
+        user.user_profile_sethandle(token, "andrasarato19")
 
 clear()

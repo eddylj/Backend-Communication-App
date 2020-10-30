@@ -1,16 +1,34 @@
-'''
+"""
 Functions to send, remove and edit messages
-'''
+"""
 import time
 from data import data
 from error import InputError, AccessError
 from other import get_active
 
 def message_send(token, channel_id, message):
-    '''
-    Send a message and create a new entry in the messages database and also inside the channels
-    messages database
-    '''
+    """
+    Send a message and create a new entry in the messages database and also in
+    the channel's messages database.
+
+    Parameters:
+        token (str)         : User's authorisation hash.
+        channel_id (int)    : Destination channel.
+        message (str)       : Message to be sent.
+
+    Returns:
+        {'message_id'(int)}:
+            A dictionary containing the unique identifier of the newly sent
+            message.
+
+    Raises:
+        AccessError:
+            When:
+                - the caller is not a member of the channel.
+                - token is invalid.
+        InputError:
+            - When message isn't between 1 and 1000 characters in length.
+    """
     # Keeping the timestamp as close to the start of function as possible.
     timestamp = int(time.time())
 
@@ -35,12 +53,10 @@ def message_send(token, channel_id, message):
         'time_created' : timestamp,
     }
 
-    # Adds to channel data WITHOUT channel_id, since output demands that.
-    # This puts the new message at the 0th element, as per requirement in channel_messages
+    # Inserts new message at the start of the messages stored in channel data.
     data['channels'][channel_id]['messages'].insert(0, new_message)
 
     # Storing channel_id and caller_id only in message data
-    # The others aren't relevant and only take up space + need to be updated.
     data['messages'].append({'channel_id': channel_id, 'u_id': caller_id})
 
     return {
@@ -48,9 +64,29 @@ def message_send(token, channel_id, message):
     }
 
 def message_remove(token, message_id):
-    '''
-    Remove a message inside the messages database and channels database
-    '''
+    """
+    Removes a message from the channel's database that is storing it. Replaces
+    the data stored in the messages data with an empty dictionary to preserve
+    the generation of unique message_ids.
+
+    Parameters:
+        token (str)         : User's authorisation hash.
+        message_id (int)    : Target message's identifier.
+
+    Returns:
+        {}: An empty dictionary if message_remove succeeds.
+
+    Raises:
+        AccessError:
+            - When token is invalid.
+            - When none of these conditions are met:
+                - Message with message_id was sent by the caller making this
+                request.
+                - The caller isn't an owner of the channel where the message
+                was sent.
+        InputError:
+            - When the message doesn't exist (never sent/already deleted).
+    """
     # Check if token is valid
     u_id = get_active(token)
     if u_id is None:
@@ -63,11 +99,10 @@ def message_remove(token, message_id):
     channel_id = data['messages'][message_id]['channel_id']
     channel_data = data['channels'][channel_id]
 
-    # If not sender of message / not owner of flockr
+    # If not sender of message and not owner of channel
     if u_id != data['messages'][message_id]['u_id']:
         if u_id not in channel_data['owners']:
-            if data['users'][u_id]['permission_id'] != 1:
-                raise AccessError
+            raise AccessError
     elif u_id not in channel_data['members']:
         raise AccessError
 
@@ -80,14 +115,40 @@ def message_remove(token, message_id):
             channel_data['messages'].pop(index)
             break
 
-    return {}
+    # Coverage treats the for loop on line 75 as incomplete if it breaks early
+    # and states that it never jumps to 82. Clearly doesn't make sense since
+    # theres no early returns or exits in the loop. Once the loop breaks,
+    # function will return on 82. Coverage exception cautiously applied.
+    return {} # pragma: no cover
 
 def message_edit(token, message_id, message):
-    '''
-    Edit a message
-    This changes the message inside the data['messages'] database and also
-    inside the data['channels'][channel_id]['messages'] database
-    '''
+    """
+    Edits the contents of a message stored in channel data and updates the
+    timestamp. If an empty string is passed as the message string, the message
+    is deleted instead.
+
+    Parameters:
+        token (str)         : User's authorisation hash.
+        message_id (int)    : Target message's identifier.
+        message (str)       : New message to be edited in.
+
+    Returns:
+        {}: An empty dictionary if message_edit succeeds.
+
+    Raises:
+        AccessError:
+            - When token is invalid.
+            - When none of these conditions are met:
+                - Message with message_id was sent by the caller making this
+                request.
+                - The caller isn't an owner of the channel where the message
+                was sent.
+        InputError:
+            When:
+                - The message to be edited in is longer than 1000 characters.
+                - The message is exactly the same as the one stored in data.
+                - Message_id doesn't correspond to an existing message.
+    """
     # Keeping the timestamp as close to the start of function as possible.
     timestamp = int(time.time())
 
@@ -104,14 +165,16 @@ def message_edit(token, message_id, message):
     if len(message) > 1000:
         raise InputError
 
-    sender_id = data['messages'][message_id]['u_id']
     channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
     channel_messages = data['channels'][channel_id]['messages']
 
-    # If not original sender, not owner and not owner of flockr
-    if u_id not in (sender_id, data['messages'][message_id]['u_id']):
-        if data['users'][u_id]['permission_id'] != 1:
+    # If not sender of message and not owner of channel
+    if u_id != data['messages'][message_id]['u_id']:
+        if u_id not in channel_data['owners']:
             raise AccessError
+    elif u_id not in channel_data['members']:
+        raise AccessError
 
     for (index, msg) in enumerate(channel_messages):
         if msg['message_id'] == message_id:
@@ -126,13 +189,15 @@ def message_edit(token, message_id, message):
                 msg['time_created'] = timestamp
             break
 
-    return {}
+    # Same scenario as message_remove. Coverage doesn't account for breaks.
+    # Coverage exception cautiously applied.
+    return {} # pragma: no cover
 
 def is_message(message_id):
-    '''
+    """
     Checks if message_id corresponds to a sent message. Also checks if the
     message has already been deleted.
-    '''
+    """
     return (
         -1 < message_id < len(data['messages']) and
         data['messages'][message_id] != {}

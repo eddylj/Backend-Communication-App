@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 '''
 Tests for all functions in user.py
 '''
 import pytest
 import server
 import json
+=======
+"""
+Tests for all functions in user.py
+"""
+>>>>>>> master
 import requests
 from echo_http_test import url
 
@@ -18,9 +24,15 @@ user = {
 
 # BASE CASE
 def test_channel_invite_valid_http(url):
+<<<<<<< HEAD
     '''
     Base test for channel_invite
     '''
+=======
+    """
+    Base test for channel_invite
+    """
+>>>>>>> master
 
     user2 = {
         'email': 'alsovalidemail@gmail.com',
@@ -47,7 +59,10 @@ def test_channel_invite_valid_http(url):
     req = requests.post(f"{url}/channels/create", json=channel_payload)
     channel1 = req.json()
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
     user1_details = {
         'u_id': account1['u_id'],
         'name_first': 'Hayden',
@@ -73,7 +88,10 @@ def test_channel_invite_valid_http(url):
 
     requests.post(f"{url}/channel/join", json=join_payload)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
     details_payload = {
         'token' : account1['token'],
         'channel_id' : channel1['channel_id']
@@ -87,9 +105,15 @@ def test_channel_invite_valid_http(url):
 
 # # INVALID CHANNEL_ID
 def test_channel_invite_channel_invalid_http(url):
+<<<<<<< HEAD
     '''
     Test channel_invite fails if the channel is invalid
     '''
+=======
+    """
+    Test channel_invite fails if the channel is invalid
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -108,9 +132,15 @@ def test_channel_invite_channel_invalid_http(url):
 
 # INVITING YOURSELF
 def test_channel_invite_self_invite_http(url):
+<<<<<<< HEAD
     '''
     Test channel_invite fails if you invite yourself
     '''
+=======
+    """
+    Test channel_invite fails if you invite yourself
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -138,9 +168,15 @@ def test_channel_invite_self_invite_http(url):
 
 # INVITING WHILE NOT BEING A MEMBER
 def test_channel_invite_non_member_http(url):
+<<<<<<< HEAD
     '''
     Test channel_invite fails when you aren't a member of the channel being invite to
     '''
+=======
+    """
+    Test channel_invite fails when you aren't a member of the channel being invite to
+    """
+>>>>>>> master
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
     account1 = req.json()
@@ -188,9 +224,15 @@ def test_channel_invite_non_member_http(url):
 
 # INVITING A PERSON THAT'S ALREADY A MEMBER
 def test_channel_invite_already_member_http(url):
+<<<<<<< HEAD
     '''
     Test channel_invite fails when you invite an existing member
     '''
+=======
+    """
+    Test channel_invite fails when you invite an existing member
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -216,11 +258,14 @@ def test_channel_invite_already_member_http(url):
     req = requests.post(f"{url}/channels/create", json=channel_payload)
     channel = req.json()
 
+<<<<<<< HEAD
     join_payload = {
         'token' : account1['token'],
         'channel_id' : channel['channel_id']
     }
 
+=======
+>>>>>>> master
     # invite yourself
     invite_payload = {
         'token' : account1['token'],
@@ -236,9 +281,15 @@ def test_channel_invite_already_member_http(url):
 
 # BASE CASE - Valid channel with no messages
 def test_channel_messages_valid_http(url):
+<<<<<<< HEAD
     '''
     Base test for channel_messages
     '''
+=======
+    """
+    Base test for channel_messages
+    """
+>>>>>>> master
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
     account = req.json()
@@ -268,9 +319,15 @@ def test_channel_messages_valid_http(url):
 
 # INVALID CHANNEL
 def test_channel_messages_invalid_channel_http(url):
+<<<<<<< HEAD
     '''
     Test channel_messages fails when using an invalid channel
     '''
+=======
+    """
+    Test channel_messages fails when using an invalid channel
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -289,9 +346,15 @@ def test_channel_messages_invalid_channel_http(url):
 
 # INVALID START PARAMETER
 def test_channel_messages_invalid_start_http(url):
+<<<<<<< HEAD
     '''
     Test channel_messages fails when having an invalid start
     '''
+=======
+    """
+    Test channel_messages fails when having an invalid start
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -328,9 +391,15 @@ def test_channel_messages_invalid_start_http(url):
 
 # INACCESSBILE CHANNEL
 def test_channel_messages_no_access_http(url):
+<<<<<<< HEAD
     '''
     Test channel_messages fails when channel is not public
     '''
+=======
+    """
+    Test channel_messages fails when channel is not public
+    """
+>>>>>>> master
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
     account1 = req.json()
@@ -385,9 +454,15 @@ def test_channel_messages_no_access_http(url):
 
 # BASE CASE
 def test_channel_leave_valid_http(url):
+<<<<<<< HEAD
     '''
     Base test for channel_leave
     '''
+=======
+    """
+    Base test for channel_leave
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -445,9 +520,15 @@ def test_channel_leave_valid_http(url):
 
 # INVALID CHANNEL
 def test_channel_leave_invalid_channel_http(url):
+<<<<<<< HEAD
     '''
     Test channel_leave fails when invalid channel
     '''
+=======
+    """
+    Test channel_leave fails when invalid channel
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -478,9 +559,15 @@ def test_channel_leave_invalid_channel_http(url):
 
 # TRYING TO LEAVE A CHANNEL WHICH USER IS NOT IN
 def test_channel_leave_not_member_http(url):
+<<<<<<< HEAD
     '''
     Test channel_leave fails when a user is not in it already
     '''
+=======
+    """
+    Test channel_leave fails when a user is not in it already
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -520,9 +607,15 @@ def test_channel_leave_not_member_http(url):
 
 # BASE CASE
 def test_channel_details_valid_http(url):
+<<<<<<< HEAD
     '''
     Base test for channel_details
     '''
+=======
+    """
+    Base test for channel_details
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -604,9 +697,15 @@ def test_channel_details_valid_http(url):
 
 # INVALID CHANNEL
 def test_channel_details_invalid_channel_http(url):
+<<<<<<< HEAD
     '''
     Test channel_details fails when invalid channel
     '''
+=======
+    """
+    Test channel_details fails when invalid channel
+    """
+>>>>>>> master
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
     account1 = req.json()
@@ -623,9 +722,15 @@ def test_channel_details_invalid_channel_http(url):
 
 # USER NOT A MEMBER
 def test_channel_details_not_member_http(url):
+<<<<<<< HEAD
     '''
     Test channel_details fails when the user is not a member of the channel
     '''
+=======
+    """
+    Test channel_details fails when the user is not a member of the channel
+    """
+>>>>>>> master
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
     account1 = req.json()
@@ -662,9 +767,15 @@ def test_channel_details_not_member_http(url):
 
 # BASE CASE
 def test_channel_join_valid_http(url):
+<<<<<<< HEAD
     '''
     Base test for channel_join
     '''
+=======
+    """
+    Base test for channel_join
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -726,9 +837,15 @@ def test_channel_join_valid_http(url):
 
 # INVALID CHANNEL
 def test_channel_join_invalid_channel_http(url):
+<<<<<<< HEAD
     '''
     Test channel_join fails when and invalid channel is used
     '''
+=======
+    """
+    Test channel_join fails when and invalid channel is used
+    """
+>>>>>>> master
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
     account = req.json()
@@ -745,9 +862,15 @@ def test_channel_join_invalid_channel_http(url):
 
 # PRIVATE CHANNEL
 def test_channel_join_private_channel_http(url):
+<<<<<<< HEAD
     '''
     Test channel_join fails when the channel is private
     '''
+=======
+    """
+    Test channel_join fails when the channel is private
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -784,9 +907,15 @@ def test_channel_join_private_channel_http(url):
 
 # JOINING A CHANNEL USER IS ALREADY IN
 def test_channel_join_already_member_http(url):
+<<<<<<< HEAD
     '''
     Test channel_join fails when user is already a member
     '''
+=======
+    """
+    Test channel_join fails when user is already a member
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -813,9 +942,15 @@ def test_channel_join_already_member_http(url):
 
 # BASE CASE
 def test_channel_addowner_valid_http(url):
+<<<<<<< HEAD
     '''
     Base test for channel_addowner
     '''
+=======
+    """
+    Base test for channel_addowner
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -885,9 +1020,15 @@ def test_channel_addowner_valid_http(url):
 
 # INVALID CHANNEL
 def test_channel_addowner_invalid_channel_http(url):
+<<<<<<< HEAD
     '''
     Test channel_addowner fails when invalid channel
     '''
+=======
+    """
+    Test channel_addowner fails when invalid channel
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -906,9 +1047,15 @@ def test_channel_addowner_invalid_channel_http(url):
 
 # WHEN USER IS ALREADY AN OWNER OF THE CHANNEL
 def test_channel_addowner_already_owner_http(url):
+<<<<<<< HEAD
     '''
     Test channel_addowner fails when user is already an owner
     '''
+=======
+    """
+    Test channel_addowner fails when user is already an owner
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -935,9 +1082,15 @@ def test_channel_addowner_already_owner_http(url):
 
 # WHEN AUTHORISED USER IS NOT AN OWNER AND ADDOWNERS THEMSELF
 def test_channel_addowner_auth_self_http(url):
+<<<<<<< HEAD
     '''
     Test channel_addowner fails when adding oneself
     '''
+=======
+    """
+    Test channel_addowner fails when adding oneself
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -981,9 +1134,15 @@ def test_channel_addowner_auth_self_http(url):
 
 # WHEN AUTHORISED USER IS NOT AN OWNER AND ADDOWNERS ANOTHER USER
 def test_channel_addowner_auth_not_owner_http(url):
+<<<<<<< HEAD
     '''
     Test channel_addowner fails when the a non-owner tries to addowner
     '''
+=======
+    """
+    Test channel_addowner fails when the a non-owner tries to addowner
+    """
+>>>>>>> master
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
     account1 = req.json()
@@ -1047,9 +1206,15 @@ def test_channel_addowner_auth_not_owner_http(url):
 
 # BASE CASE
 def test_channel_removeowner_valid_http(url):
+<<<<<<< HEAD
     '''
     Base test for channel_removeowner
     '''
+=======
+    """
+    Base test for channel_removeowner
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -1126,6 +1291,7 @@ def test_channel_removeowner_valid_http(url):
 
 # INVALID CHANNEL
 def test_channel_removeowner_invalid_channel_http(url):
+<<<<<<< HEAD
     '''
     Test channel_removeowner fails when invalid channel
     '''
@@ -1150,6 +1316,11 @@ def test_channel_removeowner_invalid_channel_http(url):
     Test channel_removeowner fails when invalid channel
     '''
 
+=======
+    """
+    Test channel_removeowner fails when invalid channel
+    """
+>>>>>>> master
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
     account = req.json()
@@ -1167,9 +1338,15 @@ def test_channel_removeowner_invalid_channel_http(url):
 
 # WHEN AUTHORISED USER IS NOT AN OWNER REMOVE ANOTHER OWNER
 def test_channel_removeowner_not_owner_http(url):
+<<<<<<< HEAD
     '''
     Test channel_removeowner fails when not an owner
     '''
+=======
+    """
+    Test channel_removeowner fails when not an owner
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -1238,9 +1415,15 @@ def test_channel_removeowner_not_owner_http(url):
 
 # REMOVING THEMSELVES AS OWNER
 def test_channel_removeowner_auth_self_http(url):
+<<<<<<< HEAD
     '''
     Test channel_removeowner fails when removing themselves as owner
     '''
+=======
+    """
+    Test channel_removeowner fails when removing themselves as owner
+    """
+>>>>>>> master
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
     account1 = req.json()
@@ -1290,9 +1473,15 @@ def test_channel_removeowner_auth_self_http(url):
 
 # REMOVING LAST OWNER AS GLOBAL OWNER
 def test_channel_removeowner_last_owner_http(url):
+<<<<<<< HEAD
     '''
     Test channel_removeowner fails when global owner
     '''
+=======
+    """
+    Test channel_removeowner fails when global owner
+    """
+>>>>>>> master
 
     # Register user1
     req = requests.post(f"{url}/auth/register", json=user)
@@ -1338,7 +1527,15 @@ def test_channel_removeowner_last_owner_http(url):
         'token' : account2['token'],
         'channel_id' : channel['channel_id']
     }
+<<<<<<< HEAD
 
+=======
+    leave_payload = {
+        'token' : account1['token'],
+        'channel_id' : channel['channel_id']
+    }
+    requests.post(f"{url}/channel/leave", json=leave_payload)
+>>>>>>> master
     req = requests.get(f"{url}/channel/details", params=details_payload)
     details = req.json()
 
