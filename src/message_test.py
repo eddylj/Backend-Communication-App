@@ -542,3 +542,293 @@ def test_message_invalid_token():
         message.message_edit(token, msg_id, "Goodbye")
 
 clear()
+
+############################## MESSAGE_PIN TESTS ##############################
+
+def test_message_pin_valid():
+    '''
+    Base Test for message_pin. Owner pinning a message and checking with channel_messages()
+    '''
+    clear()
+
+     # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+
+    # Invite user 1 into the channel
+    channel.channel_invite(token2, channel_id, u_id1)
+
+    # Send messages
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
+    timestamp2 = int(time.time())
+    msg_id2 = message.message_send(token2, channel_id, "goodnight")['message_id']
+
+    # Owner of Channel pinning
+    message.message_pin(token2, msg_id1)
+
+    # Owner of FLockr pinning
+    message.message_pin(token1, msg_id2)
+
+    
+
+    expected = [
+        {
+            'message_id': msg_id1,
+            'u_id': u_id2,
+            'message': "Hello",
+            'time_created': timestamp1
+            'is_pinned': True
+        },
+        {
+            'message_id': msg_id2,
+            'u_id': u_id1,
+            'message': "goodnight",
+            'time_created': timestamp2
+            'is_pinned': True
+        }
+    ]
+
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': expected,
+        'start': 0,
+        'end': -1
+    }
+
+
+def test_message_pin_invalid_message_id():
+    clear()
+
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Input error when message_id is not valid
+    with pytest.raises(InputError):
+        message.message_pin(token1, 123415)
+    
+    # Message is already pinned
+    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+    message.message_pin(token1, msg_id1)
+
+    with pytest.raises(InputError):
+        message.message_pin(token1, msg_id1)
+
+def test_message_pin_not_member():
+    clear()
+
+    # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+
+    # Create channel
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+
+    msg_id = message.message_send(token2, channel_id, "KOOLL")['message_id']
+
+    # Even if flockr owner, cannot pin unless in channel
+    with pytest.raises(AccessError):
+        message.message_pin(token1, msg_id)
+
+    #If the owner who wants to pin the message leaves
+    channel.channel_leave(token2, channel_id)
+    with pytest.raises(AccessError):
+        message.message_pin(token2, msg_id)
+
+def test_message_pin_not_owner():
+    clear()
+
+    # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Invite user 2 into the channel
+    channel.channel_invite(token1, channel_id, u_id2)
+
+    msg_id = message.message_send(token2, channel_id, "that one")['message_id']
+    
+    # Not the owner of the channel
+    with pytest.raises(AccessError):
+        message.message_pin(token2, msg_id)
+
+############################## MESSAGE_UNPIN TESTS ##############################
+
+def test_message_unpin_valid():
+    '''
+    Base Test for message_unpin. Owner pinning a message and checking with channel_messages()
+    '''
+    clear()
+
+     # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+
+    # Invite user 1 into the channel
+    channel.channel_invite(token1, channel_id, u_id1)
+
+    # Send messages
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
+
+    timestamp2 = int(time.time())
+    msg_id2 = message.message_send(token2, channel_id, "what it do")['message_id']
+
+    message.message_pin(token1, msg_id1)
+    message.message_pin(token2, msg_id2)
+
+    before_unpinned = [
+        {
+            'message_id': msg_id1,
+            'u_id': u_id2,
+            'message': "Hello",
+            'time_created': timestamp1
+            'is_pinned': True
+        },
+        {
+            'message_id': msg_id2,
+            'u_id': u_id2,
+            'message': "What it do",
+            'time_created': timestamp2
+            'is_pinned': True
+        }
+    ]
+
+    # Check that the messages were pinned before unpinning
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': before_unpinned,
+        'start': 0,
+        'end': -1
+    }
+
+    # Flockr Owner unpinning
+    message.message_unpin(token1, msg_id2)
+
+    # Channel Owner unpinning
+    message.message_unpin(token2, msg_id1)
+
+    expected = [
+        {
+            'message_id': msg_id1,
+            'u_id': u_id2,
+            'message': "Hello",
+            'time_created': timestamp1
+            'is_pinned': False
+        },
+        {
+            'message_id': msg_id2,
+            'u_id': u_id2,
+            'message': "What it do",
+            'time_created': timestamp2
+            'is_pinned': False
+        }
+    ]
+
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': expected,
+        'start': 0,
+        'end': -1
+    }
+
+def test_message_unpin_invalid_message_id():
+    clear()
+
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    # Input error when message_id is not valid
+    with pytest.raises(InputError):
+        message.message_unpin(token1, 123415)
+    
+    #Message is already unpinned
+    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+    msg_id2 = message.message_send(token1, channel_id, "cool story")['message_id']
+   
+    # Unpinning the same message twice
+    message.message_pin(token1, msg_id1)
+    message.message_unpin(token1, msg_id1)
+
+    with pytest.raises(InputError):
+        message.message_unpin(token1, msg_id1)
+
+    # Unpinning a message that was never pinned
+    with pytest.raises(InputError):
+        message.message_unpin(token1, msg_id2)
+
+def test_message_unpin_not_member():
+    clear()
+
+    # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+
+    # Create channel
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+
+    msg_id = message.message_send(token2, channel_id, "KOOLL")['message_id']
+    message.message_pin(token2, msg_id)
+
+    with pytest.raises(AccessError):
+        message.message_unpin(token1, msg_id)
+
+    #If the owner who wants to pin the message leaves
+    channel.channel_leave(token2, channel_id)
+    with pytest.raises(AccessError):
+        message.message_unpin(token2, msg_id)
+
+def test_message_unpin_not_owner():
+    clear()
+
+    # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Invite user 2 into the channel
+    channel.channel_invite(token1, channel_id, u_id2)
+
+    msg_id = message.message_send(token2, channel_id, "that one")['message_id']
+    message.message_pin(token1, msg_id)
+
+    # Not the owner of the channel
+    with pytest.raises(AccessError):
+        message.message_unpin(token2, msg_id)
+
