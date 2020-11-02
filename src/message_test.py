@@ -769,7 +769,7 @@ def test_message_unpin_valid():
         'end': -1
     }
 
-def test_message_unpin_invalid_message_id():
+def test_message_unpin_invalid_message_id(): 
     
     clear()
 
@@ -930,7 +930,7 @@ def test_message_react_invalid_react_id():
     with pytest.raises(InputError):
         message.message_react(token1, msg_id1, 123415)
 
-def test_message_react_already_react():
+def test_message_react_not_active_react_id():
     clear()
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
@@ -969,13 +969,13 @@ def test_message_react_already_react():
         'end': -1
     }
 
-    # Input error when reacting an already reacted message
+    # Input error when react_id is already active
     with pytest.raises(InputError):
         message.message_react(token1, msg_id1, react_id)
 
 ############################## MESSAGE_UNREACT TESTS ##############################
 
-def test_message_react_valid():
+def test_message_unreact_valid():
     clear()
 
      # Create 2 users
@@ -1050,3 +1050,94 @@ def test_message_react_valid():
         'start': 0,
         'end': -1
     }
+
+def test_message_unreact_invalid_message_id():
+    clear()
+
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+     # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+	react_id = 1
+
+    # Input error when message_id is not valid
+    with pytest.raises(InputError):
+        message.message_unreact(token1, 123415, react_id)
+
+def test_message_react_invalid_react_id():
+    clear()
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+     # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+	# Send messages
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+
+    # Input error when react_id is not valid
+    with pytest.raises(InputError):
+        message.message_unreact(token1, msg_id1, 123415)
+
+def test_message_unreact_not_active_react_id():
+    clear()
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+     # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+	# Send messages
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+
+    timestamp2 = int(time.time())
+    msg_id2 = message.message_send(token1, channel_id, "cs cs")['message_id']
+
+	react_id = 1
+
+	message.message_react(token1, msg_id1, react_id)
+    
+    expected = [
+        {
+            'message_id': msg_id2,
+            'u_id': u_id1,
+            'message': "Hello",
+            'time_created': timestamp1
+            'reacts': [
+                {
+                    'react_id': 1
+                    'u_ids': [u_id1]
+                    'is_the_user_reacted': True
+                }
+            ]
+            'is_pinned': False
+        },
+        {
+            'message_id': msg_id1,
+            'u_id': u_id1,
+            'message': "cs cs",
+            'time_created': timestamp2
+            'reacts': [
+                {
+                    'react_id': None
+                    'u_ids': None
+                    'is_the_user_reacted': False
+                }
+            ]
+            'is_pinned': False
+        }
+    ]
+
+	assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': expected,
+        'start': 0,
+        'end': -1
+    }
+
+    # Input error when reacting an already reacted message
+    with pytest.raises(InputError):
+        message.message_unreact(token1, msg_id2, react_id)
