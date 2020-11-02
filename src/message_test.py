@@ -1037,8 +1037,8 @@ def test_message_unreact_valid():
             'reacts': [
                 {
                     'react_id': 1
-                    'u_ids': [u_id1, u_id2]
-                    'is_the_user_reacted': True
+                    'u_ids': [u_id1]
+                    'is_the_user_reacted': False
                 }
             ]
             'is_pinned': False
