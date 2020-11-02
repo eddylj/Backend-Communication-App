@@ -228,7 +228,7 @@ def test_auth_logout_fail():
 
 
 ####################### AUTH_PASSWORDRESET_REQUEST TESTS #######################
-def test_auth_passwordreset_request_fail():
+def test_auth_passwordreset_request():
     """
     Test for auth_passwordreset_request with invalid email
     """
@@ -262,8 +262,13 @@ def test_auth_passwordreset_reset_base():
     # Reset
     auth.auth_passwordreset_reset(reset_code, new_password)
 
-    ### Not sure about this, because this makes this test non-black box
-    assert data['users'][0]['password'] == "asdf1234qwer"
+
+    # passed = {
+    #     'u_id' : 0,
+    #     'token' : 
+    # }
+    # Not sure about if JWT for the token is possible
+    assert auth.auth_login('validemail@gmail.com', 'asdf1234qwer')['u_id'] == 0
 
 def test_auth_passwordreset_reset_invalid_code():
     """
