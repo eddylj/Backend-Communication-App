@@ -47,10 +47,10 @@
 - Edit raises InputError if passed message is the same as the existing message.
 - Edit does not change the original sender's ID if edited by a different user.
 ### message_pin()
-- the owner of the flockr can also pin messages despite not being the owner of the channel
+- the owner of the flockr can also pin messages despite not being the owner of the channel, however, they must be in the channel
 - only owners in the channel can pin
 ### message_unpin()
-- the owner of the flockr can also unpin messages despite not being the owner of the channel
+- the owner of the flockr can also unpin messages despite not being the owner of the channel, however, they must be in the channel
 - only owners in the channel can unpin
 
 
