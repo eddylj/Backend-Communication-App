@@ -74,3 +74,10 @@
 ## Server
 ### /message
 - Some black-box HTTP message tests which need to call /channel/messages for comparison cannot be done because of the latency affecting the accuracy of the timestamp.
+
+## Standup
+- If nothing was sent during the standup through standup_send, no message gets sent into the channel at the end.
+### standup_start()
+- Caller must be in the channel to start a standup. If the caller isn't in the channel, AccessError gets raised.
+- If a sender of a message leaves the channel before the standup finishes, their message still gets sent.
+- If the caller/user that started the standup leaves before it finishes, the final composite message still gets sent under their name.

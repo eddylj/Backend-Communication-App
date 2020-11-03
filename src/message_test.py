@@ -585,14 +585,14 @@ def test_message_pin_valid():
             'message_id': msg_id1,
             'u_id': u_id2,
             'message': "Hello",
-            'time_created': timestamp1
+            'time_created': timestamp1,
             'is_pinned': True
         },
         {
             'message_id': msg_id2,
             'u_id': u_id1,
             'message': "goodnight",
-            'time_created': timestamp2
+            'time_created': timestamp2,
             'is_pinned': True
         }
     ]
