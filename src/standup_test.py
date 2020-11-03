@@ -217,6 +217,8 @@ def test_standup_active_valid():
 
     time.sleep(3)
 
+    assert not standup.standup_active['is_active']
+
 def test_standup_active_invalid_channel():
     """
     Testing behaviour when an invalid channel_id is passed into standup_active.
