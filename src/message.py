@@ -30,7 +30,7 @@ def message_send(token, channel_id, message):
             - When message isn't between 1 and 1000 characters in length.
     """
     # Keeping the timestamp as close to the start of function as possible.
-    timestamp = int(time.time())
+    timestamp = round(time.time())
 
     # Check if token is valid
     caller_id = get_active(token)
@@ -150,7 +150,7 @@ def message_edit(token, message_id, message):
                 - Message_id doesn't correspond to an existing message.
     """
     # Keeping the timestamp as close to the start of function as possible.
-    timestamp = int(time.time())
+    timestamp = round(time.time())
 
     # Check if token is valid
     u_id = get_active(token)
