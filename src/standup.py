@@ -41,4 +41,15 @@ def standup_start(token, channel_id, length):
     """
     timestamp = round(time.time())
 
-    
+    caller_id = get_active(token)
+    if caller_id is None:
+        raise AccessError
+
+    if caller_id not in data['channels'][channel_id]['members']:
+        raise AccessError
+
+    if length < 1:
+        raise InputError
+
+    if standup_active(token, channel_id)['is_actve']:
+        raise InputError
