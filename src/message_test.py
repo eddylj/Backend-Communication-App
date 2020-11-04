@@ -7,6 +7,7 @@ import channels
 import message
 from error import InputError, AccessError
 from other import clear
+import datetime
 
 user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -832,3 +833,123 @@ def test_message_unpin_not_owner():
     with pytest.raises(AccessError):
         message.message_unpin(token2, msg_id)
 
+
+
+
+############################## MESSAGE_SENDLATER TESTS ##############################
+
+def test_message_sendlater_valid():
+    clear()
+
+    # Create a user
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    future_date = datetime(2021, 1, 1)
+    msg_id = message.message_sendlater(token1, channel_id, "I'm famous", future_date) ['message_id']
+
+    assert 
+
+def test_message_sendlater_invalid_channel():
+    """
+    Test case for message_sendlater() where the message is sent to a channel id that is invalid.
+    """
+    
+    clear()
+
+    # Create a user
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    # An invalid channel id
+    channel_id = 123213
+
+    # A valid future date
+    future_date = datetime(2021, 1, 1)
+
+    with pytest.raises(InputError):
+        message.message_send(token1, channel_id, "Hallo guys", future_date)
+
+def test_message_sendlater_invalid_channel():
+    """
+    Test case for message_sendlater(), where the passed message exceeds the 1000
+    character limit.
+    """
+    clear()
+
+    account = auth.auth_register(*user)
+    token = account['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+
+    # 1008-character string
+    long_message = (
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean "
+        "commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus "
+        "et magnis dis parturient montes, nascetur ridiculus mus. Donec quam "
+        "felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla "
+        "consequat massa quis enim. Donec pede justo, fringilla vel, aliquet "
+        "nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, "
+        "venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. "
+        "Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. "
+        "Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, "
+        "consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, "
+        "viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus "
+        "varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies "
+        "nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. "
+        "Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem "
+        "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam."
+    )
+    # A random valid future date
+    future_date = datetime(2021, 1, 1)
+
+    with pytest.raises(InputError):
+        message.message_sendlater(token, channel_id, long_message, future_date)
+
+def test_message_sendlater_invalid_time():
+    """
+    Test case for message_sendlater() where the specified time to send the message
+    is in the past.
+    """
+
+    # Create a user
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # A random invalid past date
+    past_date = datetime(1969, 6, 9)
+
+    with pytest.raises(InputError):
+        message.message_sendlater(token1, channel_id, "rawr", past_date)
+
+def test_message_sendlater_not_member():
+    """
+    Test case for message_sendlater(), where the caller is trying to send a message
+    to a channel they're not part of.
+    """
+    clear()
+
+    # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+
+    # Create channel using user1
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # A random valid future date
+    future_date = datetime(2021, 1, 1)
+
+    with pytest.raises(AccessError):
+        message.message_sendlater(token2, channel_id, "Hello", future_date)
