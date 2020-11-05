@@ -193,6 +193,26 @@ def message_edit(token, message_id, message):
     # Coverage exception cautiously applied.
     return {} # pragma: no cover
 
+def message_pin(token, message_id):
+    """
+    Function to pin a message in a channel
+    """
+
+    # Not a message
+    if not is_message(message_id):
+        raise InputError
+
+    # Already pinned
+    if data['messages'][message_id]['is_pinned']:
+        raise InputError
+
+    # User not part of channel
+    if data['messages'][message_id]
+    
+    return {}
+
+
+
 def is_message(message_id):
     """
     Checks if message_id corresponds to a sent message. Also checks if the
