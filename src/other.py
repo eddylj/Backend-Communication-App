@@ -19,6 +19,7 @@ def clear():
     data['tokens'].clear()
     data['messages'].clear()
 
+# To be replaced
 def get_active(token):
     """
     Checks if a token is active. Returns the corresponding u_id if it is active,
@@ -34,6 +35,29 @@ def get_active(token):
     if token in data['tokens']:
         return jwt.decode(token, SECRET, algorithms='HS256')['u_id']
     return None
+
+# To replace get_active
+def validate_token(function):
+    def wrapper(*args):
+        if args[0] in data['tokens']:
+            caller_id = jwt.decode(args[0], SECRET, algorithms='HS256')['u_id']
+        else:
+            raise AccessError
+        return function(caller_id, *args[1:])
+    return wrapper
+
+def is_valid_channel(channel_id):
+    """
+    Checks if the channel_id corresponds to an existing channel stored in the
+    database.
+
+    Parameters:
+        channel_id (int): Target channel's ID.
+
+    Returns:
+        (bool): Whether or not channel_id corresponds to an existing channel.
+    """
+    return -1 < channel_id < len(data['channels'])
 
 def is_valid(email):
     """

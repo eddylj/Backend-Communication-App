@@ -5,7 +5,7 @@ above functions.
 '''
 from data import data
 from error import InputError, AccessError
-from other import get_active
+from other import get_active, is_valid_channel
 
 def channel_invite(token, channel_id, u_id):
     """
@@ -327,19 +327,6 @@ def channel_removeowner(token, channel_id, u_id):
 
     data['channels'][channel_id]['owners'].remove(u_id)
     return {}
-
-def is_valid_channel(channel_id):
-    """
-    Checks if the channel_id corresponds to an existing channel stored in the
-    database.
-
-    Parameters:
-        channel_id (int): Target channel's ID.
-
-    Returns:
-        (bool): Whether or not channel_id corresponds to an existing channel.
-    """
-    return len(data['channels']) > channel_id
 
 def is_member(channel_id, u_id):
     """
