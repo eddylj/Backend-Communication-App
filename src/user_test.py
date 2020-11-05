@@ -292,4 +292,17 @@ def test_user_invalid_token():
     with pytest.raises(AccessError):
         user.user_profile_sethandle(token, "andrasarato19")
 
+######################### USER_PROFILE_UPLOADPHOTO TESTS ########################
+
+# def test_user_profile_uploadphoto_base():
+#     clear()
+
+
+#     # Register a user
+#     account = auth.auth_register(*user1)
+#     token = account['token']
+#     u_id = account['u_id']
+
+
+
 clear()
