@@ -873,7 +873,7 @@ def test_message_sendlater_valid():
             'u_id': u_id2,
             'message': "Plz",
             'time_created': future_time2,
-            'reacts': []
+            'reacts': [],
             'is_pinned': False
         },
         {
@@ -881,7 +881,7 @@ def test_message_sendlater_valid():
             'u_id': u_id1,
             'message': "I'm famous",
             'time_created': future_time1
-            'reacts': []
+            'reacts': [],
             'is_pinned': False
         }
     ]
@@ -913,7 +913,7 @@ def test_message_sendlater_invalid_channel():
     with pytest.raises(InputError):
         message.message_send(token1, channel_id, "Hallo guys", future_time)
 
-def test_message_sendlater_invalid_channel():
+def test_message_sendlater_too_long():
     """
     Test case for message_sendlater(), where the passed message exceeds the 1000
     character limit.
