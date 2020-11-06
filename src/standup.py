@@ -61,9 +61,11 @@ def standup_start(caller_id, channel_id, length):
                 - Token is invalid.
         InputError:
             When:
+                - Length parameter is less than 1.
                 - Channel_id does not correspond to an existing channel.
                 - There is already an ongoing standup in the channel.
     """
+    length = int(length)
     if length <= 0:
         raise InputError
 

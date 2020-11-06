@@ -50,8 +50,11 @@ def test_standup_start_valid():
     standup.standup_send(token1, channel_id, "Is this working?")
     standup.standup_send(token2, channel_id, "Should be")
 
-    time.sleep(1.5)
+    assert not channel.channel_messages(token1, channel_id, 0)['messages']
+
+    time.sleep(1.1)
     messages = channel.channel_messages(token1, channel_id, 0)['messages']
+    assert messages
     assert messages[0]['u_id'] == u_id1
     assert messages[0]['time_created'] == start_time + 1
     assert messages[0]['message'] == '''haydeneverest: Is this working?
@@ -71,10 +74,10 @@ def test_standup_start_no_messages():
 
     channel_id = channels.channels_create(token, "Testing", True)['channel_id']
 
-    standup.standup_start(token, channel_id, 0.1)
+    standup.standup_start(token, channel_id, 1)
 
-    time.sleep(0.2)
-    assert len(channel.channel_messages(token, channel_id, 0)['messages']) == 0
+    time.sleep(1.1)
+    assert not channel.channel_messages(token, channel_id, 0)['messages']
 
 def test_standup_start_invalid_channel():
     """
@@ -139,7 +142,7 @@ def test_standup_start_sender_leave_before_end():
     standup.standup_send(token2, channel_id, "Hello and goodbye.")
     channel.channel_leave(token2, channel_id)
 
-    time.sleep(1.2)
+    time.sleep(1.1)
     messages = channel.channel_messages(token1, channel_id, 0)['messages']
     assert messages[0]['u_id'] == u_id1
     assert messages[0]['message'] == "andrasarato: Hello and goodbye."
@@ -168,15 +171,15 @@ def test_standup_start_caller_leave_before_end():
     standup.standup_send(token1, channel_id, "I'm out.")
     channel.channel_leave(token1, channel_id)
 
-    time.sleep(1.2)
+    time.sleep(1.1)
     messages = channel.channel_messages(token2, channel_id, 0)['messages']
     assert messages[0]['u_id'] == u_id1
     assert messages[0]['message'] == "haydeneverest: I'm out."
 
-def test_standup_start_nonpositive_length():
+def test_standup_start_invalid_length():
     """
     Testing behaviour for the edge case where the length passed into
-    standup_start is non-positive. Expected to raise InputError.
+    standup_start is less than 1. Expected to raise InputError.
     """
     clear()
 
@@ -184,6 +187,9 @@ def test_standup_start_nonpositive_length():
     token = users[0]['token']
 
     channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+
+    with pytest.raises(InputError):
+        standup.standup_start(token, channel_id, 0.9)
 
     with pytest.raises(InputError):
         standup.standup_start(token, channel_id, 0)
@@ -203,14 +209,14 @@ def test_standup_start_long_composite_message():
 
     channel_id = channels.channels_create(token, "Testing", True)['channel_id']
 
-    standup.standup_start(token, channel_id, 2)
+    standup.standup_start(token, channel_id, 1)
 
     # haydeneverest: Hello there. :) -> 30 character string
     # Repeated 34 times to create a final string of 1020 + 33 (newlines) chars.
     for _ in range(34):
         standup.standup_send(token, channel_id, "Hello there. :)")
 
-    time.sleep(2.2)
+    time.sleep(1.1)
     messages = channel.channel_messages(token, channel_id, 0)['messages']
     print(messages[0]['message'])
     assert len(messages[0]['message']) == 1053
@@ -284,9 +290,11 @@ def test_standup_send_valid():
 
     standup.standup_send(token1, channel_id, "Is this working?")
     standup.standup_send(token2, channel_id, "Should be")
+    assert not channel.channel_messages(token1, channel_id, 0)['messages']
 
-    time.sleep(1.2)
+    time.sleep(1.1)
     messages = channel.channel_messages(token1, channel_id, 0)['messages']
+    assert messages
     assert messages[0]['message'] == """haydeneverest: Is this working?
 andrasarato: Should be"""
 
@@ -309,8 +317,9 @@ def test_standup_send_join_ongoing():
 
     channel.channel_join(token2, channel_id)
     standup.standup_send(token2, channel_id, "Hello there")
+    assert not channel.channel_messages(token1, channel_id, 0)['messages']
 
-    time.sleep(1.7)
+    time.sleep(1.6)
 
     messages = channel.channel_messages(token1, channel_id, 0)['messages']
     assert messages[0]['u_id'] == u_id1
@@ -395,7 +404,7 @@ def test_standup_send_inactive_standup():
 
     standup.standup_start(token, channel_id, 1)
 
-    time.sleep(1.2)
+    time.sleep(1.1)
 
     with pytest.raises(InputError):
         standup.standup_send(token, channel_id, "Goodbye")
