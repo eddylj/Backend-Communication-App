@@ -872,7 +872,7 @@ def test_message_react_valid():
     msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
 
 	# Not sure where we get react id for now, however react id = 1 is thumbs up i believe
-	react_id = 1
+    react_id = 1
 
     message.message_react(token1, msg_id1, react_id)
     message.message_react(token2, msg_id1, react_id)
