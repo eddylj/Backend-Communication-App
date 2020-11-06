@@ -939,7 +939,7 @@ def test_message_react_invalid_message_id():
 
 	react_id = 1
 
-	# Input error when message_id is not valid
+	# message_id not valid
 	with pytest.raises(InputError):
 		message.message_react(token1, 123415, react_id)
 
@@ -1132,7 +1132,7 @@ def test_message_unreact_not_active_react_id():
 
 	expected = [
 		{
-			'message_id': msg_id2,
+			'message_id': msg_id1,
 			'u_id': u_id1,
 			'message': "Hello",
 			'time_created': timestamp1,
@@ -1146,7 +1146,7 @@ def test_message_unreact_not_active_react_id():
 			'is_pinned': False
 		},
 		{
-			'message_id': msg_id1,
+			'message_id': msg_id2,
 			'u_id': u_id1,
 			'message': "cs cs",
 			'time_created': timestamp2,
