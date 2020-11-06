@@ -7,7 +7,6 @@ import channels
 import message
 from error import InputError, AccessError
 from other import clear
-import datetime
 
 user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -839,20 +838,55 @@ def test_message_unpin_not_owner():
 ############################## MESSAGE_SENDLATER TESTS ##############################
 
 def test_message_sendlater_valid():
+    """
+    Base case for message_sendlater().
+    """
     clear()
 
-    # Create a user
+    # Creates two users
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
     u_id1 = account1['u_id']
 
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
     # Create channel
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
-    future_date = datetime(2021, 1, 1)
-    msg_id = message.message_sendlater(token1, channel_id, "I'm famous", future_date) ['message_id']
+    # Invite user 2 into the channel
+    channel.channel_invite(token1, channel_id, u_id2)
+    
+    # Sends two messages in the future
+    future_time1 = int(round(time.time() + 1))
+    msg_id1 = message.message_sendlater(token1, channel_id, "I'm famous", future_time1) ['message_id']
 
-    assert 
+    future_time2 = int(round(time.time() + 2))
+    msg_id2 = message.message_sendlater(token2, channel_id, "Plz", future_time2) ['message_id']
+
+    time.sleep(5)
+
+    expected = [
+        {
+            'message_id': msg_id2,
+            'u_id': u_id2,
+            'message': "Plz",
+            'time_created': future_time2
+        },
+        {
+            'message_id': msg_id1,
+            'u_id': u_id1,
+            'message': "I'm famous",
+            'time_created': future_time1
+        }
+    ]
+
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': expected,
+        'start': 0,
+        'end': -1
+    }
 
 def test_message_sendlater_invalid_channel():
     """
@@ -869,11 +903,11 @@ def test_message_sendlater_invalid_channel():
     # An invalid channel id
     channel_id = 123213
 
-    # A valid future date
-    future_date = datetime(2021, 1, 1)
+    # A valid time 1min in the future
+    future_time = int(round(time.time() + 10))
 
     with pytest.raises(InputError):
-        message.message_send(token1, channel_id, "Hallo guys", future_date)
+        message.message_send(token1, channel_id, "Hallo guys", future_time)
 
 def test_message_sendlater_invalid_channel():
     """
@@ -905,11 +939,11 @@ def test_message_sendlater_invalid_channel():
         "Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem "
         "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam."
     )
-    # A random valid future date
-    future_date = datetime(2021, 1, 1)
+    # A valid time 1min in the future
+    future_time = int(round(time.time() + 10))
 
     with pytest.raises(InputError):
-        message.message_sendlater(token, channel_id, long_message, future_date)
+        message.message_sendlater(token, channel_id, long_message, future_time)
 
 def test_message_sendlater_invalid_time():
     """
@@ -925,11 +959,11 @@ def test_message_sendlater_invalid_time():
     # Create channel
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
-    # A random invalid past date
-    past_date = datetime(1969, 6, 9)
+    # An invalid time 1min in the past
+    past_time = int(round(time.time() - 10))
 
     with pytest.raises(InputError):
-        message.message_sendlater(token1, channel_id, "rawr", past_date)
+        message.message_sendlater(token1, channel_id, "rawr", past_time)
 
 def test_message_sendlater_not_member():
     """
@@ -948,8 +982,8 @@ def test_message_sendlater_not_member():
     # Create channel using user1
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
-    # A random valid future date
-    future_date = datetime(2021, 1, 1)
+    # A valid time 1min in the future
+    future_time = int(round(time.time() + 10))
 
     with pytest.raises(AccessError):
-        message.message_sendlater(token2, channel_id, "Hello", future_date)
+        message.message_sendlater(token2, channel_id, "Hello", future_time)
