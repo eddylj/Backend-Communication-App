@@ -617,6 +617,9 @@ def test_message_pin_valid():
 
 
 def test_message_pin_invalid_message_id():
+    '''
+    Test Case for when there is an message ID is non-existent or invalid
+    '''
     clear()
 
     account1 = auth.auth_register(*user1)
@@ -637,6 +640,10 @@ def test_message_pin_invalid_message_id():
         message.message_pin(token1, msg_id1)
 
 def test_message_pin_not_member():
+    '''
+    Test Case for when the user is pinning a message when they are not a member of the 
+    channel and are owners 
+    '''
     clear()
 
     # Create 2 users
@@ -661,6 +668,9 @@ def test_message_pin_not_member():
         message.message_pin(token2, msg_id)
 
 def test_message_pin_not_owner():
+    '''
+    Test case for messages being pinned by non-owners or not by the flockr owner who must be in the channel
+    '''
     clear()
 
     # Create 2 users
@@ -799,7 +809,9 @@ def test_message_unpin_valid():
     }
 
 def test_message_unpin_invalid_message_id(): 
-    
+    '''
+    Test case for an invalid message ID of a message that doesn't exist in the channel
+    '''
     clear()
 
     account1 = auth.auth_register(*user1)
@@ -828,6 +840,9 @@ def test_message_unpin_invalid_message_id():
         message.message_unpin(token1, msg_id2)
 
 def test_message_unpin_not_member():
+    '''
+    Test Case for messages being pinned by non-members of the channel that are owners
+    '''
     clear()
 
     # Create 2 users
@@ -852,6 +867,9 @@ def test_message_unpin_not_member():
         message.message_unpin(token2, msg_id)
 
 def test_message_unpin_not_owner():
+    '''
+    Test case for the non-owner or non-flockr owner unpinning messages in the channel
+    '''
     clear()
 
     # Create 2 users
@@ -879,6 +897,9 @@ def test_message_unpin_not_owner():
 ############################## MESSAGE_REACT TESTS ##############################
 
 def test_message_react_valid():
+    '''
+    Base test for message react. Owner reacting to a message and checking with channel_messages()
+    '''
 	clear()
 
 		# Create 2 users
@@ -930,6 +951,9 @@ def test_message_react_valid():
 	}
 
 def test_message_react_invalid_message_id():
+    '''
+    Test case for having an invalid message id to a non-existent message in the channel
+    '''
 	clear()
 	account1 = auth.auth_register(*user1)
 	token1 = account1['token']
@@ -944,6 +968,9 @@ def test_message_react_invalid_message_id():
 		message.message_react(token1, 123415, react_id)
 
 def test_message_react_invalid_react_id():
+    '''
+    Test case for having an invalid react id to a non-existent react available in the channel
+    '''
 	clear()
 	account1 = auth.auth_register(*user1)
 	token1 = account1['token']
@@ -959,7 +986,10 @@ def test_message_react_invalid_react_id():
 	with pytest.raises(InputError):
 		message.message_react(token1, msg_id1, 123415)
 
-def test_message_react_not_active_react_id():
+def test_message_react_already_active_react_id():
+    '''
+    Test case for when the react id is already being used on a message
+    '''
 	clear()
 	account1 = auth.auth_register(*user1)
 	token1 = account1['token']
@@ -1005,6 +1035,9 @@ def test_message_react_not_active_react_id():
 ############################## MESSAGE_UNREACT TESTS ##############################
 
 def test_message_unreact_valid():
+    '''
+    Base test for message unreact. Owner unreacting to a message and checking with channel_messages()
+    '''
 	clear()
 
 		# Create 2 users
@@ -1081,6 +1114,9 @@ def test_message_unreact_valid():
 	}
 
 def test_message_unreact_invalid_message_id():
+    '''
+    Test case for when the message id is invalid and does not correspond to a message in the channel
+    '''
 	clear()
 
 	account1 = auth.auth_register(*user1)
@@ -1096,6 +1132,9 @@ def test_message_unreact_invalid_message_id():
 		message.message_unreact(token1, 123415, react_id)
 
 def test_message_react_invalid_react_id():
+    '''
+    Test case for having an invalid react id to a non-existent react available in the channel
+    '''
 	clear()
 	account1 = auth.auth_register(*user1)
 	token1 = account1['token']
@@ -1111,7 +1150,10 @@ def test_message_react_invalid_react_id():
 	with pytest.raises(InputError):
 		message.message_unreact(token1, msg_id1, 123415)
 
-def test_message_unreact_not_active_react_id():
+def test_message_unreact_already_active_react_id():
+    '''
+    Test case for when the message is unreacted and is being unreacted again
+    '''
 	clear()
 	account1 = auth.auth_register(*user1)
 	token1 = account1['token']
