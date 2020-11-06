@@ -859,10 +859,10 @@ def test_message_sendlater_valid():
     channel.channel_invite(token1, channel_id, u_id2)
     
     # Sends two messages in the future
-    future_time1 = int(round(time.time() + 1))
+    future_time1 = round(time.time() + 1)
     msg_id1 = message.message_sendlater(token1, channel_id, "I'm famous", future_time1) ['message_id']
 
-    future_time2 = int(round(time.time() + 2))
+    future_time2 = round(time.time() + 2)
     msg_id2 = message.message_sendlater(token2, channel_id, "Plz", future_time2) ['message_id']
 
     time.sleep(5)
@@ -872,13 +872,17 @@ def test_message_sendlater_valid():
             'message_id': msg_id2,
             'u_id': u_id2,
             'message': "Plz",
-            'time_created': future_time2
+            'time_created': future_time2,
+            'reacts': []
+            'is_pinned': False
         },
         {
             'message_id': msg_id1,
             'u_id': u_id1,
             'message': "I'm famous",
             'time_created': future_time1
+            'reacts': []
+            'is_pinned': False
         }
     ]
 
@@ -904,7 +908,7 @@ def test_message_sendlater_invalid_channel():
     channel_id = 123213
 
     # A valid time 1min in the future
-    future_time = int(round(time.time() + 10))
+    future_time = round(time.time() + 10)
 
     with pytest.raises(InputError):
         message.message_send(token1, channel_id, "Hallo guys", future_time)
@@ -940,7 +944,7 @@ def test_message_sendlater_invalid_channel():
         "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam."
     )
     # A valid time 1min in the future
-    future_time = int(round(time.time() + 10))
+    future_time = round(time.time() + 10)
 
     with pytest.raises(InputError):
         message.message_sendlater(token, channel_id, long_message, future_time)
@@ -960,7 +964,7 @@ def test_message_sendlater_invalid_time():
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     # An invalid time 1min in the past
-    past_time = int(round(time.time() - 10))
+    past_time = round(time.time() - 10)
 
     with pytest.raises(InputError):
         message.message_sendlater(token1, channel_id, "rawr", past_time)
@@ -983,7 +987,7 @@ def test_message_sendlater_not_member():
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     # A valid time 1min in the future
-    future_time = int(round(time.time() + 10))
+    future_time = round(time.time() + 10)
 
     with pytest.raises(AccessError):
         message.message_sendlater(token2, channel_id, "Hello", future_time)
