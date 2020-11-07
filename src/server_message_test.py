@@ -616,3 +616,75 @@ def test_message_invalid_token_http(url):
     payload['channel_id'] = channel['channel_id']
     response = requests.post(f"{url}/message/send", json=payload)
     assert response.status_code == 400
+
+
+
+def test_message_pin_valid_http(url):
+    '''
+    Base Test for message_pin. Owner pinning a message and checking with channel_messages()
+    '''
+
+    # Create 2 users
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account = r.json()
+    token2 = account['token']
+
+    # Create channel
+    test_channel['token'] = token2
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    # Invite user 2 into the channel
+    invite_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'u_id': u_id1
+    }
+    requests.post(f"{url}/channel/invite", json=invite_payload)
+
+    # User 2 sends two messages, then user 1(flockr owner) and user 2 pins it.
+    send_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'message': "Hello"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message1 = r.json()
+
+    send_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'message': "Hello"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message2 = r.json()
+
+    pin_payload = {
+        'token': token2,
+        'message_id': message1['message_id']
+    }
+    requests.post(f"{url}/message/pin", json=pin_payload)
+
+    pin_payload = {
+        'token': token1,
+        'message_id': message2['message_id']
+    }
+    requests.post(f"{url}/message/pin", json=pin_payload)
+
+    get_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'start': 0
+    }
+    r = requests.get(f"{url}/channel/messages", params=get_payload)
+    messages = r.json()
+    assert messages == {
+        'messages': [],
+        'start': 0,
+        'end': -1
+    }
+    
