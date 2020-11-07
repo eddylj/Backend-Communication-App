@@ -542,3 +542,114 @@ def test_message_invalid_token():
         message.message_edit(token, msg_id, "Goodbye")
 
 clear()
+
+def test_message_react_valid():
+    '''
+    Base Test for message_react. Owner reacting to a message and checking with channel_messages()
+    '''
+    clear()
+
+     # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+
+    # Invite user 1 into the channel
+    channel.channel_invite(token2, channel_id, u_id1)
+
+    # Send messages
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
+    timestamp2 = int(time.time())
+    msg_id2 = message.message_send(token2, channel_id, "goodnight")['message_id']
+
+    # Owner of Channel reacting
+    message.message_react(token2, msg_id1, 1)
+
+    # Invitee reacting
+    message.message_react(token1, msg_id2, 1)
+
+    expected = [
+        {
+            'message_id' : msg_id2,
+            'u_id': u_id2,
+            'message' : "goodnight",
+            'time_created': timestamp2,
+            'reacts' : [1],
+            'is_pinned': False, 
+        },   
+        {
+            'message_id': msg_id1,
+            'u_id' : u_id2,
+            'message' : "Hello",
+            'time_created' : timestamp1,
+            'reacts' : [1],
+            'is_pinned': False, 
+        },
+    ]
+
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages' : expected,
+        'start' : 0,
+        'end' : -1
+    }
+
+def test_message_react_invalid_message_id():
+    clear()
+
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Input error when message_id is not valid
+    with pytest.raises(InputError):
+        message.message_react(token1, 123415, 1)
+    
+
+def test_message_react_invalid_react_id():
+    clear()
+
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Send messages
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+
+    # Input error when react_id is not valid -> isn't this test flawed because 12345 could potentially be a valid react_id later on
+    with pytest.raises(InputError):
+        message.message_react(token1, msg_id1, 12345)
+
+    
+def test_message_react_already_reacted():
+    clear()
+
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Send messages
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+
+    # User reacting once
+    message.message_react(token1, msg_id1, 1)
+
+    # User reacting twice
+    with pytest.raises(InputError):
+        message.message_react(token1, msg_id1, 1)
+
