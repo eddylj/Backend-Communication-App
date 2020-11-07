@@ -51,6 +51,9 @@ def message_send(token, channel_id, message):
         'u_id' : caller_id,
         'message' : message,
         'time_created' : timestamp,
+        'reacts' : [],
+        'is_pinned' : False,
+
     }
 
     # Inserts new message at the start of the messages stored in channel data.
@@ -202,3 +205,7 @@ def is_message(message_id):
         -1 < message_id < len(data['messages']) and
         data['messages'][message_id] != {}
     )
+
+def message_react(token, message_id, react_id):
+
+def message_unreact(token, message_id, react_id):
