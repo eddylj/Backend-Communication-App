@@ -60,7 +60,6 @@ def test_standup_start_valid():
     assert messages[0]['message'] == '''haydeneverest: Is this working?
 andrasarato: Should be'''
 
-
 def test_standup_start_no_messages():
     """
     Testing behaviour of standup_start if nothing was send using standup_send
@@ -169,10 +168,40 @@ def test_standup_start_caller_leave_before_end():
     standup.standup_start(token1, channel_id, 1)
 
     standup.standup_send(token1, channel_id, "I'm out.")
+    assert not channel.channel_messages(token2, channel_id, 0)['messages']
     channel.channel_leave(token1, channel_id)
 
     time.sleep(1.1)
     messages = channel.channel_messages(token2, channel_id, 0)['messages']
+    assert messages
+    assert messages[0]['u_id'] == u_id1
+    assert messages[0]['message'] == "haydeneverest: I'm out."
+
+def test_standup_start_caller_logout():
+    """
+    Testing behaviour when the user who started the standup logs out before it
+    finishes. The final message is expected to send anyway.
+    """
+    clear()
+
+    users = register([user1, user2])
+    token1 = users[0]['token']
+    token2 = users[1]['token']
+    u_id1 = users[0]['u_id']
+    u_id2 = users[1]['u_id']
+
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+    channel.channel_invite(token1, channel_id, u_id2)
+
+    standup.standup_start(token1, channel_id, 1)
+
+    standup.standup_send(token1, channel_id, "I'm out.")
+    assert not channel.channel_messages(token2, channel_id, 0)['messages']
+    auth.auth_logout(token1)
+
+    time.sleep(1.1)
+    messages = channel.channel_messages(token2, channel_id, 0)['messages']
+    assert messages
     assert messages[0]['u_id'] == u_id1
     assert messages[0]['message'] == "haydeneverest: I'm out."
 
@@ -221,6 +250,27 @@ def test_standup_start_long_composite_message():
     print(messages[0]['message'])
     assert len(messages[0]['message']) == 1053
 
+def test_standup_start_invalid_token():
+    """
+    Testing behaviour when an inactive or invalid token is passed into
+    standup_start(). Expected to raise an AccessError.
+    """
+    clear()
+
+    users = register([user1])
+    token = users[0]['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+
+    # Tampered token
+    with pytest.raises(AccessError):
+        standup.standup_start(token + "tZSI6", channel_id, 1)
+
+    # Inactive token
+    auth.auth_logout(token)
+    with pytest.raises(AccessError):
+        standup.standup_start(token, channel_id, 1)
+
 # To be added to message_send tests, testing whether or not it can be called
 # during a standup. Reference implementation doesn't allow it.
 
@@ -268,6 +318,28 @@ def test_standup_active_invalid_channel():
 
     with pytest.raises(InputError):
         standup.standup_active(token1, channel_id + 10)
+
+def test_standup_active_invalid_token():
+    """
+    Testing behaviour when an inactive or invalid token is passed into
+    standup_active(). Expected to raise an AccessError.
+    """
+    clear()
+
+    users = register([user1])
+    token = users[0]['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+    standup.standup_start(token, channel_id, 1)
+
+    # Tampered token
+    with pytest.raises(AccessError):
+        standup.standup_active("UzI1N" + token, channel_id)
+
+    # Inactive token
+    auth.auth_logout(token)
+    with pytest.raises(AccessError):
+        standup.standup_active(token, channel_id)
 
 ############################## STANDUP_SEND TESTS ##############################
 
@@ -408,3 +480,25 @@ def test_standup_send_inactive_standup():
 
     with pytest.raises(InputError):
         standup.standup_send(token, channel_id, "Goodbye")
+
+def test_standup_send_invalid_token():
+    """
+    Testing behaviour when an inactive or invalid token is passed into
+    standup_send(). Expected to raise an AccessError.
+    """
+    clear()
+
+    users = register([user1])
+    token = users[0]['token']
+
+    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+    standup.standup_start(token, channel_id, 1)
+
+    # Tampered token
+    with pytest.raises(AccessError):
+        standup.standup_send("UzI1N" + token, channel_id, "Hello")
+
+    # Inactive token
+    auth.auth_logout(token)
+    with pytest.raises(AccessError):
+        standup.standup_send(token, channel_id, "Hello")

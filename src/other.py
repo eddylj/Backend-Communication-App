@@ -44,6 +44,7 @@ def validate_token(function):
         else:
             raise AccessError
         return function(caller_id, *args[1:])
+    wrapper.validated = function
     return wrapper
 
 def is_valid_channel(channel_id):
