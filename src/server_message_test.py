@@ -617,7 +617,7 @@ def test_message_invalid_token_http(url):
     response = requests.post(f"{url}/message/send", json=payload)
     assert response.status_code == 400
 
-
+############################## MESSAGE_PIN TESTS ##############################
 
 def test_message_pin_valid_http(url):
     '''
@@ -688,3 +688,133 @@ def test_message_pin_valid_http(url):
         'end': -1
     }
     
+def test_message_pin_invalid_message_id_http():
+    '''
+    Test case for an invalid message ID of a message that doesn't exist in the channel 
+    when an owner is pinning a message.
+    '''
+    
+    # Create a user
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    # Create channel
+    test_channel['token'] = token1
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    pin_payload = {
+        'token': token1,
+        'message_id': 12345
+    }
+    response = requests.post(f"{url}/message/pin", json=pin_payload)
+    assert response.status_code == 400
+
+    send_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'message': "Hello"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message = r.json()
+
+    pin_payload = {
+        'token': token1,
+        'message_id': message['message_id']
+    }
+    requests.post(f"{url}/message/pin", json=pin_payload)
+
+    response = requests.post(f"{url}/message/pin", json=pin_payload)
+    assert response.status_code == 400
+
+def test_message_pin_not_member():
+    '''
+    Test Case for when the user is pinning a message when they are not a member of the 
+    channel and are owners 
+    '''
+
+    # Create 2 users
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account = r.json()
+    token2 = account['token']
+
+    # Create channel
+    test_channel['token'] = token2
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    send_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'message': "KOOLL"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message = r.json()
+
+    pin_payload = {
+        'token': token1,
+        'message_id': message['message_id']
+    }
+    response = requests.post(f"{url}/message/pin", json=pin_payload)
+    assert response.status_code == 400
+
+    leave_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+    }
+
+    requests.post(f"{url}/channel/leave", json=leave_payload)
+
+    pin_payload = {
+        'token': token2,
+        'message_id': message['message_id']
+    }
+    response = requests.post(f"{url}/message/pin", json=pin_payload)
+    assert response.status_code == 400
+
+def test_message_pin_not_owner():
+    '''
+    Test case for messages being pinned by non-owners or not by the flockr owner who must be in the channel
+    '''
+
+    # Create 2 users
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account = r.json()
+    token2 = account['token']
+
+    # Create channel
+    test_channel['token'] = token2
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    # Invite user 2 into the channel
+    invite_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'u_id': u_id1
+    }
+    requests.post(f"{url}/channel/invite", json=invite_payload)
+
+    send_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'message': "that one"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message = r.json()
+
+    pin_payload = {
+        'token': token2,
+        'message_id': message['message_id']
+    }
+    response = requests.post(f"{url}/message/pin", json=pin_payload)
+    assert response.status_code == 400
