@@ -116,3 +116,6 @@ def search(token, query_str):
                     result.append(message)
 
     return {'messages': result}
+
+def is_flockr_owner(u_id):
+    return data['users'][u_id]['permission_id'] == 1
