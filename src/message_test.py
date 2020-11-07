@@ -38,10 +38,10 @@ def test_message_send_valid():
     channel.channel_invite(token1, channel_id, u_id2)
 
     # Send messages
-    timestamp1 = int(time.time())
+    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
-    timestamp2 = int(time.time())
+    timestamp2 = round(time.time())
     msg_id2 = message.message_send(token2, channel_id, "Goodbye")['message_id']
 
     expected = [
@@ -188,7 +188,7 @@ def test_message_remove_not_owner():
     # Invite user 2 into the channel
     channel.channel_invite(token1, channel_id, u_id2)
 
-    timestamp = int(time.time())
+    timestamp = round(time.time())
     msg_id = message.message_send(token1, channel_id, "Hello")['message_id']
 
     with pytest.raises(AccessError):
@@ -282,7 +282,7 @@ def test_message_edit_valid():
 
     channel_id = channels.channels_create(token, "Testing", True)['channel_id']
 
-    timestamp = int(time.time())
+    timestamp = round(time.time())
     msg_id = message.message_send(token, channel_id, "Hello")['message_id']
 
     expected = [
@@ -300,7 +300,7 @@ def test_message_edit_valid():
         'end': -1
     }
 
-    timestamp = int(time.time())
+    timestamp = round(time.time())
     message.message_edit(token, msg_id, "Goodbye")
 
     expected[0]['message'] = "Goodbye"
@@ -355,7 +355,7 @@ def test_message_edit_not_owner():
     # Invite user 2 into the channel
     channel.channel_invite(token1, channel_id, u_id2)
 
-    timestamp = int(time.time())
+    timestamp = round(time.time())
     msg_id = message.message_send(token1, channel_id, "Hello")['message_id']
 
     expected = [
@@ -398,7 +398,7 @@ def test_message_edit_as_owner():
 
     # User 2 sends a message, then user 1 edits it.
     msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
-    timestamp = int(time.time())
+    timestamp = round(time.time())
     message.message_edit(token1, msg_id, "Hello")
 
     expected = [
@@ -567,9 +567,9 @@ def test_message_pin_valid():
     channel.channel_invite(token2, channel_id, u_id1)
 
     # Send messages
-    timestamp1 = int(time.time())
+    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
-    timestamp2 = int(time.time())
+    timestamp2 = round(time.time())
     msg_id2 = message.message_send(token2, channel_id, "goodnight")['message_id']
 
     # Owner of Channel pinning
@@ -585,14 +585,14 @@ def test_message_pin_valid():
             'message_id': msg_id1,
             'u_id': u_id2,
             'message': "Hello",
-            'time_created': timestamp1
+            'time_created': timestamp1,
             'is_pinned': True
         },
         {
             'message_id': msg_id2,
             'u_id': u_id1,
             'message': "goodnight",
-            'time_created': timestamp2
+            'time_created': timestamp2,
             'is_pinned': True
         }
     ]
@@ -696,10 +696,10 @@ def test_message_unpin_valid():
     channel.channel_invite(token1, channel_id, u_id1)
 
     # Send messages
-    timestamp1 = int(time.time())
+    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
 
-    timestamp2 = int(time.time())
+    timestamp2 = round(time.time())
     msg_id2 = message.message_send(token2, channel_id, "what it do")['message_id']
 
     message.message_pin(token1, msg_id1)
@@ -710,14 +710,14 @@ def test_message_unpin_valid():
             'message_id': msg_id1,
             'u_id': u_id2,
             'message': "Hello",
-            'time_created': timestamp1
+            'time_created': timestamp1,
             'is_pinned': True
         },
         {
             'message_id': msg_id2,
             'u_id': u_id2,
             'message': "What it do",
-            'time_created': timestamp2
+            'time_created': timestamp2,
             'is_pinned': True
         }
     ]
@@ -740,14 +740,14 @@ def test_message_unpin_valid():
             'message_id': msg_id1,
             'u_id': u_id2,
             'message': "Hello",
-            'time_created': timestamp1
+            'time_created': timestamp1,
             'is_pinned': False
         },
         {
             'message_id': msg_id2,
             'u_id': u_id2,
             'message': "What it do",
-            'time_created': timestamp2
+            'time_created': timestamp2,
             'is_pinned': False
         }
     ]

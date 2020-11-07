@@ -4,9 +4,10 @@ Functions to send, remove and edit messages
 import time
 from data import data
 from error import InputError, AccessError
-from other import get_active
+from other import get_active, validate_token
 
-def message_send(token, channel_id, message):
+@validate_token
+def message_send(caller_id, channel_id, message):
     """
     Send a message and create a new entry in the messages database and also in
     the channel's messages database.
@@ -30,12 +31,7 @@ def message_send(token, channel_id, message):
             - When message isn't between 1 and 1000 characters in length.
     """
     # Keeping the timestamp as close to the start of function as possible.
-    timestamp = int(time.time())
-
-    # Check if token is valid
-    caller_id = get_active(token)
-    if caller_id is None:
-        raise AccessError
+    timestamp = round(time.time())
 
     # If the user is not part of the channel
     if caller_id not in data['channels'][channel_id]['members']:
@@ -150,7 +146,7 @@ def message_edit(token, message_id, message):
                 - Message_id doesn't correspond to an existing message.
     """
     # Keeping the timestamp as close to the start of function as possible.
-    timestamp = int(time.time())
+    timestamp = round(time.time())
 
     # Check if token is valid
     u_id = get_active(token)
