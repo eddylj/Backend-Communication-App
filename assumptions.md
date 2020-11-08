@@ -54,6 +54,10 @@
 ### message_unpin()
 - the owner of the flockr can also unpin messages despite not being the owner of the channel, however, they must be in the channel
 - only owners in the channel can unpin
+### message_react()
+- the authorised user is the user who sends the message
+### message_unreact()
+- the authorised user is the user who sends the message
 
 
 ## User
