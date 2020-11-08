@@ -49,13 +49,17 @@ def test_message_send_valid():
             'message_id': msg_id2,
             'u_id': u_id2,
             'message': "Goodbye",
-            'time_created': timestamp2
+            'time_created': timestamp2,
+            'reacts' : [],
+            'is_pinned': False, 
         },
         {
             'message_id': msg_id1,
             'u_id': u_id1,
             'message': "Hello",
-            'time_created': timestamp1
+            'time_created': timestamp1,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -199,7 +203,9 @@ def test_message_remove_not_owner():
             'message_id': msg_id,
             'u_id': u_id1,
             'message': "Hello",
-            'time_created': timestamp
+            'time_created': timestamp,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -290,7 +296,9 @@ def test_message_edit_valid():
             'message_id': msg_id,
             'u_id': u_id,
             'message': "Hello",
-            'time_created': timestamp
+            'time_created': timestamp,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -363,7 +371,9 @@ def test_message_edit_not_owner():
             'message_id': msg_id,
             'u_id': u_id1,
             'message': "Hello",
-            'time_created': timestamp
+            'time_created': timestamp,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -406,7 +416,9 @@ def test_message_edit_as_owner():
             'message_id': msg_id,
             'u_id': u_id2,
             'message': "Hello",
-            'time_created': timestamp
+            'time_created': timestamp,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -580,39 +592,27 @@ def test_message_pin_valid():
 
     expected = [
         {
-            'message_id': msg_id1,
+            'message_id': msg_id2,
             'u_id': u_id2,
-            'message': "Hello",
-            'time_created': timestamp1,
-			'reacts': [
-                {
-                    'react_id': None,
-                    'u_ids': [],
-                    'is_the_user_reacted': False
-                }
-			],
+            'message': "goodnight",
+            'time_created': timestamp2,
+			'reacts': [],
             'is_pinned': True
         },
         {
-            'message_id': msg_id2,
-            'u_id': u_id1,
-            'message': "goodnight",
-            'time_created': timestamp2,
-			'reacts': [
-                {
-                    'react_id': None,
-                    'u_ids': [],
-                    'is_the_user_reacted': False
-                }
-			],
+            'message_id' : msg_id1,
+            'u_id': u_id2,
+            'message': "Hello",
+            'time_created': timestamp1,
+			'reacts': [],
             'is_pinned': True
         }
     ]
 
     assert channel.channel_messages(token1, channel_id, 0) == {
-        'messages': expected,
-        'start': 0,
-        'end': -1
+        'messages' : expected,
+        'start' : 0,
+        'end' : -1
     }
 
 
@@ -715,45 +715,33 @@ def test_message_unpin_valid():
     channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
 
     # Invite user 1 into the channel
-    channel.channel_invite(token1, channel_id, u_id1)
+    channel.channel_invite(token2, channel_id, u_id1)
 
     # Send messages
     timestamp1 = int(time.time())
     msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
 
     timestamp2 = int(time.time())
-    msg_id2 = message.message_send(token2, channel_id, "what it do")['message_id']
+    msg_id2 = message.message_send(token2, channel_id, "What it do")['message_id']
 
     message.message_pin(token1, msg_id1)
     message.message_pin(token2, msg_id2)
 
     before_unpinned = [
         {
-            'message_id': msg_id1,
-            'u_id': u_id2,
-            'message': "Hello",
-            'time_created': timestamp1,
-			'reacts': [
-                {
-                    'react_id': None,
-                    'u_ids': [],
-                    'is_the_user_reacted': False
-                }
-			],
-            'is_pinned': True
-        },
-        {
             'message_id': msg_id2,
             'u_id': u_id2,
             'message': "What it do",
             'time_created': timestamp2,
-			'reacts': [
-                {
-                    'react_id': None,
-                    'u_ids': [],
-                    'is_the_user_reacted': False
-                }
-			],
+			'reacts': [],
+            'is_pinned': True
+        },
+        {
+            'message_id': msg_id1,
+            'u_id': u_id2,
+            'message': "Hello",
+            'time_created': timestamp1,
+			'reacts': [],
             'is_pinned': True
         }
     ]
@@ -773,31 +761,19 @@ def test_message_unpin_valid():
 
     expected = [
         {
-            'message_id': msg_id1,
-            'u_id': u_id2,
-            'message': "Hello",
-            'time_created': timestamp1,
-            'reacts': [
-                {
-                    'react_id': None,
-                    'u_ids': [],
-                    'is_the_user_reacted': False
-                }
-            ],
-            'is_pinned': False
-        },
-        {
             'message_id': msg_id2,
             'u_id': u_id2,
             'message': "What it do",
             'time_created': timestamp2,
-            'reacts': [
-                {
-                    'react_id': None,
-                    'u_ids': [],
-                    'is_the_user_reacted': False
-                }
-			],
+            'reacts': [],
+            'is_pinned': False
+        },
+        {
+            'message_id': msg_id1,
+            'u_id': u_id2,
+            'message': "Hello",
+            'time_created': timestamp1,
+            'reacts': [],
             'is_pinned': False
         }
     ]
@@ -823,6 +799,9 @@ def test_message_unpin_invalid_message_id():
     # Input error when message_id is not valid
     with pytest.raises(InputError):
         message.message_unpin(token1, 123415)
+    
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
     
     #Message is already unpinned
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
@@ -894,12 +873,13 @@ def test_message_unpin_not_owner():
     with pytest.raises(AccessError):
         message.message_unpin(token2, msg_id)
 
-############################## MESSAGE_REACT TESTS ##############################
+    ############################## MESSAGE_REACT TESTS ##############################
 
 def test_message_react_valid():
-    '''
+    """
     Base test for message react. Owner reacting to a message and checking with channel_messages().
-    '''
+    """
+
     clear()
 
     # Create 2 users
@@ -954,7 +934,6 @@ def test_message_react_invalid_message_id():
     '''
     Test case for having an invalid message id to a non-existent message in the channel
     '''
-
     clear()
     account1 = auth.auth_register(*user1)
     token1 = account1['token']

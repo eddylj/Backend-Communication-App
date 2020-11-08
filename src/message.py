@@ -5,7 +5,7 @@ import time
 from data import data
 from error import InputError, AccessError
 from other import get_active
-from channel import is_valid_channel
+from other import is_flockr_owner
 
 def message_send(token, channel_id, message):
     """
@@ -52,6 +52,8 @@ def message_send(token, channel_id, message):
         'u_id' : caller_id,
         'message' : message,
         'time_created' : timestamp,
+        'reacts' : [],
+        'is_pinned' : False,
     }
 
     # Inserts new message at the start of the messages stored in channel data.
@@ -194,51 +196,82 @@ def message_edit(token, message_id, message):
     # Coverage exception cautiously applied.
     return {} # pragma: no cover
 
-def message_sendlater(token, channel_id, message, time_sent):
-
-    # If the time given is in the past
-    if time_sent < time.time():
-        raise InputError
-
-    # If the channel id is invalid
-    if not is_valid_channel(channel_id):
-        raise InputError
+def message_pin(token, message_id):
+    """
+    Function to pin a message in a channel
+    """
 
     # Check if token is valid
     caller_id = get_active(token)
     if caller_id is None:
         raise AccessError
 
-    # If the user is not part of the channel
-    if caller_id not in data['channels'][channel_id]['members']:
+    # Not a message
+    if not is_message(message_id):
+        raise InputError
+
+    # Find channel_id and data
+    channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
+
+    # User is a flockr owner and not part of channel
+    if is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['members']:
         raise AccessError
 
-    # If the message is too long
-    if not 0 < len(message) < 1000:
+    # If not an owner of the channel
+    if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
+        raise AccessError
+
+    for (index, msg) in enumerate(channel_data['messages']):
+        # Find the message in the channels database
+        if msg['message_id'] == message_id:
+            # Already pinned
+            if msg['is_pinned']:
+                raise InputError
+            # Change is_pinned
+            msg['is_pinned'] = True
+            break
+
+    return {}
+
+def message_unpin(token, message_id):
+    """
+    Function to unpin a message in a channel
+    """
+
+    # Check if token is valid
+    caller_id = get_active(token)
+    if caller_id is None:
+        raise AccessError
+
+    # Not a message
+    if not is_message(message_id):
         raise InputError
-    
-    sleep_time = time_sent - int(time.time())
-    time.sleep(sleep_time)
 
-    message_id = len(data['messages'])
-    new_message = {
-        'message_id' : message_id,
-        'u_id' : caller_id,
-        'message' : message,
-        'time_created' : time_sent,
-        'reacts' : [],
-        'is_pinned' : False,
-    }
+    # Find channel_id and data
+    channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
 
-    # Inserts new message at the start of the messages stored in channel data.
-    data['channels'][channel_id]['messages'].insert(0, new_message)
+    # User is a flockr owner and not part of channel
+    if is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['members']:
+        raise AccessError
 
-    # Storing channel_id and caller_id only in message data
-    data['messages'].append({'channel_id': channel_id, 'u_id': caller_id})
+    # If not an owner of the channel
+    if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
+        raise AccessError
 
-    return {
-        'message_id': message_id,
-    }
+    for (index, msg) in enumerate(channel_data['messages']):
+        # Find the message in the channels database
+        if msg['message_id'] == message_id:
+            # Already unpinned
+            if not msg['is_pinned']:
+                raise InputError
+            # Change is_pinned
+            msg['is_pinned'] = False
+            break
+
+    return {}
+
 
 def is_message(message_id):
     """
