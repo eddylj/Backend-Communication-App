@@ -49,13 +49,17 @@ def test_message_send_valid():
             'message_id': msg_id2,
             'u_id': u_id2,
             'message': "Goodbye",
-            'time_created': timestamp2
+            'time_created': timestamp2,
+            'reacts' : [],
+            'is_pinned': False, 
         },
         {
             'message_id': msg_id1,
             'u_id': u_id1,
             'message': "Hello",
-            'time_created': timestamp1
+            'time_created': timestamp1,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -199,7 +203,9 @@ def test_message_remove_not_owner():
             'message_id': msg_id,
             'u_id': u_id1,
             'message': "Hello",
-            'time_created': timestamp
+            'time_created': timestamp,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -290,7 +296,9 @@ def test_message_edit_valid():
             'message_id': msg_id,
             'u_id': u_id,
             'message': "Hello",
-            'time_created': timestamp
+            'time_created': timestamp,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -363,7 +371,9 @@ def test_message_edit_not_owner():
             'message_id': msg_id,
             'u_id': u_id1,
             'message': "Hello",
-            'time_created': timestamp
+            'time_created': timestamp,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -406,7 +416,9 @@ def test_message_edit_as_owner():
             'message_id': msg_id,
             'u_id': u_id2,
             'message': "Hello",
-            'time_created': timestamp
+            'time_created': timestamp,
+            'reacts' : [],
+            'is_pinned': False, 
         }
     ]
 
@@ -580,7 +592,7 @@ def test_message_pin_valid():
 
     expected = [
         {
-            'message_id': msg_id1,
+            'message_id' : msg_id2,
             'u_id': u_id2,
             'message': "Hello",
             'time_created': timestamp1,
@@ -610,9 +622,9 @@ def test_message_pin_valid():
     ]
 
     assert channel.channel_messages(token1, channel_id, 0) == {
-        'messages': expected,
-        'start': 0,
-        'end': -1
+        'messages' : expected,
+        'start' : 0,
+        'end' : -1
     }
 
 
@@ -715,7 +727,7 @@ def test_message_unpin_valid():
     channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
 
     # Invite user 1 into the channel
-    channel.channel_invite(token1, channel_id, u_id1)
+    channel.channel_invite(token2, channel_id, u_id1)
 
     # Send messages
     timestamp1 = int(time.time())
@@ -729,7 +741,7 @@ def test_message_unpin_valid():
 
     before_unpinned = [
         {
-            'message_id': msg_id1,
+            'message_id': msg_id2,
             'u_id': u_id2,
             'message': "Hello",
             'time_created': timestamp1,
@@ -743,7 +755,7 @@ def test_message_unpin_valid():
             'is_pinned': True
         },
         {
-            'message_id': msg_id2,
+            'message_id': msg_id1,
             'u_id': u_id2,
             'message': "What it do",
             'time_created': timestamp2,
@@ -773,7 +785,7 @@ def test_message_unpin_valid():
 
     expected = [
         {
-            'message_id': msg_id1,
+            'message_id': msg_id2,
             'u_id': u_id2,
             'message': "Hello",
             'time_created': timestamp1,
@@ -787,7 +799,7 @@ def test_message_unpin_valid():
             'is_pinned': False
         },
         {
-            'message_id': msg_id2,
+            'message_id': msg_id1,
             'u_id': u_id2,
             'message': "What it do",
             'time_created': timestamp2,
@@ -823,6 +835,9 @@ def test_message_unpin_invalid_message_id():
     # Input error when message_id is not valid
     with pytest.raises(InputError):
         message.message_unpin(token1, 123415)
+    
+    # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
     
     #Message is already unpinned
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
