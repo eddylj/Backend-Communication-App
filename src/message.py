@@ -6,6 +6,7 @@ from data import data
 from error import InputError, AccessError
 from other import get_active
 from other import is_flockr_owner
+from channel import is_valid_channel
 
 def message_send(token, channel_id, message):
     """
@@ -271,6 +272,52 @@ def message_unpin(token, message_id):
             break
 
     return {}
+
+def message_sendlater(token, channel_id, message, time_sent):
+
+    # If the time given is in the past
+    if time_sent < time.time():
+        raise InputError
+
+    # If the channel id is invalid
+    if not is_valid_channel(channel_id):
+        raise InputError
+
+    # Check if token is valid
+    caller_id = get_active(token)
+    if caller_id is None:
+        raise AccessError
+
+    # If the user is not part of the channel
+    if caller_id not in data['channels'][channel_id]['members']:
+        raise AccessError
+
+    # If the message is too long
+    if not 0 < len(message) < 1000:
+        raise InputError
+    
+    sleep_time = time_sent - int(time.time())
+    time.sleep(sleep_time)
+
+    message_id = len(data['messages'])
+    new_message = {
+        'message_id' : message_id,
+        'u_id' : caller_id,
+        'message' : message,
+        'time_created' : time_sent,
+        'reacts' : [],
+        'is_pinned' : False,
+    }
+
+    # Inserts new message at the start of the messages stored in channel data.
+    data['channels'][channel_id]['messages'].insert(0, new_message)
+
+    # Storing channel_id and caller_id only in message data
+    data['messages'].append({'channel_id': channel_id, 'u_id': caller_id})
+
+    return {
+        'message_id': message_id,
+    }
 
 
 def is_message(message_id):
