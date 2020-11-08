@@ -215,36 +215,47 @@ def message_react(token, message_id, react_id):
     Function to pin a message in a channel
     """
 
-    # Check if token is valid
-    caller_id = get_active(token)
-    if caller_id is None:
-        raise AccessError
-
-    # Not a message
-    if not is_message(message_id):
-        raise InputError
-
     # Find channel_id and data
     channel_id = data['messages'][message_id]['channel_id']
     channel_data = data['channels'][channel_id]
 
-    # User is a flockr owner and not part of channel
-    if is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['members']:
-        raise AccessError
+    # Check if user is reacting to a valid message within a channel that the authorised user has joined
+    caller_id = get_active(token)
+    if caller_id not in data['channels'][channel_id]['members']:
+        raise InputError
 
-    # If not an owner of the channel
-    if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
-        raise AccessError
+
+
+
+    # Check if user is performing an appropriate reaction ->just need to know if there's a list of elegible reacts
+    reaction = get_active(react_id)
+    if reaction not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts
+        raise InputError
+
 
     for (index, msg) in enumerate(channel_data['messages']):
         # Find the message in the channels database
         if msg['message_id'] == message_id:
-            # Already pinned
-            if msg['is_pinned']:
-                raise InputError
-            # Change is_pinned
-            msg['is_pinned'] = True
-            break
+            if msg['reacts']
+            # if reacts = NULL, insert
+            # else, search reacts for react id
+                # if reacts is in the react id list, 
+                    # scenario 1: if uid is not in the list, append the uids list
+                    # else, if uid is in the react list, InputError
+
+                    # scenario 2: if msg[uid] = uid and is_the_user_reacted = True
+                        # InputError
+                    # else, append the uids list and if msg[uid] = uid:
+                        # is_the_user_reacted = True
+                # if reacts is not in the react id list, create a new react in the list 
+
+            for reacts in msg['reacts']['react_id']:
+                # Already reacted
+                if msg['reacts']['is_the_user_reacted']:
+                    raise InputError
+                # Change is_pinned
+                msg['reacts']['is_pinned'] = True
+                break
 
     return {}
 
@@ -253,47 +264,51 @@ def message_unreact(token, message_id, react_id):
     Function to unreact a message in a channel
     """
 
-    # Check if token is valid
-    caller_id = get_active(token)
-    if caller_id is None:
-        raise AccessError
-
-    # Not a message
-    if not is_message(message_id):
-        raise InputError
-
     # Find channel_id and data
     channel_id = data['messages'][message_id]['channel_id']
     channel_data = data['channels'][channel_id]
 
-    # User is a flockr owner and not part of channel
-    if is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['members']:
-        raise AccessError
+    # Check if user is unreacting a valid message within a channel that the authorised user has joined
+    caller_id = get_active(token)
+    if caller_id not in data['channels'][channel_id]['members']:
+        raise InputError
 
-    # If not an owner of the channel
-    if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
-        raise AccessError
+
+
+
+    # Check if user is performing an appropriate unreact ->just need to know if there's a list of elegible reacts
+    reaction = get_active(react_id)
+    if reaction not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts
+        raise InputError
+
 
     for (index, msg) in enumerate(channel_data['messages']):
         # Find the message in the channels database
         if msg['message_id'] == message_id:
-            # Already unpinned
-            if not msg['is_pinned']:
-                raise InputError
-            # Change is_pinned
-            msg['is_pinned'] = False
-            break
+            if msg['reacts']
+            # if reacts = NULL, InputError
+            # else, search reacts for react id
+                # scenario 1: remove uid from list
+                # if elements(uid_list) = 1, delete the react
+
+                # scenario 2: if msg[uid] = uid and is_the_user_reacted = True
+                    # remove uid from list and is_the_user_reacted = False
+                    # if elements(uid_list) = 1, delete the react
+                    
+
+            for reacts in msg['reacts']['react_id']:
+                # Already reacted
+                if msg['reacts']['is_the_user_reacted']:
+                    raise InputError
+                # Change is_pinned
+                msg['reacts']['is_pinned'] = True
+                break
 
     return {}
 
 
-def is_message(message_id):
-    """
-    Checks if message_id corresponds to a sent message. Also checks if the
-    message has already been deleted.
-    """
-    return (
-        -1 < message_id < len(data['messages']) and
-        data['messages'][message_id] != {}
-    )
-
+def isEmpty(self, dictionary):
+    for element in dictionary:
+        if element:
+            return True
+        return False
