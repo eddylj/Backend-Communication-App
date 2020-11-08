@@ -58,7 +58,9 @@
 - the authorised user is the user who sends the message
 ### message_unreact()
 - the authorised user is the user who sends the message
-
+### message_sendlater()
+- The Flockr owner cannot send messages into a channel without being in it.
+- Message cannot be empty. Raise InputError in that case.
 
 ## User
 ### user_profile_setname()
