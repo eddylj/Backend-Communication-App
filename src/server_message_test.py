@@ -1127,7 +1127,6 @@ def test_message_react_valid_http(url):
     }
 
     r = requests.post(f"{url}/message/react", json=react_payload)
-    message = r.json()  
 
     get_payload = {
         'token': token1,
@@ -1141,6 +1140,114 @@ def test_message_react_valid_http(url):
         'start': 0,
         'end': -1
     }
+
+def test_message_react_invalid_message_id_http(url):
+    '''
+    Test case for having an invalid message id to a non-existent message in the channel
+    '''
+    # Create a user
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    # Create channel
+    test_channel['token'] = token1
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    react_payload = {
+        'token': token1,
+        'message_id': 12345
+        'react_id': 1
+    }
+    
+    response = requests.post(f"{url}/message/react", json=react_payload)
+    assert response.status_code == 400
+
+def test_message_react_invalid_react_id_http(url):
+    '''
+    Test case for having an invalid react id to a non-existent react available in the channel
+    '''
+    # Create a user
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    # Create channel
+    test_channel['token'] = token1
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    # User sends a message
+    send_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'message': "that one"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message = r.json()   
+
+    react_payload = {
+        'token': token1,
+        'message_id': message['message_id']
+        'react_id': 123415
+    }
+    
+    response = requests.post(f"{url}/message/react", json=react_payload)
+    assert response.status_code == 400
+
+def test_message_react_already_active_react_id():
+    '''
+    Test case for when the react id is already being used on a message
+    '''
+    # Create a user
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    # Create channel
+    test_channel['token'] = token1
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    # User sends a message
+    send_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'message': "that one"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message = r.json()   
+
+    react_payload = {
+        'token': token1,
+        'message_id': message['message_id']
+        'react_id': 1
+    }
+    
+    r = requests.post(f"{url}/message/react", json=react_payload)
+
+    get_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'start': 0
+    }
+    r = requests.get(f"{url}/channel/messages", params=get_payload)
+    messages = r.json()
+    assert messages == {
+        'messages': [],
+        'start': 0,
+        'end': -1
+    }
+
+    react_payload = {
+        'token': token1,
+        'message_id': message['message_id']
+        'react_id': 1
+    }
+    
+    response = requests.post(f"{url}/message/react", json=react_payload)
+    assert response.status_code == 400
 
 ############################## MESSAGE_UNREACT TESTS ##############################
 
@@ -1187,7 +1294,7 @@ def test_message_unreact_valid_http(url):
     }
 
     r = requests.post(f"{url}/message/react", json=react_payload)
-    message = r.json()  
+   
 
     get_payload = {
         'token': token1,
@@ -1223,3 +1330,120 @@ def test_message_unreact_valid_http(url):
         'start': 0,
         'end': -1
     }
+
+def test_message_unreact_invalid_message_id_http(url):
+    '''
+    Test case for when the message id is invalid and does not correspond to a message in the channel
+    '''
+    # Create a user
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    # Create channel
+    test_channel['token'] = token1
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    unreact_payload = {
+        'token': token1,
+        'message_id': 12345
+        'react_id': 1
+    }
+    
+    response = requests.post(f"{url}/message/unreact", json=unreact_payload)
+    assert response.status_code == 400
+
+def test_message_unreact_invalid_react_id_http(url):
+    '''
+    Test case for having an invalid react id to a non-existent react available in the channel
+    '''
+
+    # Create a user
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    # Create channel
+    test_channel['token'] = token1
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    # User sends a message
+    send_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'message': "that one"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message = r.json()   
+
+    unreact_payload = {
+        'token': token1,
+        'message_id': message['message_id']
+        'react_id': 123415
+    }
+    
+    response = requests.post(f"{url}/message/unreact", json=unreact_payload)
+    assert response.status_code == 400
+
+def test_message_unreact_already_active_react_id():
+    '''
+    Test case for when the react id is already being used on a message
+    '''
+    # Create a user
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    # Create channel
+    test_channel['token'] = token1
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()
+
+    # User sends two messages
+    send_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'message': "that one"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message1 = r.json()  
+
+    send_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'message': "hello"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message2 = r.json()    
+
+    react_payload = {
+        'token': token1,
+        'message_id': message1['message_id']
+        'react_id': 1
+    }
+    
+    r = requests.post(f"{url}/message/react", json=react_payload)
+
+    get_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'start': 0
+    }
+    r = requests.get(f"{url}/channel/messages", params=get_payload)
+    messages = r.json()
+    assert messages == {
+        'messages': [],
+        'start': 0,
+        'end': -1
+    }
+
+    unreact_payload = {
+        'token': token1,
+        'message_id': message2['message_id']
+        'react_id': 1
+    }
+    
+    response = requests.post(f"{url}/message/unreact", json=unreact_payload)
+    assert response.status_code == 400
