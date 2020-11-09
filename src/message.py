@@ -226,31 +226,29 @@ def message_send_later(caller_id, channel_id, message, time_sent):
 
     is_valid_message(message)
 
-    # Method 1
-    # Add an empty message to database and edit when the time comes.
-    # Issue: order will be messed up if other people send messages before countdown finishes.
+    message_id = len(data['messages'])
+    data['messages'].append({})
 
-    # message_id = len(data['messages'])
-    # new_message = {
-    #     'message_id' : message_id,
-    #     'u_id' : caller_id,
-    #     'message' : "",
-    #     'time_created' : None,
-    # }
-    # # Inserts new message at the start of the messages stored in channel data.
-    # data['channels'][channel_id]['messages'].insert(0, new_message)
-    # # Storing channel_id and caller_id only in message data
-    # data['messages'].append({'channel_id': channel_id, 'u_id': caller_id})
+    args = [caller_id, message_id, channel_id, message]
+    threading.Timer(countdown, send_later_resolve, args).start()
 
-    # args = [caller_id, message_id, message]
-    # threading.Timer(countdown, message_edit.validated, args).start()
+    return {'message_id': message_id}
 
-    # Method 2
-    # Call message_send in timer.
-    # Issue: Message_id to be returned would be wrong if other people send messages before countdown finishes.
+def send_later_resolve(sender_id, message_id, channel_id, message):
+    timestamp = round(time.time())
 
-    # args = [caller_id, channel_id, message]
-    # threading.Timer(countdown, message_send.validated, args).start()
+    data['messages'][message_id] = {
+        'channel_id': channel_id,
+        'u_id': sender_id
+    }
+
+    new_message = {
+        'message_id' : message_id,
+        'u_id' : sender_id,
+        'message' : message,
+        'time_created' : timestamp,
+    }
+    data['channels'][channel_id]['messages'].insert(0, new_message)
 
 def is_message(message_id):
     """

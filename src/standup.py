@@ -14,7 +14,7 @@ from error import InputError, AccessError
 from other import validate_token, is_valid_channel
 
 # MAYBE CHANGE TO MESSAGE_SEND WITH DECORATORS
-def standup_finish(sender_id, channel_id):
+def standup_resolve(sender_id, channel_id):
     """
     Sends the standup buffer string as a message into a given channel. Ignores
     length limitations and access rules unlike message_send. The standup key
@@ -85,7 +85,7 @@ def standup_start(caller_id, channel_id, length):
         'time_finish': time_finish,
         'buffer': ""
     }
-    threading.Timer(length, standup_finish, [caller_id, channel_id]).start()
+    threading.Timer(length, standup_resolve, [caller_id, channel_id]).start()
 
     return {'time_finish': time_finish}
 

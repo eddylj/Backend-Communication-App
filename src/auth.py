@@ -164,6 +164,8 @@ def auth_register(email, password, name_first, name_last):
         'token': token,
     }
 
+# Method to send an email to a user adapted from:
+# https://realpython.com/python-send-email/#starting-a-secure-smtp-connection
 def auth_passwordreset_request(email):
     port = 0
     authenticator = "flockrauth@gmail.com"
@@ -181,9 +183,10 @@ def auth_passwordreset_request(email):
                 message = ("Subject: Flockr password reset\n\n"
                            "Your password reset code is: " + reset_code + "\n"
                            "This code expires in 10 minutes.")
+                           
                 server.sendmail(authenticator, email, message)
                 user['pw_reset'] = True
-    
+
     return {}
 
 def auth_passwordreset_reset(reset_code, new_password):
