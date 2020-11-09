@@ -924,6 +924,7 @@ def test_message_send_later_valid():
     future_time2 = round(time.time()) + 2
     message.message_send_later(token2, channel_id, "Plz", future_time2)
 
+    assert not channel.channel_messages(token1, channel_id, 0)['messages']
     time.sleep(3)
 
     messages = channel.channel_messages(token1, channel_id, 0)['messages']
