@@ -36,6 +36,8 @@ def get_active(token):
         return jwt.decode(token, SECRET, algorithms='HS256')['u_id']
     return None
 
+# Wrapper.validated attribute to skip validate_token taken from:
+# https://stackoverflow.com/questions/41206565/bypassing-a-decorator-for-unit-testing
 # To replace get_active
 def validate_token(function):
     def wrapper(*args):
