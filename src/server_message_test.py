@@ -688,7 +688,7 @@ def test_message_pin_valid_http(url):
         'end': -1
     }
     
-def test_message_pin_invalid_message_id_http():
+def test_message_pin_invalid_message_id_http(url):
     '''
     Test case for an invalid message ID of a message that doesn't exist in the channel 
     when an owner is pinning a message.
@@ -728,7 +728,7 @@ def test_message_pin_invalid_message_id_http():
     response = requests.post(f"{url}/message/pin", json=pin_payload)
     assert response.status_code == 400
 
-def test_message_pin_not_member():
+def test_message_pin_not_member(url):
     '''
     Test Case for when the user is pinning a message when they are not a member of the 
     channel and are owners 
@@ -777,7 +777,7 @@ def test_message_pin_not_member():
     response = requests.post(f"{url}/message/pin", json=pin_payload)
     assert response.status_code == 400
 
-def test_message_pin_not_owner():
+def test_message_pin_not_owner(url):
     '''
     Test case for messages being pinned by non-owners or not by the flockr owner who must be in the channel
     '''
@@ -820,7 +820,7 @@ def test_message_pin_not_owner():
     assert response.status_code == 400
 
 ############################## MESSAGE_UNPIN TESTS ##############################
-def test_message_unpin_valid_http():
+def test_message_unpin_valid_http(url):
     '''
     Base Test for message_unpin. Owner pinning a message and checking with channel_messages()
     ''' 
@@ -913,7 +913,7 @@ def test_message_unpin_valid_http():
         'end': -1
     }
 
-def test_message_unpin_invalid_message_id(): 
+def test_message_unpin_invalid_message_id(url): 
     '''
     Test case for an invalid message ID of a message that doesn't exist in the channel
     '''
@@ -978,7 +978,7 @@ def test_message_unpin_invalid_message_id():
     response = requests.post(f"{url}/message/unpin", json=unpin_payload)
     assert response.status_code == 400
 
-def test_message_unpin_not_member():
+def test_message_unpin_not_member(url):
     '''
     Test Case for messages being pinned by non-members of the channel that are owners
     '''
@@ -1033,7 +1033,7 @@ def test_message_unpin_not_member():
     assert response.status_code == 400 
 
 
-def test_message_unpin_not_owner():
+def test_message_unpin_not_owner(url):
     '''
     Test case for the non-owner or non-flockr owner unpinning messages in the channel
     '''
@@ -1081,3 +1081,145 @@ def test_message_unpin_not_owner():
     }
     response = requests.post(f"{url}/message/unpin", json=unpin_payload)
     assert response.status_code == 400 
+
+
+############################## MESSAGE_REACT TESTS ##############################
+
+def test_message_react_valid_http(url):
+    '''
+    Base test for message react. Owner reacting to a message and checking with channel_messages()
+    '''
+    # Create 2 users
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account = r.json()
+    token2 = account['token']
+
+    # Create channel
+    test_channel['token'] = token2
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()    
+
+    # Invite user 1 into the channel
+    invite_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'u_id': u_id1
+    }
+    requests.post(f"{url}/channel/invite", json=invite_payload)
+
+    # User 2 sends a message
+    send_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'message': "that one"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message = r.json()   
+
+    react_payload = {
+        'token': token2,
+        'message_id': message['message_id']
+        'react_id': 1 # 1 for now as only have 1 react so far
+    }
+
+    r = requests.post(f"{url}/message/react", json=react_payload)
+    message = r.json()  
+
+    get_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'start': 0
+    }
+    r = requests.get(f"{url}/channel/messages", params=get_payload)
+    messages = r.json()
+    assert messages == {
+        'messages': [],
+        'start': 0,
+        'end': -1
+    }
+
+############################## MESSAGE_UNREACT TESTS ##############################
+
+def test_message_unreact_valid_http(url): 
+    '''
+    Base test for message unreact. Owner unreacting to a message and checking with channel_messages()
+    ''' 
+
+     # Create 2 users
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account = r.json()
+    token1 = account['token']
+
+    r = requests.post(f"{url}/auth/register", json=user2)
+    account = r.json()
+    token2 = account['token']
+
+    # Create channel
+    test_channel['token'] = token2
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel = r.json()    
+
+    # Invite user 1 into the channel
+    invite_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'u_id': u_id1
+    }
+    requests.post(f"{url}/channel/invite", json=invite_payload)
+
+    # User 2 sends a message
+    send_payload = {
+        'token': token2,
+        'channel_id': channel['channel_id'],
+        'message': "that one"
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    message = r.json() 
+
+    react_payload = {
+        'token': token2,
+        'message_id': message['message_id']
+        'react_id': 1 # 1 for now as only have 1 react so far
+    }
+
+    r = requests.post(f"{url}/message/react", json=react_payload)
+    message = r.json()  
+
+    get_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'start': 0
+    }
+    r = requests.get(f"{url}/channel/messages", params=get_payload)
+    messages = r.json()
+    assert messages == {
+        'messages': [],
+        'start': 0,
+        'end': -1
+    }
+
+    unreact_payload = {
+        'token': token2,
+        'message_id': message['message_id']
+        'react_id': 1 # 1 for now as only have 1 react so far
+    }
+
+    r = requests.post(f"{url}/message/unreact", json=unreact_payload)
+    message = r.json()  
+
+    get_payload = {
+        'token': token1,
+        'channel_id': channel['channel_id'],
+        'start': 0
+    }
+    r = requests.get(f"{url}/channel/messages", params=get_payload)
+    messages = r.json()
+    assert messages == {
+        'messages': [],
+        'start': 0,
+        'end': -1
+    }
