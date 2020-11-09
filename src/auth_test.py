@@ -225,3 +225,85 @@ def test_auth_logout_fail():
 
     # Try logging out right after logging in
     assert auth.auth_logout(token) == logout_success
+
+
+####################### AUTH_PASSWORDRESET_REQUEST TESTS #######################
+def test_auth_passwordreset_request():
+    """
+    Test for auth_passwordreset_request with invalid email
+    """
+
+    clear()
+
+    # Create a user
+    auth.auth_register(*user)
+
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_request('alsovalidemail@gmail.com')
+
+
+######################## AUTH_PASSWORDRESET_RESET TESTS ########################
+def test_auth_passwordreset_reset_base():
+    """
+    Base test for auth_passwordreset_reset
+    """
+
+    clear()
+
+    # Create a user
+    auth.auth_register(*user)
+
+    reset_code = "abcdef"
+    new_password = "asdf1234qwer"
+
+    # Request a password reset
+    auth.auth_passwordreset_request('validemail@gmail.com')
+
+    # Reset
+    auth.auth_passwordreset_reset(reset_code, new_password)
+
+
+    # passed = {
+    #     'u_id' : 0,
+    #     'token' : 
+    # }
+    # Not sure about if JWT for the token is possible
+    assert auth.auth_login('validemail@gmail.com', 'asdf1234qwer')['u_id'] == 0
+
+def test_auth_passwordreset_reset_invalid_code():
+    """
+    Test auth_passwordreset_reset fails with an invalid code
+    """
+
+    clear()
+
+    # Create a user
+    auth.auth_register(*user)
+
+    reset_code = "bcdefa"
+    new_password = "asdf1234qwer"
+
+    # Request a password reset
+    auth.auth_passwordreset_request('validemail@gmail.com')
+
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_reset(reset_code, new_password)
+
+def test_auth_passwordreset_reset_invalid_pw():
+    """
+    Test auth_passwordreset_reset fails with an invalid password
+    """
+
+    clear()
+
+    # Create a user
+    auth.auth_register(*user)
+
+    reset_code = "abcdef"
+    new_password = "asdf1234qwer"
+
+    # Request a password reset
+    auth.auth_passwordreset_request('validemail@gmail.com')
+
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_reset(reset_code, new_password)
