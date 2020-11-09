@@ -905,7 +905,7 @@ def test_message_react_valid():
     react_id = 1
 
     message.message_react(token1, msg_id1, react_id)
-    message.message_react(token2, msg_id1, react_id)
+
 
     expected = [
         {
@@ -1043,7 +1043,7 @@ def test_message_unreact_valid():
     react_id = 1
 
     message.message_react(token1, msg_id1, react_id)
-    message.message_react(token2, msg_id1, react_id)
+   
 
     before_unreact = [
         {
