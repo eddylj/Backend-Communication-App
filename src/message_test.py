@@ -918,38 +918,22 @@ def test_message_send_later_valid():
     channel.channel_invite(token1, channel_id, u_id2)
 
     # Sends two messages in the future
-    future_time1 = round(time.time() + 1)
-    msg_id1 = message.message_send_later(token1, channel_id, "I'm famous", future_time1) ['message_id']
+    future_time1 = round(time.time()) + 1
+    message.message_send_later(token1, channel_id, "I'm famous", future_time1)
 
-    future_time2 = round(time.time() + 2)
-    msg_id2 = message.message_send_later(token2, channel_id, "Plz", future_time2) ['message_id']
+    future_time2 = round(time.time()) + 2
+    message.message_send_later(token2, channel_id, "Plz", future_time2)
 
-    time.sleep(5)
+    time.sleep(3)
 
-    expected = [
-        {
-            'message_id': msg_id2,
-            'u_id': u_id2,
-            'message': "Plz",
-            'time_created': future_time2,
-            'reacts': [],
-            'is_pinned': False
-        },
-        {
-            'message_id': msg_id1,
-            'u_id': u_id1,
-            'message': "I'm famous",
-            'time_created': future_time1,
-            'reacts': [],
-            'is_pinned': False
-        }
-    ]
-
-    assert channel.channel_messages(token1, channel_id, 0) == {
-        'messages': expected,
-        'start': 0,
-        'end': -1
-    }
+    messages = channel.channel_messages(token1, channel_id, 0)['messages']
+    assert len(messages) == 2
+    assert messages[1]['u_id'] == u_id1
+    assert messages[0]['u_id'] == u_id2
+    assert messages[1]['time_created'] == future_time1
+    assert messages[0]['time_created'] == future_time2
+    assert messages[1]['message'] == "I'm famous"
+    assert messages[0]['message'] == "Plz"
 
 def test_message_send_later_invalid_channel():
     """
