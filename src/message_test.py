@@ -1111,7 +1111,7 @@ def test_message_unreact_invalid_message_id():
     with pytest.raises(InputError):
         message.message_unreact(token1, 123415, react_id)
 
-def test_message_react_invalid_react_id():
+def test_message_unreact_invalid_react_id():
     '''
     Test case for having an invalid react id to a non-existent react available in the channel
     '''
