@@ -832,14 +832,11 @@ def test_message_unpin_not_owner():
     with pytest.raises(AccessError):
         message.message_unpin(token2, msg_id)
 
+############################## MESSAGE_SEND_LATER TESTS ##############################
 
-
-
-############################## MESSAGE_SENDLATER TESTS ##############################
-
-def test_message_sendlater_valid():
+def test_message_send_later_valid():
     """
-    Base case for message_sendlater().
+    Base case for message_send_later().
     """
     clear()
 
@@ -860,10 +857,10 @@ def test_message_sendlater_valid():
     
     # Sends two messages in the future
     future_time1 = round(time.time() + 1)
-    msg_id1 = message.message_sendlater(token1, channel_id, "I'm famous", future_time1) ['message_id']
+    msg_id1 = message.message_send_later(token1, channel_id, "I'm famous", future_time1) ['message_id']
 
     future_time2 = round(time.time() + 2)
-    msg_id2 = message.message_sendlater(token2, channel_id, "Plz", future_time2) ['message_id']
+    msg_id2 = message.message_send_later(token2, channel_id, "Plz", future_time2) ['message_id']
 
     time.sleep(5)
 
@@ -892,9 +889,9 @@ def test_message_sendlater_valid():
         'end': -1
     }
 
-def test_message_sendlater_invalid_channel():
+def test_message_send_later_invalid_channel():
     """
-    Test case for message_sendlater() where the message is sent to a channel id that is invalid.
+    Test case for message_send_later() where the message is sent to a channel id that is invalid.
     """
     
     clear()
@@ -913,9 +910,9 @@ def test_message_sendlater_invalid_channel():
     with pytest.raises(InputError):
         message.message_send(token1, channel_id, "Hallo guys", future_time)
 
-def test_message_sendlater_too_long():
+def test_message_send_later_too_long():
     """
-    Test case for message_sendlater(), where the passed message exceeds the 1000
+    Test case for message_send_later(), where the passed message exceeds the 1000
     character limit.
     """
     clear()
@@ -947,11 +944,11 @@ def test_message_sendlater_too_long():
     future_time = round(time.time() + 10)
 
     with pytest.raises(InputError):
-        message.message_sendlater(token, channel_id, long_message, future_time)
+        message.message_send_later(token, channel_id, long_message, future_time)
 
-def test_message_sendlater_invalid_time():
+def test_message_send_later_invalid_time():
     """
-    Test case for message_sendlater() where the specified time to send the message
+    Test case for message_send_later() where the specified time to send the message
     is in the past.
     """
 
@@ -967,11 +964,11 @@ def test_message_sendlater_invalid_time():
     past_time = round(time.time() - 10)
 
     with pytest.raises(InputError):
-        message.message_sendlater(token1, channel_id, "rawr", past_time)
+        message.message_send_later(token1, channel_id, "rawr", past_time)
 
-def test_message_sendlater_not_member():
+def test_message_send_later_not_member():
     """
-    Test case for message_sendlater(), where the caller is trying to send a message
+    Test case for message_send_later(), where the caller is trying to send a message
     to a channel they're not part of.
     """
     clear()
@@ -990,4 +987,4 @@ def test_message_sendlater_not_member():
     future_time = round(time.time() + 10)
 
     with pytest.raises(AccessError):
-        message.message_sendlater(token2, channel_id, "Hello", future_time)
+        message.message_send_later(token2, channel_id, "Hello", future_time)

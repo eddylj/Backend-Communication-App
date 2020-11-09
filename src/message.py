@@ -1,10 +1,11 @@
 """
 Functions to send, remove and edit messages
 """
+import threading
 import time
 from data import data
 from error import InputError, AccessError
-from other import get_active, validate_token
+from other import get_active, validate_token, is_valid_channel
 
 @validate_token
 def message_send(caller_id, channel_id, message):
@@ -38,8 +39,7 @@ def message_send(caller_id, channel_id, message):
         raise AccessError
 
     # If the message is too long
-    if not 0 < len(message) < 1000:
-        raise InputError
+    is_valid_message(message)
 
     message_id = len(data['messages'])
     new_message = {
@@ -117,7 +117,8 @@ def message_remove(token, message_id):
     # function will return on 82. Coverage exception cautiously applied.
     return {} # pragma: no cover
 
-def message_edit(token, message_id, message):
+@validate_token
+def message_edit(caller_id, message_id, message):
     """
     Edits the contents of a message stored in channel data and updates the
     timestamp. If an empty string is passed as the message string, the message
@@ -148,11 +149,6 @@ def message_edit(token, message_id, message):
     # Keeping the timestamp as close to the start of function as possible.
     timestamp = round(time.time())
 
-    # Check if token is valid
-    u_id = get_active(token)
-    if u_id is None:
-        raise AccessError
-
     # If message doesn't exist already
     if not is_message(message_id):
         raise InputError
@@ -166,10 +162,10 @@ def message_edit(token, message_id, message):
     channel_messages = data['channels'][channel_id]['messages']
 
     # If not sender of message and not owner of channel
-    if u_id != data['messages'][message_id]['u_id']:
-        if u_id not in channel_data['owners']:
+    if caller_id != data['messages'][message_id]['u_id']:
+        if caller_id not in channel_data['owners']:
             raise AccessError
-    elif u_id not in channel_data['members']:
+    elif caller_id not in channel_data['members']:
         raise AccessError
 
     for (index, msg) in enumerate(channel_messages):
@@ -189,6 +185,73 @@ def message_edit(token, message_id, message):
     # Coverage exception cautiously applied.
     return {} # pragma: no cover
 
+@validate_token
+def message_send_later(caller_id, channel_id, message, time_sent):
+    """
+    Sends a message from a user to the channel specified by channel_id
+    automatically at a specified time in the future.
+
+    Parameters:
+        token (str)         : User's authorisation hash.
+        channel_id (int)    : Target channel.
+        message (str)       : Message string to be sent.
+        time_sent (int)     : Unix timestamp when the message will be sent.
+
+    Returns:
+        {'message_id'(int)}:
+            A dictionary containing the unique identifier of the message.
+    Raises:
+        AccessError:
+            When:
+                - The caller is not a member of the channel.
+                - Token is invalid.
+        InputError:
+            When:
+                - Channel_id does not correspond to an existing channel.
+                - Message isn't between 1 and 1000 characters in length.
+                - Time_sent is in the past.
+    """
+    countdown = time_sent - round(time.time())
+
+    if countdown <= 0:
+        raise InputError
+
+    if not is_valid_channel(channel_id):
+        raise InputError
+
+    channel = data['channels'][channel_id]
+
+    if caller_id not in channel['members']:
+        raise AccessError
+
+    is_valid_message(message)
+
+    # Method 1
+    # Add an empty message to database and edit when the time comes.
+    # Issue: order will be messed up if other people send messages before countdown finishes.
+
+    # message_id = len(data['messages'])
+    # new_message = {
+    #     'message_id' : message_id,
+    #     'u_id' : caller_id,
+    #     'message' : "",
+    #     'time_created' : None,
+    # }
+    # # Inserts new message at the start of the messages stored in channel data.
+    # data['channels'][channel_id]['messages'].insert(0, new_message)
+    # # Storing channel_id and caller_id only in message data
+    # data['messages'].append({'channel_id': channel_id, 'u_id': caller_id})
+
+    # args = [caller_id, message_id, message]
+    # threading.Timer(countdown, message_edit.validated, args).start()
+
+    # Method 2
+    # Call message_send in timer.
+    # Issue: Message_id to be returned would be wrong if other people send messages before countdown finishes.
+
+    # args = [caller_id, channel_id, message]
+    # threading.Timer(countdown, message_send.validated, args).start()
+
 def is_message(message_id):
     """
     Checks if message_id corresponds to a sent message. Also checks if the
@@ -198,3 +261,9 @@ def is_message(message_id):
         -1 < message_id < len(data['messages']) and
         data['messages'][message_id] != {}
     )
+
+def is_valid_message(message):
+    """ Checks if a message is between 1 and 1000, raise InputError if not. """
+    if not 0 < len(message) <= 1000:
+        raise InputError
+    return True
