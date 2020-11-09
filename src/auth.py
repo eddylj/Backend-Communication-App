@@ -183,7 +183,7 @@ def auth_passwordreset_request(email):
                 message = ("Subject: Flockr password reset\n\n"
                            "Your password reset code is: " + reset_code + "\n"
                            "This code expires in 10 minutes.")
-                           
+
                 server.sendmail(authenticator, email, message)
                 user['pw_reset'] = True
 
