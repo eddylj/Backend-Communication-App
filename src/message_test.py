@@ -900,12 +900,12 @@ def test_message_send_later_valid(test_data):
     """
     Base case for message_send_later().
     """
-    # Invite user 2 into the channel
     token0 = test_data.token(0)
     token1 = test_data.token(1)
     u_id0 = test_data.u_id(0)
     u_id1 = test_data.u_id(1)
     channel_id = test_data.channels[0]
+
     channel.channel_invite(token0, channel_id, u_id1)
 
     # Sends two messages in the future
@@ -927,38 +927,31 @@ def test_message_send_later_valid(test_data):
     assert messages[1]['message'] == "I'm famous"
     assert messages[0]['message'] == "Plz"
 
-def test_message_send_later_invalid_channel():
+    clear()
+
+def test_message_send_later_invalid_channel(test_data):
     """
     Test case for message_send_later() where the message is sent to a channel id that is invalid.
     """
-    
-    clear()
-
-    # Create a user
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
+    token0 = test_data.token(0)
 
     # An invalid channel id
     channel_id = 123213
 
-    # A valid time 1min in the future
-    future_time = round(time.time() + 10)
+    future_time = round(time.time()) + 10
 
     with pytest.raises(InputError):
-        message.message_send(token1, channel_id, "Hallo guys", future_time)
+        message.message_send_later(token0, channel_id, "Hallo", future_time)
 
-def test_message_send_later_too_long():
+    clear()
+
+def test_message_send_later_too_long(test_data):
     """
     Test case for message_send_later(), where the passed message exceeds the 1000
     character limit.
     """
-    clear()
-
-    account = auth.auth_register(*user)
-    token = account['token']
-
-    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
+    token = test_data.token(0)
+    channel_id = test_data.channels[0]
 
     # 1008-character string
     long_message = (
@@ -978,54 +971,46 @@ def test_message_send_later_too_long():
         "Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem "
         "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam."
     )
-    # A valid time 1min in the future
-    future_time = round(time.time() + 10)
+
+    future_time = round(time.time()) + 10
 
     with pytest.raises(InputError):
         message.message_send_later(token, channel_id, long_message, future_time)
 
-def test_message_send_later_invalid_time():
+    clear()
+
+def test_message_send_later_invalid_time(test_data):
     """
     Test case for message_send_later() where the specified time to send the message
     is in the past.
     """
+    token = test_data.token(0)
+    channel_id = test_data.channels[0]
 
-    # Create a user
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # An invalid time 1min in the past
+    # An invalid time 10 seconds in the past
     past_time = round(time.time() - 10)
 
     with pytest.raises(InputError):
-        message.message_send_later(token1, channel_id, "rawr", past_time)
+        message.message_send_later(token, channel_id, "rawr", past_time)
 
-def test_message_send_later_not_member():
+    clear()
+
+def test_message_send_later_not_member(test_data):
     """
     Test case for message_send_later(), where the caller is trying to send a message
     to a channel they're not part of.
     """
-    clear()
+    token1 = test_data.token(1)
+    channel_id = test_data.channels[0]
 
-    # Create 2 users
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-
-    # Create channel using user1
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # A valid time 1min in the future
+    # A valid time 10sec in the future
     future_time = round(time.time() + 10)
 
     with pytest.raises(AccessError):
-        message.message_send_later(token2, channel_id, "Hello", future_time)
+        message.message_send_later(token1, channel_id, "Hello", future_time)
+
+    clear()
+
 ############################## MESSAGE_REACT TESTS ##############################
 
 def test_message_react_valid():
