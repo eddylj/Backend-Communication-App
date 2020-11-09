@@ -3,6 +3,8 @@ Login, logout and register functions
 """
 from time import time
 import hashlib
+import smtplib
+import ssl
 import jwt
 from data import data
 from error import InputError
@@ -126,8 +128,7 @@ def auth_register(email, password, name_first, name_last):
                 user['name_last'] == name_last):
             number += 1
 
-    if len(password) < 6:
-        raise InputError
+    is_valid_password(password)
 
     if not 1 <= len(name_first) <= 50:
         raise InputError
@@ -162,6 +163,45 @@ def auth_register(email, password, name_first, name_last):
         'u_id': u_id,
         'token': token,
     }
+
+def auth_passwordreset_request(email):
+    port = 0
+    authenticator = "flockrauth@gmail.com"
+    password = "7P9adNdsvdVYgRu"
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
+        server.login(authenticator, password)
+        for user in data['users']:
+            if user['email'] == email:
+                payload = {
+                    'u_id': user['u_id'],
+                    'exp': time() + 600
+                }
+                reset_code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
+                message = ("Subject: Flockr password reset\n\n"
+                           "Your password reset code is: " + reset_code + "\n"
+                           "This code expires in 10 minutes.")
+                server.sendmail(authenticator, email, message)
+                user['pw_reset'] = True
+    
+    return {}
+
+def auth_passwordreset_reset(reset_code, new_password):
+    u_id = jwt.decode(reset_code, SECRET, algorithms='HS256')['u_id']
+    user = data['users'][u_id]
+    if "pw_reset" not in user:
+        raise InputError
+
+    is_valid_password(new_password)
+    user['password'] = new_password
+    del user["pw_reset"]
+
+    return {}
+
+def is_valid_password(password):
+    if len(password) < 6:
+        raise InputError
+    return True
 
 def new_handle(handle, num):
     """

@@ -12,5 +12,5 @@ data = {
     # Stores active tokens
     'tokens': [],
     # Stores messages
-    'messages' : [],
+    'messages': [],
 }

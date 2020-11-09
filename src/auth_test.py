@@ -228,6 +228,7 @@ def test_auth_logout_fail():
 
 
 ####################### AUTH_PASSWORDRESET_REQUEST TESTS #######################
+
 def test_auth_passwordreset_request():
     """
     Test for auth_passwordreset_request with invalid email
