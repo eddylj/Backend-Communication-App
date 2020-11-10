@@ -12,6 +12,9 @@
     - If the number puts the handle over the 20 character limit, the number would replace characters at the end of the handle string instead.
 ### auth_passwordreset_request()
 - If an email is given which does not refer to a registered account, then raise InputError
+- Reset codes will expire after 10 minutes.
+### auth_passwordreset_request()
+- If the new password is the same as the existing one, raise InputError.
 
 ## Channel
 ### channel_invite()

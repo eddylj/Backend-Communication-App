@@ -18,7 +18,7 @@ class Data:
         return self.users[user]['u_id']
 
 # Pytest fixture to always register 2 users and create 2 channels.
-@pytest.fixture(scope="session")
+@pytest.fixture
 def test_data():
     clear()
 

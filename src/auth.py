@@ -1,6 +1,7 @@
 """
 Login, logout and register functions
 """
+import threading
 from time import time
 import hashlib
 import smtplib
@@ -62,7 +63,7 @@ def validate_pw(user, password):
                 hash.
     """
     password = hashlib.sha256(password.encode())
-    return password.digest() == user['password'].digest()
+    return password.hexdigest() == user['password'].hexdigest()
 
 def auth_logout(token):
     """
@@ -165,6 +166,9 @@ def auth_register(email, password, name_first, name_last):
     }
 
 def start_email_server():
+    """
+    Starts a SMTP_SSL session in order to send an email.
+    """
     port = 0
     context = ssl.create_default_context()
     return smtplib.SMTP_SSL("smtp.gmail.com", port, context=context)
@@ -172,6 +176,21 @@ def start_email_server():
 # Method to send an email to a user adapted from:
 # https://realpython.com/python-send-email/#starting-a-secure-smtp-connection
 def auth_passwordreset_request(email):
+    """
+    Given an email, checks against the existing users to see if one registered
+    with that email exists. If they do, send a unique reset code to that email,
+    otherwise raise InputError. The reset code is a jwt string which expires
+    after 10 minutes.
+
+    Parameters:
+        email (str): User's email
+
+    Returns:
+        {}: An empty dictionary if the code was sent successfully.
+
+    Raises:
+        InputError: If no user is registered with the provided email.
+    """
     for user in data['users']:
         if user['email'] == email:
             authenticator = "flockrauth@gmail.com"
@@ -189,6 +208,10 @@ def auth_passwordreset_request(email):
 
                 server.sendmail(authenticator, email, message)
                 user['pw_reset'] = True
+                # Might not work, needs testing
+                def end_reset(user):
+                    user.pop('pw_reset', None)
+                threading.Timer(600, end_reset, [user])
                 return {}
 
     raise InputError
@@ -197,9 +220,30 @@ def auth_passwordreset_request(email):
 #   - Logout after password reset
 #   - Can only request if logged out
 def auth_passwordreset_reset(reset_code, new_password):
+    """
+    Given a reset code, replace the password stored in the database with the
+    new password if the reset code can be verified.
+
+    Parameters:
+        reset_code (str)    : Code which was sent to the user's email through
+                              auth_passwordreset_request().
+        new_password (str)  : New password to replace old.
+
+    Returns:
+        {}: An empty dictionary if the user's password was reset successfully.
+
+    Raises:
+        InputError:
+            When:
+                - The reset code doesn't match the one sent out.
+                - The reset code expired already.
+                - The new password is exactly the same as the old.
+                - If the user somehow passed a valid token, but didn't request
+                  a password reset.
+    """
     try:
         u_id = jwt.decode(reset_code, SECRET, algorithms='HS256')['u_id']
-    except jwt.exceptions.DecodeError:
+    except (jwt.exceptions.DecodeError, jwt.exceptions.ExpiredSignatureError):
         raise InputError
     user = data['users'][u_id]
     if "pw_reset" not in user:
@@ -207,12 +251,17 @@ def auth_passwordreset_reset(reset_code, new_password):
 
     is_valid_password(new_password)
     new_password = hashlib.sha256(new_password.encode())
+    if user['password'].hexdigest() == new_password.hexdigest():
+        raise InputError
     user['password'] = new_password
     del user["pw_reset"]
 
     return {}
 
 def is_valid_password(password):
+    """
+    Checks if a password is valid (6 or more characters in length).
+    """
     if len(password) < 6:
         raise InputError
     return True

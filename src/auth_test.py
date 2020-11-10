@@ -285,17 +285,16 @@ def test_auth_passwordreset_reset_invalid_code(test_data):
 def test_auth_passwordreset_reset_invalid_pw(test_data):
     """
     White-box test to test for an InputError when an invalid password gets
-    passed into auth_passwordreset_reset().
+    passed into auth_passwordreset_reset(). A password is invalid if:
+        1. It's less than 6 characters in length.
+        2. It's the same as the existing password.
     """
     token = test_data.token(0)
     u_id = test_data.u_id(0)
     auth.auth_logout(token)
 
-    email = "validemail@gmail.com"
-    new_password = "qTs37"
-
     # Request a password reset
-    auth.auth_passwordreset_request(email)
+    auth.auth_passwordreset_request("validemail@gmail.com")
     payload = {
         'u_id': u_id,
         'exp': time.time() + 600
@@ -303,4 +302,7 @@ def test_auth_passwordreset_reset_invalid_pw(test_data):
     reset_code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
 
     with pytest.raises(InputError):
-        auth.auth_passwordreset_reset(reset_code, new_password)
+        auth.auth_passwordreset_reset(reset_code, "qTs37")
+
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_reset(reset_code, "123abc!@#")
