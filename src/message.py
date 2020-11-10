@@ -224,38 +224,50 @@ def message_react(token, message_id, react_id):
     if caller_id not in data['channels'][channel_id]['members']:
         raise InputError
 
-
-
-
     # Check if user is performing an appropriate reaction ->just need to know if there's a list of elegible reacts
-    reaction = get_active(react_id)
-    if reaction not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts
+    # if reaction not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts if this is possible
+    if react_id != 1:
         raise InputError
-
 
     for (index, msg) in enumerate(channel_data['messages']):
         # Find the message in the channels database
         if msg['message_id'] == message_id:
-            if msg['reacts']
-            # if reacts = NULL, insert
-            # else, search reacts for react id
-                # if reacts is in the react id list, 
-                    # scenario 1: if uid is not in the list, append the uids list
-                    # else, if uid is in the react list, InputError
+            # if reacts is currently not populated and the user is not reacting to their own message
+            if not msg['reacts'] and token != msg['token']:
+                insert = {
+                    react_id: 1
+                    uid:[token]
+                    is_the_user_reacted: False
+                }
+                insert_copy = insert.copy()
+                # add the new dictionary to the list
+                msg['reacts'].append(insert_copy)
+                return {}
 
-                    # scenario 2: if msg[uid] = uid and is_the_user_reacted = True
-                        # InputError
-                    # else, append the uids list and if msg[uid] = uid:
-                        # is_the_user_reacted = True
-                # if reacts is not in the react id list, create a new react in the list 
+            # If reacts is currently not populated and the user is reacting to their own message
+            elif not msg['reacts'] and token == msg['token']:
+                insert = {
+                    react_id: 1
+                    uid:[token]
+                    is_the_user_reacted: True
+                }
+                insert_copy = insert.copy()
+                # add the new dictionary to the list
+                msg['reacts'].append(insert_copy)
+                return {}
 
-            for reacts in msg['reacts']['react_id']:
-                # Already reacted
-                if msg['reacts']['is_the_user_reacted']:
-                    raise InputError
-                # Change is_pinned
-                msg['reacts']['is_pinned'] = True
-                break
+            # If there already exist reacts to the message
+            for reacts in msg['reacts']:
+                if msg['reacts']['react_id'] == 1:
+                    # Raise InputError if the user has already reacted
+                    if msg['reacts']['is_the_user_reacted'] = True:
+                        raise InputError
+                    else:
+                        # Append the token to the 'reacts' list
+                        msg['reacts'][1]['u_ids'].append(token)
+                        # Change 'is_the_user_reacted' if the user is reacting to their own message
+                        if token == msg['token']:
+                            msg['reacts'][1]['is_the_user_reacted'] == True
 
     return {}
 
@@ -273,39 +285,34 @@ def message_unreact(token, message_id, react_id):
     if caller_id not in data['channels'][channel_id]['members']:
         raise InputError
 
-
-
-
     # Check if user is performing an appropriate unreact ->just need to know if there's a list of elegible reacts
-    reaction = get_active(react_id)
-    if reaction not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts
+    # if react_id not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts
+    if react_id != 1:
         raise InputError
-
 
     for (index, msg) in enumerate(channel_data['messages']):
         # Find the message in the channels database
         if msg['message_id'] == message_id:
-            if msg['reacts']
-            # if reacts = NULL, InputError
-            # else, search reacts for react id
-                # scenario 1: remove uid from list
-                # if elements(uid_list) = 1, delete the react
-
-                # scenario 2: if msg[uid] = uid and is_the_user_reacted = True
-                    # remove uid from list and is_the_user_reacted = False
-                    # if elements(uid_list) = 1, delete the react
-                    
-
-            for reacts in msg['reacts']['react_id']:
-                # Already reacted
-                if msg['reacts']['is_the_user_reacted']:
-                    raise InputError
-                # Change is_pinned
-                msg['reacts']['is_pinned'] = True
-                break
+            # If there arent any reacts that the user can unreact
+            if not msg['reacts']:
+                raise InputError          
+            for reacts in msg['reacts']:
+                if msg['reacts'][1]['react_id'] == 1:
+                    # Removing the uid from the list of reacts
+                    msg['reacts'][1]['u_ids'].remove(react_id)
+                    if token == msg['token']:
+                        # If the user is the person who sent the message, update 'is_the_user_reacted'
+                        msg['reacts'][1]['is_the_user_reacted'] == False
+                    # If the list of reacts is now empty, remove the dictionary from the reacts list.
+                    if not msg['reacts'][1]['u_ids']:
+                        removekey(msg['reacts'], 1)
 
     return {}
 
+def removekey(d, key):
+    r = dict(d)
+    del r[key]
+    return r
 
 def isEmpty(self, dictionary):
     for element in dictionary:
