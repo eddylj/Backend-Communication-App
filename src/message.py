@@ -210,10 +210,6 @@ def message_react(token, message_id, react_id):
     """
     Function to react to a message in a channel
     """
-    
-     """
-    Function to pin a message in a channel
-    """
 
     # Find channel_id and data
     channel_id = data['messages'][message_id]['channel_id']
