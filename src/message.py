@@ -314,8 +314,3 @@ def removekey(d, key):
     del r[key]
     return r
 
-def isEmpty(self, dictionary):
-    for element in dictionary:
-        if element:
-            return True
-        return False
