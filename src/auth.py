@@ -164,17 +164,20 @@ def auth_register(email, password, name_first, name_last):
         'token': token,
     }
 
+def start_email_server():
+    port = 0
+    context = ssl.create_default_context()
+    return smtplib.SMTP_SSL("smtp.gmail.com", port, context=context)
+
 # Method to send an email to a user adapted from:
 # https://realpython.com/python-send-email/#starting-a-secure-smtp-connection
 def auth_passwordreset_request(email):
-    port = 0
-    authenticator = "flockrauth@gmail.com"
-    password = "7P9adNdsvdVYgRu"
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
-        server.login(authenticator, password)
-        for user in data['users']:
-            if user['email'] == email:
+    for user in data['users']:
+        if user['email'] == email:
+            authenticator = "flockrauth@gmail.com"
+            password = "7P9adNdsvdVYgRu"
+            with start_email_server() as server:
+                server.login(authenticator, password)
                 payload = {
                     'u_id': user['u_id'],
                     'exp': time() + 600
@@ -186,16 +189,24 @@ def auth_passwordreset_request(email):
 
                 server.sendmail(authenticator, email, message)
                 user['pw_reset'] = True
+                return {}
 
-    return {}
+    raise InputError
 
+# Consider adding either:
+#   - Logout after password reset
+#   - Can only request if logged out
 def auth_passwordreset_reset(reset_code, new_password):
-    u_id = jwt.decode(reset_code, SECRET, algorithms='HS256')['u_id']
+    try:
+        u_id = jwt.decode(reset_code, SECRET, algorithms='HS256')['u_id']
+    except jwt.exceptions.DecodeError:
+        raise InputError
     user = data['users'][u_id]
     if "pw_reset" not in user:
         raise InputError
 
     is_valid_password(new_password)
+    new_password = hashlib.sha256(new_password.encode())
     user['password'] = new_password
     del user["pw_reset"]
 
