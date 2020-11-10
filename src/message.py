@@ -260,10 +260,10 @@ def message_react(token, message_id, react_id):
                         raise InputError
                     else:
                         # Append the token to the 'reacts' list
-                        msg['reacts'][1]['u_ids'].append(token)
+                        msg['reacts'][0]['u_ids'].append(token)
                         # Change 'is_the_user_reacted' if the user is reacting to their own message
                         if token == msg['token']:
-                            msg['reacts'][1]['is_the_user_reacted'] == True
+                            msg['reacts'][0]['is_the_user_reacted'] == True
 
     return {}
 
@@ -293,15 +293,15 @@ def message_unreact(token, message_id, react_id):
             if not msg['reacts']:
                 raise InputError          
             for reacts in msg['reacts']:
-                if msg['reacts'][1]['react_id'] == 1:
+                if msg['reacts'][0]['react_id'] == 1:
                     # Removing the uid from the list of reacts
-                    msg['reacts'][1]['u_ids'].remove(react_id)
+                    msg['reacts'][0]['u_ids'].remove(react_id)
                     if token == msg['token']:
                         # If the user is the person who sent the message, update 'is_the_user_reacted'
-                        msg['reacts'][1]['is_the_user_reacted'] == False
+                        msg['reacts'][0]['is_the_user_reacted'] == False
                     # If the list of reacts is now empty, remove the dictionary from the reacts list.
-                    if not msg['reacts'][1]['u_ids']:
-                        removekey(msg['reacts'], 1)
+                    if not msg['reacts'][0]['u_ids']:
+                        removekey(msg['reacts'], 0)
 
     return {}
 
