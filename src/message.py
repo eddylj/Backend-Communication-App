@@ -225,45 +225,42 @@ def message_react(token, message_id, react_id):
     if react_id != 1:
         raise InputError
 
+    # only issue with this is that itll work for react_id 1 but not for 1,2,3.. etc. if the reacts aren't coming in increasing
+    # order, ie. the the reacts list will not be in increasing order of react_id.
     for (index, msg) in enumerate(channel_data['messages']):
         # Find the message in the channels database
         if msg['message_id'] == message_id:
             # if reacts is currently not populated and the user is not reacting to their own message
-            if not msg['reacts'] and token != msg['token']:
+            if not msg['reacts'][react_id] and token != msg['token']:
                 insert = {
-                    react_id: 1
+                    react_id: react_id
                     uid:[token]
                     is_the_user_reacted: False
                 }
                 insert_copy = insert.copy()
                 # add the new dictionary to the list
                 msg['reacts'].append(insert_copy)
-                return {}
-
             # If reacts is currently not populated and the user is reacting to their own message
-            elif not msg['reacts'] and token == msg['token']:
+            elif not msg['reacts'][react_id] and token == msg['token']:
                 insert = {
-                    react_id: 1
+                    react_id: react_id
                     uid:[token]
                     is_the_user_reacted: True
                 }
                 insert_copy = insert.copy()
                 # add the new dictionary to the list
                 msg['reacts'].append(insert_copy)
-                return {}
-
             # If there already exist reacts to the message
-            for reacts in msg['reacts']:
-                if msg['reacts']['react_id'] == 1:
-                    # Raise InputError if the user has already reacted
-                    if msg['reacts']['is_the_user_reacted'] = True:
-                        raise InputError
-                    else:
-                        # Append the token to the 'reacts' list
-                        msg['reacts'][0]['u_ids'].append(token)
-                        # Change 'is_the_user_reacted' if the user is reacting to their own message
-                        if token == msg['token']:
-                            msg['reacts'][0]['is_the_user_reacted'] == True
+            else: 
+                # Raise InputError if the user has already reacted
+                if msg['reacts'][react_id]['is_the_user_reacted'] = True:
+                    raise InputError
+                else:
+                    # Append the token to the 'reacts' list
+                    msg['reacts'][react_id]['u_ids'].append(token)
+                    # Change 'is_the_user_reacted' if the user is reacting to their own message
+                    if token == msg['token']:
+                        msg['reacts'][react_id]['is_the_user_reacted'] == True
 
     return {}
 
@@ -289,19 +286,18 @@ def message_unreact(token, message_id, react_id):
     for (index, msg) in enumerate(channel_data['messages']):
         # Find the message in the channels database
         if msg['message_id'] == message_id:
-            # If there arent any reacts that the user can unreact
-            if not msg['reacts']:
+            # If there arent any reacts that the user can unreact, raise InputError
+            if not msg['reacts'][react_id]:
                 raise InputError          
-            for reacts in msg['reacts']:
-                if msg['reacts'][0]['react_id'] == 1:
-                    # Removing the uid from the list of reacts
-                    msg['reacts'][0]['u_ids'].remove(react_id)
-                    if token == msg['token']:
-                        # If the user is the person who sent the message, update 'is_the_user_reacted'
-                        msg['reacts'][0]['is_the_user_reacted'] == False
-                    # If the list of reacts is now empty, remove the dictionary from the reacts list.
-                    if not msg['reacts'][0]['u_ids']:
-                        removekey(msg['reacts'], 0)
+            
+            # Removing the uid from the list of reacts
+            msg['reacts'][react_id]['u_ids'].remove(token)
+            if token == msg['token']:
+                # If the user is the person who sent the message, update 'is_the_user_reacted'
+                msg['reacts'][react_id]['is_the_user_reacted'] == False
+            # If the list of reacts is now empty, remove the dictionary from the reacts list.
+            if not msg['reacts'][react_id]['u_ids']:
+                removekey(msg['reacts'], react_id)
 
     return {}
 
