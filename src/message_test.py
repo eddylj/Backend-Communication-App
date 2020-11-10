@@ -546,124 +546,10 @@ clear()
 ############################## MESSAGE_REACT TESTS ##############################
 
 def test_message_react_valid():
-    '''
-    Base Test for message_react(). Owner reacting to a message and checking with channel_messages()
-    '''
-    clear()
-
-    # Create user
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # Send messages 1 and 2
-    timestamp1 = int(time.time())
-    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
-    timestamp2 = int(time.time())
-    msg_id2 = message.message_send(token1, channel_id, "goodnight")['message_id']
-
-    # User reacts to message 1
-    message.message_react(token1, msg_id1, 1)
-
-    expected = [
-        {
-            'message_id' : msg_id2,
-            'u_id': u_id2,
-            'message' : "goodnight",
-            'time_created': timestamp2,
-            'reacts' : [0],
-            'is_pinned': False, 
-        },   
-        {
-            'message_id': msg_id1,
-            'u_id' : u_id2,
-            'message' : "Hello",
-            'time_created' : timestamp1,
-            'reacts' : [1],
-            'is_pinned': False, 
-        },
-    ]
-
-    assert channel.channel_messages(token1, channel_id, 0) == {
-        'messages' : expected,
-        'start' : 0,
-        'end' : -1
-    }
-
-def test_message_react_invalid_message_id():
     """
-    Test case where the user reacts to a message with invalid message_id.
+    Base test for message react. Owner reacting to a message and checking with channel_messages().
     """
-    clear()
 
-    # Create user
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # Input error when message_id is not valid
-    with pytest.raises(InputError):
-        message.message_react(token1, 123415, 1)
-    
-
-def test_message_react_invalid_react_id():
-    """
-    Test case where the user reacts to a message using an invalid react_id.
-    """
-    clear()
-    
-    # Create user
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # Send messages
-    timestamp1 = int(time.time())
-    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
-
-    # Input error when react_id is not valid
-    with pytest.raises(InputError):
-        message.message_react(token1, msg_id1, 12345)
-
-    
-def test_message_react_already_reacted():
-    """
-    Test case where the user reacts to a message twice with the same react_id.
-    """
-    clear()
-    
-    # Create user
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # Send messages
-    timestamp1 = int(time.time())
-    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
-
-    # User reacts once
-    message.message_react(token1, msg_id1, 1)
-
-    # Input error when user reacts twice
-    with pytest.raises(InputError):
-        message.message_react(token1, msg_id1, 1)
-
-
-############################## MESSAGE_UNREACT TESTS ##############################
-
-def test_message_unreact_valid():
-    '''
-    Base Test for message_unreact. Owner reacting to a message and checking with channel_messages()
-    '''
     clear()
 
     # Create 2 users
@@ -671,65 +557,40 @@ def test_message_unreact_valid():
     token1 = account1['token']
     u_id1 = account1['u_id']
 
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
     # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+
+    # Invite user 1 into the channel
+    channel.channel_invite(token1, channel_id, u_id1)
 
     # Send messages
     timestamp1 = int(time.time())
-    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+    msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
 
-    timestamp2 = int(time.time())
-    msg_id2 = message.message_send(token1, channel_id, "what it do")['message_id']
+    # Not sure where we get react id for now, however react id = 1 is thumbs up i believe
+    react_id = 1
 
-    # React to both messages
-    message.message_react(token1, msg_id1, 1)
-    message.message_react(token1, msg_id2, 1)
+    message.message_react(token1, msg_id1, react_id)
 
-    before_unreacted = [
-        {
-            'message_id': msg_id2,
-            'u_id': u_id2,
-            'message': "what it do",
-            'time_created': timestamp2,
-            'reacts' : [1],
-            'is_pinned': False, 
-        },
-        {
-            'message_id': msg_id1,
-            'u_id': u_id2,
-            'message': "Hello",
-            'time_created': timestamp1,
-            'reacts' : [1],
-            'is_pinned': False, 
-        },
-    ]
-
-    # Check that the messages were reacted before unreacting
-    assert channel.channel_messages(token1, channel_id, 0) == {
-        'messages': before_unpinned,
-        'start': 0,
-        'end': -1
-    }
-
-    # User unreacts message 2
-    message.message_unreact(token1, msg_id2, 1)
 
     expected = [
         {
-            'message_id': msg_id2,
-            'u_id': u_id2,
-            'message': "what it do",
-            'time_created': timestamp2,
-            'reacts' : [],
-            'is_pinned': False, 
-        },
-        {
             'message_id': msg_id1,
             'u_id': u_id2,
             'message': "Hello",
             'time_created': timestamp1,
-            'reacts' : [1],
-            'is_pinned': False, 
+            'reacts': [
+                {
+                    'react_id': 1,
+                    'u_ids': [u_id1, u_id2],
+                    'is_the_user_reacted': True
+                }
+            ],
+            'is_pinned': False
         }
     ]
 
@@ -739,84 +600,265 @@ def test_message_unreact_valid():
         'end': -1
     }
 
-
-def test_message_unreact_invalid_message_id():
-    """
-    Test case where the user unreacts to a message with invalid message_id.
-    """
+def test_message_react_invalid_message_id():
+    '''
+    Test case for having an invalid message id to a non-existent message in the channel
+    '''
     clear()
-
-    # Create user
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
 
-    # Input error when message_id is not valid
-    with pytest.raises(InputError):
-        message.message_unreact(token1, 123415, 1)
-
-
-def test_message_unreact_invalid_react_id():
-    """
-    Test case where the user unreacts a message using an invalid react_id.
-    """
-    clear()
-
-    # Create user
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    
-    # Create channel
+        # Create channel
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-    
-    # Create message
+
+    react_id = 1
+
+    # message_id not valid
+    with pytest.raises(InputError):
+        message.message_react(token1, 123415, react_id)
+
+def test_message_react_invalid_react_id():
+    '''
+    Test case for having an invalid react id to a non-existent react available in the channel
+    '''
+    clear()
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+        # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Send messages
+    timestamp1 = int(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
     # Input error when react_id is not valid
     with pytest.raises(InputError):
-        message.message_unpin(token1, msg_id1, 12345)
+        message.message_react(token1, msg_id1, 123415)
 
-
-def test_message_unreact_already_unreacted():
-    """
-    Test case where the user unreacts a message that has already been unreacted.
-    """
+def test_message_react_already_active_react_id():
+    '''
+    Test case for when the react id is already being used on a message
+    '''
     clear()
-
-    # Create user
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
-    
-    # Create channel
+
+        # Create channel
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-    
-    # Create messages
+
+    # Send messages
+    timestamp1 = int(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
-    msg_id2 = message.message_send(token1, channel_id, "cool story")['message_id']
+
+    react_id = 1
+
+    message.message_react(token1, msg_id1, react_id)
+
+    expected = [
+        {
+            'message_id': msg_id1,
+            'u_id': u_id1,
+            'message': "Hello",
+            'time_created': timestamp1,
+            'reacts': [
+                {
+                    'react_id': 1,
+                    'u_ids': [u_id1],
+                    'is_the_user_reacted': True
+                }
+            ],
+            'is_pinned': False
+        }
+    ]
+
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': expected,
+        'start': 0,
+        'end': -1
+    }
+
+    # Input error when react_id is already active
+    with pytest.raises(InputError):
+        message.message_react(token1, msg_id1, react_id)
+
+############################## MESSAGE_UNREACT TESTS ##############################
+
+def test_message_unreact_valid():
+    '''
+    Base test for message unreact. Owner unreacting to a message and checking with channel_messages()
+    '''
+    clear()
+
+        # Create 2 users
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+    u_id1 = account1['u_id']
+
+    account2 = auth.auth_register(*user2)
+    token2 = account2['token']
+    u_id2 = account2['u_id']
+
+    # Create channel
+    channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
+
+    # Invite user 1 into the channel
+    channel.channel_invite(token1, channel_id, u_id1)
+
+    # Send messages
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
+
+    # Not sure where we get react id for now, however react id = 1 is thumbs up i believe
+    react_id = 1
+
+    message.message_react(token1, msg_id1, react_id)
    
-    # Input error when user unreacts the same message twice
-    message.message_react(token1, msg_id1, 1)
-    message.message_unreact(token1, msg_id1, 1)
 
-    with pytest.raises(InputError):
-        message.message_unreact(token1, msg_id1, 1)
+    before_unreact = [
+        {
+            'message_id': msg_id1,
+            'u_id': u_id2,
+            'message': "Hello",
+            'time_created': timestamp1,
+            'reacts': [
+                {
+                    'react_id': 1,
+                    'u_ids': [u_id1, u_id2],
+                    'is_the_user_reacted': True
+                }
+            ],
+            'is_pinned': False
+        }
+    ]
 
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': before_unreact,
+        'start': 0,
+        'end': -1
+    }
 
-def test_message_unreact_never_reacted():
-    """
-    Test case where the user unreacts a message that has never been reacted to.
-    """
+    message.message_unreact(token2, msg_id1, react_id)
+
+    expected = [
+        {
+            'message_id': msg_id1,
+            'u_id': u_id2,
+            'message': "Hello",
+            'time_created': timestamp1,
+            'reacts': [
+                {
+                    'react_id': 1,
+                    'u_ids': [u_id1],
+                    'is_the_user_reacted': False
+                }
+            ],
+            'is_pinned': False
+        }
+    ]
+
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': expected,
+        'start': 0,
+        'end': -1
+    }
+
+def test_message_unreact_invalid_message_id():
+    '''
+    Test case for when the message id is invalid and does not correspond to a message in the channel
+    '''
     clear()
 
-    # Create user
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
-    
-    # Create channel
+
+        # Create channel
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-    
-    # Create message
+
+    react_id = 1
+
+    # Input error when message_id is not valid
+    with pytest.raises(InputError):
+        message.message_unreact(token1, 123415, react_id)
+
+def test_message_unreact_invalid_react_id():
+    '''
+    Test case for having an invalid react id to a non-existent react available in the channel
+    '''
+    clear()
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+        # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Send messages
+    timestamp1 = int(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
-    # Input error when user unreacts a message that was never reacted to
+    # Input error when react_id is not valid
     with pytest.raises(InputError):
-        message.message_unpin(token1, msg_id1, 1)
+        message.message_unreact(token1, msg_id1, 123415)
+
+def test_message_unreact_already_active_react_id():
+    '''
+    Test case for when the message is unreacted and is being unreacted again
+    '''
+    clear()
+    account1 = auth.auth_register(*user1)
+    token1 = account1['token']
+
+        # Create channel
+    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+
+    # Send messages
+    timestamp1 = int(time.time())
+    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+
+    timestamp2 = int(time.time())
+    msg_id2 = message.message_send(token1, channel_id, "cs cs")['message_id']
+
+    react_id = 1
+
+    message.message_react(token1, msg_id1, react_id)
+
+    expected = [
+        {
+            'message_id': msg_id1,
+            'u_id': u_id1,
+            'message': "Hello",
+            'time_created': timestamp1,
+            'reacts': [
+                {
+                    'react_id': 1,
+                    'u_ids': [u_id1],
+                    'is_the_user_reacted': True
+                }
+            ],
+            'is_pinned': False
+        },
+        {
+            'message_id': msg_id2,
+            'u_id': u_id1,
+            'message': "cs cs",
+            'time_created': timestamp2,
+            'reacts': [
+                {
+                    'react_id': None,
+                    'u_ids': [],
+                    'is_the_user_reacted': False
+                }
+            ],
+            'is_pinned': False
+        }
+    ]
+
+    assert channel.channel_messages(token1, channel_id, 0) == {
+        'messages': expected,
+        'start': 0,
+        'end': -1
+    }
+
+    # Input error when reacting an already reacted message
+    with pytest.raises(InputError):
+        message.message_unreact(token1, msg_id2, react_id)
