@@ -895,7 +895,7 @@ def test_message_react_valid():
     channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
 
     # Invite user 1 into the channel
-    channel.channel_invite(token1, channel_id, u_id1)
+    channel.channel_invite(token2, channel_id, u_id1)
 
     # Send messages
     timestamp1 = int(time.time())
@@ -916,8 +916,8 @@ def test_message_react_valid():
             'reacts': [
                 {
                     'react_id': 1,
-                    'u_ids': [u_id1, u_id2],
-                    'is_the_user_reacted': True
+                    'u_ids': [u_id1],
+                    'is_the_user_reacted': False
                 }
             ],
             'is_pinned': False
@@ -973,6 +973,7 @@ def test_message_react_already_active_react_id():
     clear()
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
+    u_id1 = account1['u_id']
 
         # Create channel
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
@@ -1033,7 +1034,7 @@ def test_message_unreact_valid():
     channel_id = channels.channels_create(token2, "Testing", True)['channel_id']
 
     # Invite user 1 into the channel
-    channel.channel_invite(token1, channel_id, u_id1)
+    channel.channel_invite(token2, channel_id, u_id1)
 
     # Send messages
     timestamp1 = int(time.time())
@@ -1043,6 +1044,9 @@ def test_message_unreact_valid():
     react_id = 1
 
     message.message_react(token1, msg_id1, react_id)
+    message.message_react(token2, msg_id1, react_id)
+
+    
    
 
     before_unreact = [
@@ -1137,6 +1141,7 @@ def test_message_unreact_already_active_react_id():
     clear()
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
+    u_id1 = account1['u_id']
 
         # Create channel
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
@@ -1154,6 +1159,14 @@ def test_message_unreact_already_active_react_id():
 
     expected = [
         {
+            'message_id': msg_id2,
+            'u_id': u_id1,
+            'message': "cs cs",
+            'time_created': timestamp2,
+            'reacts': [],
+            'is_pinned': False
+        },
+        {
             'message_id': msg_id1,
             'u_id': u_id1,
             'message': "Hello",
@@ -1166,21 +1179,7 @@ def test_message_unreact_already_active_react_id():
                 }
             ],
             'is_pinned': False
-        },
-        {
-            'message_id': msg_id2,
-            'u_id': u_id1,
-            'message': "cs cs",
-            'time_created': timestamp2,
-            'reacts': [
-                {
-                    'react_id': None,
-                    'u_ids': [],
-                    'is_the_user_reacted': False
-                }
-            ],
-            'is_pinned': False
-        }
+        }  
     ]
 
     assert channel.channel_messages(token1, channel_id, 0) == {
