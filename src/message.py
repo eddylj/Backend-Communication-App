@@ -231,7 +231,7 @@ def message_react(token, message_id, react_id):
         # Find the message in the channels database
         if msg['message_id'] == message_id:
             # if reacts is currently not populated and the user is not reacting to their own message
-            if not msg['reacts'][react_id] and token != msg['token']:
+            if msg['reacts'] == [] and caller_id != msg['u_id']:
                 insert = {
                     react_id: react_id
                     uid:[token]
