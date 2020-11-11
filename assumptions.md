@@ -58,10 +58,14 @@
 - the owner of the flockr can also unpin messages despite not being the owner of the channel, however, they must be in the channel
 - only owners in the channel can unpin
 ### message_react()
-- the authorised user is the user who sends the message
+- The user reacting has to be in the channel where the message was sent. raise AccessError otherwise.
+- If no message with the passed message_id exists, raise InputError.
+^I think this makes more sense^
 ### message_unreact()
-- the authorised user is the user who sends the message
-
+- The user unreacting has to be in the channel where the message was sent. raise AccessError otherwise.
+- If no message with the passed message_id exists, raise InputError.
+^I think this makes more sense^
+- If the user hasn't reacted with an ID of react_id, raise InputError
 
 ## User
 ### user_profile_setname()

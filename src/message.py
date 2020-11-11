@@ -2,6 +2,7 @@
 Functions to send, remove and edit messages
 """
 import threading
+import bisect
 import time
 from data import data
 from error import InputError, AccessError
@@ -47,6 +48,7 @@ def message_send(caller_id, channel_id, message):
         'u_id' : caller_id,
         'message' : message,
         'time_created' : timestamp,
+        'reacts': [{'react_id': 1, 'u_ids': [], 'is_this_user_reacted': False}]
     }
 
     # Inserts new message at the start of the messages stored in channel data.
@@ -203,8 +205,8 @@ def message_send_later(caller_id, channel_id, message, time_sent):
     Raises:
         AccessError:
             When:
-                - The caller is not a member of the channel.
                 - Token is invalid.
+                - The caller is not a member of the channel.
         InputError:
             When:
                 - Channel_id does not correspond to an existing channel.
@@ -250,6 +252,111 @@ def send_later_resolve(sender_id, message_id, channel_id, message):
     }
     data['channels'][channel_id]['messages'].insert(0, new_message)
 
+@validate_token
+def message_react(caller_id, message_id, react_id):
+    """
+    Given a valid message_id, a reaction from the caller is added to the
+    corresponding message.
+
+    Parameters:
+        token (str)         : User's authorisation hash.
+        message_id (int)    : ID of the target message.
+        react_id (int)      : Type of reaction to be added to the message.
+
+    Returns:
+        {}: An empty dictionary if a reaction was added successfully.
+
+    Raises:
+        AccessError:
+            When:
+                - Token is invalid.
+                - The user isn't in the channel where the message was posted.
+        InputError:
+            When:
+                - No message with that message_id exists.
+                - React_id doesn't correspond to a valid reaction.
+                - The caller has already reacted with the same reaction to a
+                  message.
+    """
+    if not is_message(message_id):
+        raise InputError
+
+    if not is_valid_react(react_id):
+        raise InputError
+
+    channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
+    channel_messages = data['channels'][channel_id]['messages']
+
+    if caller_id not in channel_data['members']:
+        raise AccessError
+
+    for msg in channel_messages:
+        if msg['message_id'] == message_id:
+            # Maybe change react_ids to start from 0
+            try:
+                reacts = msg['reacts'][react_id - 1]
+            except IndexError:
+                raise InputError
+
+            # Extra computation for small numbers of reactions, but potentially
+            # faster for more reactions.
+            # If caller has already reacted.
+            is_sender = caller_id == msg['u_id']
+            if is_sender and reacts['is_this_user_reacted']:
+                raise InputError
+            if caller_id in reacts['u_ids']:
+                raise InputError
+
+            bisect.insort(reacts['u_ids'], caller_id)
+            if is_sender:
+                reacts['is_this_user_reacted'] = True
+            return {}
+
+    raise InputError
+
+@validate_token
+def message_unreact(caller_id, message_id, react_id):
+    """
+    Given a valid message_id, the reaction with react_id from the caller is
+    removed from the message.
+    """
+    if not is_message(message_id):
+        raise InputError
+
+    if not is_valid_react(react_id):
+        raise InputError
+
+    channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
+    channel_messages = data['channels'][channel_id]['messages']
+
+    if caller_id not in channel_data['members']:
+        raise AccessError
+
+    for msg in channel_messages:
+        if msg['message_id'] == message_id:
+            # Maybe change react_ids to start from 0
+            try:
+                reacts = msg['reacts'][react_id - 1]
+            except IndexError:
+                raise InputError
+
+            # Could change to binary search
+            try:
+                index = reacts['u_ids'].index(caller_id)
+            except ValueError:
+                raise InputError
+
+            is_sender = caller_id == msg['u_id']
+            if is_sender and reacts['is_this_user_reacted']:
+                reacts['is_this_user_reacted'] = False
+            reacts['u_ids'].pop(index)
+
+            return {}
+
+    raise InputError
+
 def is_message(message_id):
     """
     Checks if message_id corresponds to a sent message. Also checks if the
@@ -265,3 +372,8 @@ def is_valid_message(message):
     if not 0 < len(message) <= 1000:
         raise InputError
     return True
+
+def is_valid_react(react_id):
+    """ Checks if a react_id is valid. """
+    # Currently useless since theres only 1 react. May add more on frontend.
+    return react_id in [1]
