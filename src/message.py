@@ -230,37 +230,25 @@ def message_react(token, message_id, react_id):
     for (index, msg) in enumerate(channel_data['messages']):
         # Find the message in the channels database
         if msg['message_id'] == message_id:
-            # if reacts is currently not populated and the user is not reacting to their own message
-            if msg['reacts'] == [] and caller_id != msg['u_id']:
+            if msg['reacts'] == []:
                 insert = {
-                    react_id: react_id
-                    uid:[token]
-                    is_the_user_reacted: False
+                    'react_id': react_id,
+                    'u_ids':[caller_id],
+                    'is_the_user_reacted': caller_id == msg['u_id']
                 }
-                insert_copy = insert.copy()
-                # add the new dictionary to the list
-                msg['reacts'].append(insert_copy)
-            # If reacts is currently not populated and the user is reacting to their own message
-            elif not msg['reacts'][react_id] and token == msg['token']:
-                insert = {
-                    react_id: react_id
-                    uid:[token]
-                    is_the_user_reacted: True
-                }
-                insert_copy = insert.copy()
-                # add the new dictionary to the list
-                msg['reacts'].append(insert_copy)
+                msg['reacts'].append(insert)
             # If there already exist reacts to the message
             else: 
                 # Raise InputError if the user has already reacted
-                if msg['reacts'][react_id]['is_the_user_reacted'] = True:
+                # if caller_id msg['reacts'][react_id]['is_the_user_reacted'] = True:
+                if caller_id in msg['reacts'][react_id - 1]['u_ids']:
                     raise InputError
                 else:
                     # Append the token to the 'reacts' list
-                    msg['reacts'][react_id]['u_ids'].append(token)
+                    msg['reacts'][react_id - 1]['u_ids'].append(caller_id)
                     # Change 'is_the_user_reacted' if the user is reacting to their own message
-                    if token == msg['token']:
-                        msg['reacts'][react_id]['is_the_user_reacted'] == True
+                    if caller_id == msg['u_id']:
+                        msg['reacts'][react_id - 1]['is_the_user_reacted'] == True
 
     return {}
 
