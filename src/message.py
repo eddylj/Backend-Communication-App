@@ -316,7 +316,7 @@ def message_react(token, message_id, react_id):
                 insert = {
                     'react_id': react_id,
                     'u_ids':[caller_id],
-                    'is_the_user_reacted': caller_id == msg['u_id']
+                    'is_the_user_reacted': (caller_id == msg['u_id'])
                 }
                 msg['reacts'].append(insert)
             # If there already exist reacts to the message
@@ -330,7 +330,9 @@ def message_react(token, message_id, react_id):
                     msg['reacts'][react_id - 1]['u_ids'].append(caller_id)
                     # Change 'is_the_user_reacted' if the user is reacting to their own message
                     if caller_id == msg['u_id']:
-                        msg['reacts'][react_id - 1]['is_the_user_reacted'] == True
+                        msg['reacts'][react_id - 1]['is_the_user_reacted'] = True
+            
+            break
 
     return {}
 
@@ -338,6 +340,10 @@ def message_unreact(token, message_id, react_id):
     """
     Function to unreact a message in a channel
     """
+
+    # Not a message
+    if not is_message(message_id):
+        raise InputError
 
     # Find channel_id and data
     channel_id = data['messages'][message_id]['channel_id']
@@ -357,17 +363,24 @@ def message_unreact(token, message_id, react_id):
         # Find the message in the channels database
         if msg['message_id'] == message_id:
             # If there arent any reacts that the user can unreact, raise InputError
-            if not msg['reacts'][react_id]:
-                raise InputError          
-            
-            # Removing the uid from the list of reacts
-            msg['reacts'][react_id]['u_ids'].remove(token)
-            if token == msg['token']:
-                # If the user is the person who sent the message, update 'is_the_user_reacted'
-                msg['reacts'][react_id]['is_the_user_reacted'] == False
-            # If the list of reacts is now empty, remove the dictionary from the reacts list.
-            if not msg['reacts'][react_id]['u_ids']:
-                removekey(msg['reacts'], react_id)
+            if msg['reacts'] == []:
+                raise InputError
+            else:
+                # Removing the uid from the list of reacts
+                if caller_id not in msg['reacts'][react_id - 1]['u_ids']:
+                    raise InputError
+
+                if caller_id == msg['u_id']:
+                    # If the user is the person who sent the message, update 'is_the_user_reacted'
+                    msg['reacts'][react_id - 1]['is_the_user_reacted'] = False
+                
+                msg['reacts'][react_id - 1]['u_ids'].remove(caller_id)
+                
+                # If the list of reacts is now empty, remove the dictionary from the reacts list.
+                if msg['reacts'][react_id - 1]['u_ids'] == []:
+                    removekey(msg['reacts'], react_id - 1)
+
+            break
 
     return {}
 
