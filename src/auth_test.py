@@ -228,59 +228,51 @@ def test_auth_logout_fail():
 
 
 ####################### AUTH_PASSWORDRESET_REQUEST TESTS #######################
-def test_auth_passwordreset_request():
+def test_auth_passwordreset_request(test_data):
     """
     Test for auth_passwordreset_request with invalid email
     """
-
-    clear()
-
-    # Create a user
-    auth.auth_register(*user)
-
+    token = test_data.token(0)
+    auth.auth_logout(token)
     with pytest.raises(InputError):
-        auth.auth_passwordreset_request('alsovalidemail@gmail.com')
+        auth.auth_passwordreset_request('nonexistent@gmail.com')
 
 
 ######################## AUTH_PASSWORDRESET_RESET TESTS ########################
-def test_auth_passwordreset_reset_base():
+
+def test_auth_passwordreset_reset_base(test_data):
     """
-    Base test for auth_passwordreset_reset
+    White-box test to test that password reset works correctly.
     """
+    token = test_data.token(0)
+    u_id = test_data.u_id(0)
+    auth.auth_logout(token)
 
-    clear()
-
-    # Create a user
-    auth.auth_register(*user)
-
-    reset_code = "abcdef"
+    email = "validemail@gmail.com"
     new_password = "asdf1234qwer"
 
     # Request a password reset
-    auth.auth_passwordreset_request('validemail@gmail.com')
+    auth.auth_passwordreset_request(email)
+    payload = {
+        'u_id': u_id,
+        'exp': time.time() + 600
+    }
+    reset_code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
 
     # Reset
     auth.auth_passwordreset_reset(reset_code, new_password)
 
+    assert auth.auth_login(email, new_password)['u_id'] == 0
 
-    # passed = {
-    #     'u_id' : 0,
-    #     'token' : 
-    # }
-    # Not sure about if JWT for the token is possible
-    assert auth.auth_login('validemail@gmail.com', 'asdf1234qwer')['u_id'] == 0
-
-def test_auth_passwordreset_reset_invalid_code():
+def test_auth_passwordreset_reset_invalid_code(test_data):
     """
-    Test auth_passwordreset_reset fails with an invalid code
+    Test auth_passwordreset_reset fails with an invalid code.
     """
+    token = test_data.token(0)
+    auth.auth_logout(token)
 
-    clear()
-
-    # Create a user
-    auth.auth_register(*user)
-
-    reset_code = "bcdefa"
+    # Assumed that the reset code would not be empty.
+    reset_code = ""
     new_password = "asdf1234qwer"
 
     # Request a password reset
@@ -289,21 +281,27 @@ def test_auth_passwordreset_reset_invalid_code():
     with pytest.raises(InputError):
         auth.auth_passwordreset_reset(reset_code, new_password)
 
-def test_auth_passwordreset_reset_invalid_pw():
+def test_auth_passwordreset_reset_invalid_pw(test_data):
     """
-    Test auth_passwordreset_reset fails with an invalid password
+    White-box test to test for an InputError when an invalid password gets
+    passed into auth_passwordreset_reset(). A password is invalid if:
+        1. It's less than 6 characters in length.
+        2. It's the same as the existing password.
     """
-
-    clear()
-
-    # Create a user
-    auth.auth_register(*user)
-
-    reset_code = "abcdef"
-    new_password = "asdf1234qwer"
+    token = test_data.token(0)
+    u_id = test_data.u_id(0)
+    auth.auth_logout(token)
 
     # Request a password reset
-    auth.auth_passwordreset_request('validemail@gmail.com')
+    auth.auth_passwordreset_request("validemail@gmail.com")
+    payload = {
+        'u_id': u_id,
+        'exp': time.time() + 600
+    }
+    reset_code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
 
     with pytest.raises(InputError):
-        auth.auth_passwordreset_reset(reset_code, new_password)
+        auth.auth_passwordreset_reset(reset_code, "qTs37")
+
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_reset(reset_code, "123abc!@#")
