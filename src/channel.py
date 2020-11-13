@@ -5,17 +5,18 @@ above functions.
 '''
 from data import data
 from error import InputError, AccessError
-from other import get_active, is_valid_channel
+from other import get_active, is_valid_channel, validate_token
 
-def channel_invite(token, channel_id, u_id):
+@validate_token
+def channel_invite(caller_id, channel_id, u_id):
     """
     Invites a user (with user id u_id) to join a channel with ID channel_id.
     Once invited the user is added to the channel immediately.
 
     Parameters:
-        token (str)     : Caller's authorisation hash.
-        channel_id (int): Target channel's ID.
-        u_id (int)      : Invitee's user ID
+        token       (str)   : Caller's authorisation hash.
+        channel_id  (int)   : Target channel's ID.
+        u_id        (int)   : Invitee's user ID
 
     Returns:
         {}: An empty dictionary if the user was successfully invited to the
@@ -33,35 +34,36 @@ def channel_invite(token, channel_id, u_id):
                 - the caller is not a member of the channel.
                 - token is invalid.
     """
-    caller_id = get_active(token)
-    if caller_id is None:
+    channel = data['channels'].get_channel(channel_id)
+    if not channel.is_member(caller_id):
         raise AccessError
 
     if not is_valid_channel(channel_id):
         raise InputError
 
-    if not 0 <= u_id < len(data['users']):
+    try:
+        user = data['users'].get_user(u_id)
+    except KeyError:
         raise InputError
 
-    if is_member(channel_id, u_id):
+    if channel.is_member(u_id):
         raise InputError
 
-    if not is_member(channel_id, caller_id):
-        raise AccessError
+    channel.add_member(user)
+    if user.get_permissions() == 1:
+        channel.add_owner(user)
 
-    data['channels'][channel_id]['members'].append(u_id)
-    if data['users'][u_id]['permission_id'] == 1:
-        data['channels'][channel_id]['owners'].append(u_id)
     return {}
 
-def channel_details(token, channel_id):
+@validate_token
+def channel_details(caller_id, channel_id, url=None):
     """
     Given a Channel with ID channel_id that the caller is part of, provide basic
     details about the channel.
 
     Parameters:
-        token (str)     : Caller's authorisation hash.
-        channel_id (int): Target channel's ID.
+        token       (str)   : Caller's authorisation hash.
+        channel_id  (int)   : Target channel's ID.
 
     Returns:
         {name, owner_members, all_members}:
@@ -76,39 +78,14 @@ def channel_details(token, channel_id):
                 - the caller is not a member of the channel.
                 - token is invalid.
     """
-    caller_id = get_active(token)
-    if caller_id is None:
+    channel = data['channels'].get_channel(channel_id)
+    if not channel.is_member(caller_id):
         raise AccessError
 
     if not is_valid_channel(channel_id):
         raise InputError
 
-    if not is_member(channel_id, caller_id):
-        raise AccessError
-
-    owners = []
-    for user in data['channels'][channel_id]['owners']:
-        user_details = {}
-        user_details['u_id'] = data['users'][user]['u_id']
-        user_details['name_first'] = data['users'][user]['name_first']
-        user_details['name_last'] = data['users'][user]['name_last']
-        user_details['profile_img_url'] = f"{data['users'][user]['u_id']}.jpg"
-        owners.append(user_details)
-
-    members = []
-    for user in data['channels'][channel_id]['members']:
-        user_details = {}
-        user_details['u_id'] = data['users'][user]['u_id']
-        user_details['name_first'] = data['users'][user]['name_first']
-        user_details['name_last'] = data['users'][user]['name_last']
-        user_details['profile_img_url'] = f"{data['users'][user]['u_id']}.jpg"
-        members.append(user_details)
-
-    return {
-        'name': data['channels'][channel_id]['name'],
-        'owner_members': owners,
-        'all_members': members,
-    }
+    return channel.get_details(url=url)
 
 def channel_messages(token, channel_id, start):
     """

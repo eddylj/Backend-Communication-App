@@ -18,8 +18,8 @@ def auth_login(email, password):
     the user to remain authenticated.
 
     Parameters:
-        email (str)     : User's email
-        password (str)  : User's password
+        email       (str)   : User's email
+        password    (str)   : User's password
 
     Returns:
         {u_id (int), token (str)}:
@@ -44,7 +44,7 @@ def auth_login(email, password):
         raise InputError
 
     # Checking if user is already logged in.
-    u_id = user.get_uid()
+    u_id = user.get_id()
     try:
         token = data['tokens'][u_id]
     except KeyError:
@@ -63,8 +63,8 @@ def validate_pw(user, password):
     password hash stored in the specified user's data.
 
     Parameters:
-        user (dict)     : User's stored data.
-        password (str)  : Password being checked against data.
+        user        (dict)  : User's stored data.
+        password    (str)   : Password being checked against data.
 
     Returns:
         (bool): Whether or not the entered password's hash matches the stored
@@ -80,7 +80,7 @@ def auth_logout(token):
     otherwise false.
 
     Parameters:
-        token (str) : User's authorisation hash.
+        token   (str)   : User's authorisation hash.
 
     Returns:
         {is_success (bool)}:
@@ -110,10 +110,10 @@ def auth_register(email, password, name_first, name_last):
     characters if needed to stay within the 20 character limit.
 
     Parameters:
-        email (str)     : User's email
-        password (str)  : User's password
-        name_first (str): User's first name
-        name_last (str) : User's last name
+        email       (str)   : User's email
+        password    (str)   : User's password
+        name_first  (str)   : User's first name
+        name_last   (str)   : User's last name
 
     Returns:
         {u_id (int), token (str)}:
@@ -191,7 +191,7 @@ def auth_passwordreset_request(email):
     after 10 minutes.
 
     Parameters:
-        email (str): User's email
+        email (str) : User's email
 
     Returns:
         {}: An empty dictionary if the code was sent successfully.
@@ -209,7 +209,7 @@ def auth_passwordreset_request(email):
     with start_email_server() as server:
         server.login(authenticator, password)
         payload = {
-            'u_id': user.get_uid(),
+            'u_id': user.get_id(),
             'exp': time() + 600
         }
         code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
@@ -236,9 +236,9 @@ def auth_passwordreset_reset(reset_code, new_password):
     new password if the reset code can be verified.
 
     Parameters:
-        reset_code (str)    : Code which was sent to the user's email through
-                              auth_passwordreset_request().
-        new_password (str)  : New password to replace old.
+        reset_code      (str)   : Code which was sent to the user's email
+                                  through auth_passwordreset_request().
+        new_password    (str)   : New password to replace old.
 
     Returns:
         {}: An empty dictionary if the user's password was reset successfully.
@@ -290,8 +290,8 @@ def new_handle(handle, num):
     within the 20 character limit.
 
     Parameters:
-        handle (str): Handle string
-        num (int)   : Integer to be appended to handle
+        handle  (str)   : Handle string
+        num     (int)   : Integer to be appended to handle
 
     Returns:
         (str): The newly generated handle.
