@@ -220,6 +220,7 @@ def message_pin(token, message_id):
         raise AccessError
 
     for (index, msg) in enumerate(channel_data['messages']):
+    # for msg in channel_data['messages']:    
         # Find the message in the channels database
         if msg['message_id'] == message_id:
             # Already pinned
@@ -355,7 +356,7 @@ def message_react(token, message_id, react_id):
     """
     Function to react to a message in a channel
     """
-    
+
     # Not a message
     if not is_message(message_id):
         raise InputError
@@ -365,17 +366,21 @@ def message_react(token, message_id, react_id):
     channel_id = data['messages'][message_id]['channel_id']
     channel_data = data['channels'][channel_id]
 
-    # Check if user is reacting to a valid message within a channel that the authorised user has joined
+    # Check if user is reacting to a valid message within a channel that the
+    # authorised user has joined
     caller_id = get_active(token)
     if caller_id not in data['channels'][channel_id]['members']:
         raise InputError
 
-    # Check if user is performing an appropriate reaction ->just need to know if there's a list of elegible reacts
-    # if reaction not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts if this is possible
+    # Check if user is performing an appropriate reaction ->just need to know if there's
+    # a list of elegible reacts
+    # if reaction not in data['channels'][channel_id]['reactions']:
+    # # search through the list of elegible reacts if this is possible
     if react_id != 1:
         raise InputError
 
-    # only issue with this is that itll work for react_id 1 but not for 1,2,3.. etc. if the reacts aren't coming in increasing
+    # only issue with this is that itll work for react_id 1 but not for 1,2,3..
+    # etc. if the reacts aren't coming in increasing
     # order, ie. the the reacts list will not be in increasing order of react_id.
     for (index, msg) in enumerate(channel_data['messages']):
         # Find the message in the channels database
@@ -388,7 +393,7 @@ def message_react(token, message_id, react_id):
                 }
                 msg['reacts'].append(insert)
             # If there already exist reacts to the message
-            else: 
+            else:
                 # Raise InputError if the user has already reacted
                 # if caller_id msg['reacts'][react_id]['is_the_user_reacted'] = True:
                 if caller_id in msg['reacts'][react_id - 1]['u_ids']:
@@ -399,7 +404,7 @@ def message_react(token, message_id, react_id):
                     # Change 'is_the_user_reacted' if the user is reacting to their own message
                     if caller_id == msg['u_id']:
                         msg['reacts'][react_id - 1]['is_the_user_reacted'] = True
-            
+
             break
 
     return {}
@@ -417,13 +422,16 @@ def message_unreact(token, message_id, react_id):
     channel_id = data['messages'][message_id]['channel_id']
     channel_data = data['channels'][channel_id]
 
-    # Check if user is unreacting a valid message within a channel that the authorised user has joined
+    # Check if user is unreacting a valid message within a channel
+    # that the authorised user has joined
     caller_id = get_active(token)
     if caller_id not in data['channels'][channel_id]['members']:
         raise InputError
 
-    # Check if user is performing an appropriate unreact ->just need to know if there's a list of elegible reacts
-    # if react_id not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts
+    # Check if user is performing an appropriate unreact ->just need to
+    # know if there's a list of elegible reacts
+    # if react_id not in data['channels'][channel_id]['reactions']:
+    # # search through the list of elegible reacts
     if react_id != 1:
         raise InputError
 
@@ -441,9 +449,9 @@ def message_unreact(token, message_id, react_id):
                 if caller_id == msg['u_id']:
                     # If the user is the person who sent the message, update 'is_the_user_reacted'
                     msg['reacts'][react_id - 1]['is_the_user_reacted'] = False
-                
+
                 msg['reacts'][react_id - 1]['u_ids'].remove(caller_id)
-                
+
                 # If the list of reacts is now empty, remove the dictionary from the reacts list.
                 if msg['reacts'][react_id - 1]['u_ids'] == []:
                     removekey(msg['reacts'], react_id - 1)
