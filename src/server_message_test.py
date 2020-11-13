@@ -628,6 +628,7 @@ def test_message_pin_valid_http(url):
     r = requests.post(f"{url}/auth/register", json=user1)
     account = r.json()
     token1 = account['token']
+    u_id1 = account['u_id']
 
     r = requests.post(f"{url}/auth/register", json=user2)
     account = r.json()
@@ -687,13 +688,13 @@ def test_message_pin_valid_http(url):
         'start': 0,
         'end': -1
     }
-    
+
 def test_message_pin_invalid_message_id_http(url):
     '''
-    Test case for an invalid message ID of a message that doesn't exist in the channel 
+    Test case for an invalid message ID of a message that doesn't exist in the channel
     when an owner is pinning a message.
     '''
-    
+
     # Create a user
     r = requests.post(f"{url}/auth/register", json=user1)
     account = r.json()
@@ -730,8 +731,8 @@ def test_message_pin_invalid_message_id_http(url):
 
 def test_message_pin_not_member(url):
     '''
-    Test Case for when the user is pinning a message when they are not a member of the 
-    channel and are owners 
+    Test Case for when the user is pinning a message when they are not a member of the
+    channel and are owners
     '''
 
     # Create 2 users
@@ -779,7 +780,8 @@ def test_message_pin_not_member(url):
 
 def test_message_pin_not_owner(url):
     '''
-    Test case for messages being pinned by non-owners or not by the flockr owner who must be in the channel
+    Test case for messages being pinned by non-owners or not by the flockr owner 
+    who must be in the channel
     '''
 
     # Create 2 users
@@ -1050,7 +1052,7 @@ def test_message_unpin_not_owner(url):
     # Create channel
     test_channel['token'] = token2
     r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()    
+    channel = r.json()
 
     # Invite user 2 into the channel
     invite_payload = {
@@ -1067,7 +1069,7 @@ def test_message_unpin_not_owner(url):
         'message': "that one"
     }
     r = requests.post(f"{url}/message/send", json=send_payload)
-    message = r.json()    
+    message = r.json()
 
     pin_payload = {
         'token': token1,
@@ -1122,7 +1124,7 @@ def test_message_react_valid_http(url):
 
     react_payload = {
         'token': token2,
-        'message_id': message['message_id']
+        'message_id': message['message_id'],
         'react_id': 1 # 1 for now as only have 1 react so far
     }
 
@@ -1157,7 +1159,7 @@ def test_message_react_invalid_message_id_http(url):
 
     react_payload = {
         'token': token1,
-        'message_id': 12345
+        'message_id': 12345,
         'react_id': 1
     }
     
@@ -1189,7 +1191,7 @@ def test_message_react_invalid_react_id_http(url):
 
     react_payload = {
         'token': token1,
-        'message_id': message['message_id']
+        'message_id': message['message_id'],
         'react_id': 123415
     }
     
@@ -1221,8 +1223,8 @@ def test_message_react_already_active_react_id():
 
     react_payload = {
         'token': token1,
-        'message_id': message['message_id']
-        'react_id': 1
+        'message_id': message['message_id'],
+        'react_id': 1,
     }
     
     r = requests.post(f"{url}/message/react", json=react_payload)
@@ -1242,7 +1244,7 @@ def test_message_react_already_active_react_id():
 
     react_payload = {
         'token': token1,
-        'message_id': message['message_id']
+        'message_id': message['message_id'],
         'react_id': 1
     }
     
@@ -1289,7 +1291,7 @@ def test_message_unreact_valid_http(url):
 
     react_payload = {
         'token': token2,
-        'message_id': message['message_id']
+        'message_id': message['message_id'],
         'react_id': 1 # 1 for now as only have 1 react so far
     }
 
@@ -1311,7 +1313,7 @@ def test_message_unreact_valid_http(url):
 
     unreact_payload = {
         'token': token2,
-        'message_id': message['message_id']
+        'message_id': message['message_id'],
         'react_id': 1 # 1 for now as only have 1 react so far
     }
 
@@ -1347,7 +1349,7 @@ def test_message_unreact_invalid_message_id_http(url):
 
     unreact_payload = {
         'token': token1,
-        'message_id': 12345
+        'message_id': 12345,
         'react_id': 1
     }
     
@@ -1380,7 +1382,7 @@ def test_message_unreact_invalid_react_id_http(url):
 
     unreact_payload = {
         'token': token1,
-        'message_id': message['message_id']
+        'message_id': message['message_id'],
         'react_id': 123415
     }
     
@@ -1420,7 +1422,7 @@ def test_message_unreact_already_active_react_id():
 
     react_payload = {
         'token': token1,
-        'message_id': message1['message_id']
+        'message_id': message1['message_id'],
         'react_id': 1
     }
     
@@ -1441,7 +1443,7 @@ def test_message_unreact_already_active_react_id():
 
     unreact_payload = {
         'token': token1,
-        'message_id': message2['message_id']
+        'message_id': message2['message_id'],
         'react_id': 1
     }
     
