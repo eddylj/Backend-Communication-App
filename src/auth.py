@@ -163,6 +163,13 @@ def auth_register(email, password, name_first, name_last):
         'token': token,
     }
 
+def auth_passwordreset_request():
+    """
+    Request a password reset, by sending a confirmation email to the provided email
+    """
+
+    return {}
+
 def new_handle(handle, num):
     """
     Given an existing handle and an integer, generates a new handle by appending

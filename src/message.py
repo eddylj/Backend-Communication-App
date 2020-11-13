@@ -47,6 +47,8 @@ def message_send(caller_id, channel_id, message):
         'u_id' : caller_id,
         'message' : message,
         'time_created' : timestamp,
+        'reacts' : [],
+        'is_pinned' : False,
     }
 
     # Inserts new message at the start of the messages stored in channel data.
@@ -189,6 +191,83 @@ def message_edit(token, message_id, message):
     # Coverage exception cautiously applied.
     return {} # pragma: no cover
 
+def message_pin(token, message_id):
+    """
+    Function to pin a message in a channel
+    """
+
+    # Check if token is valid
+    caller_id = get_active(token)
+    if caller_id is None:
+        raise AccessError
+
+    # Not a message
+    if not is_message(message_id):
+        raise InputError
+
+    # Find channel_id and data
+    channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
+
+    # User is a flockr owner and not part of channel
+    if is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['members']:
+        raise AccessError
+
+    # If not an owner of the channel
+    if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
+        raise AccessError
+
+    for (index, msg) in enumerate(channel_data['messages']):
+        # Find the message in the channels database
+        if msg['message_id'] == message_id:
+            # Already pinned
+            if msg['is_pinned']:
+                raise InputError
+            # Change is_pinned
+            msg['is_pinned'] = True
+            break
+
+    return {}
+
+def message_unpin(token, message_id):
+    """
+    Function to unpin a message in a channel
+    """
+
+    # Check if token is valid
+    caller_id = get_active(token)
+    if caller_id is None:
+        raise AccessError
+
+    # Not a message
+    if not is_message(message_id):
+        raise InputError
+
+    # Find channel_id and data
+    channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
+
+    # User is a flockr owner and not part of channel
+    if is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['members']:
+        raise AccessError
+
+    # If not an owner of the channel
+    if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
+        raise AccessError
+
+    for (index, msg) in enumerate(channel_data['messages']):
+        # Find the message in the channels database
+        if msg['message_id'] == message_id:
+            # Already unpinned
+            if not msg['is_pinned']:
+                raise InputError
+            # Change is_pinned
+            msg['is_pinned'] = False
+            break
+
+    return {}
+
+
 def is_message(message_id):
     """
     Checks if message_id corresponds to a sent message. Also checks if the
@@ -198,3 +277,110 @@ def is_message(message_id):
         -1 < message_id < len(data['messages']) and
         data['messages'][message_id] != {}
     )
+
+def message_react(token, message_id, react_id):
+    """
+    Function to react to a message in a channel
+    """
+    
+    # Not a message
+    if not is_message(message_id):
+        raise InputError
+
+
+    # Find channel_id and data
+    channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
+
+    # Check if user is reacting to a valid message within a channel that the authorised user has joined
+    caller_id = get_active(token)
+    if caller_id not in data['channels'][channel_id]['members']:
+        raise InputError
+
+    # Check if user is performing an appropriate reaction ->just need to know if there's a list of elegible reacts
+    # if reaction not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts if this is possible
+    if react_id != 1:
+        raise InputError
+
+    # only issue with this is that itll work for react_id 1 but not for 1,2,3.. etc. if the reacts aren't coming in increasing
+    # order, ie. the the reacts list will not be in increasing order of react_id.
+    for (index, msg) in enumerate(channel_data['messages']):
+        # Find the message in the channels database
+        if msg['message_id'] == message_id:
+            if msg['reacts'] == []:
+                insert = {
+                    'react_id': react_id,
+                    'u_ids':[caller_id],
+                    'is_the_user_reacted': (caller_id == msg['u_id'])
+                }
+                msg['reacts'].append(insert)
+            # If there already exist reacts to the message
+            else: 
+                # Raise InputError if the user has already reacted
+                # if caller_id msg['reacts'][react_id]['is_the_user_reacted'] = True:
+                if caller_id in msg['reacts'][react_id - 1]['u_ids']:
+                    raise InputError
+                else:
+                    # Append the token to the 'reacts' list
+                    msg['reacts'][react_id - 1]['u_ids'].append(caller_id)
+                    # Change 'is_the_user_reacted' if the user is reacting to their own message
+                    if caller_id == msg['u_id']:
+                        msg['reacts'][react_id - 1]['is_the_user_reacted'] = True
+            
+            break
+
+    return {}
+
+def message_unreact(token, message_id, react_id):
+    """
+    Function to unreact a message in a channel
+    """
+
+    # Not a message
+    if not is_message(message_id):
+        raise InputError
+
+    # Find channel_id and data
+    channel_id = data['messages'][message_id]['channel_id']
+    channel_data = data['channels'][channel_id]
+
+    # Check if user is unreacting a valid message within a channel that the authorised user has joined
+    caller_id = get_active(token)
+    if caller_id not in data['channels'][channel_id]['members']:
+        raise InputError
+
+    # Check if user is performing an appropriate unreact ->just need to know if there's a list of elegible reacts
+    # if react_id not in data['channels'][channel_id]['reactions']: # search through the list of elegible reacts
+    if react_id != 1:
+        raise InputError
+
+    for (index, msg) in enumerate(channel_data['messages']):
+        # Find the message in the channels database
+        if msg['message_id'] == message_id:
+            # If there arent any reacts that the user can unreact, raise InputError
+            if msg['reacts'] == []:
+                raise InputError
+            else:
+                # Removing the uid from the list of reacts
+                if caller_id not in msg['reacts'][react_id - 1]['u_ids']:
+                    raise InputError
+
+                if caller_id == msg['u_id']:
+                    # If the user is the person who sent the message, update 'is_the_user_reacted'
+                    msg['reacts'][react_id - 1]['is_the_user_reacted'] = False
+                
+                msg['reacts'][react_id - 1]['u_ids'].remove(caller_id)
+                
+                # If the list of reacts is now empty, remove the dictionary from the reacts list.
+                if msg['reacts'][react_id - 1]['u_ids'] == []:
+                    removekey(msg['reacts'], react_id - 1)
+
+            break
+
+    return {}
+
+
+def removekey(d, key):
+    r = dict(d)
+    del r[key]
+    return r
