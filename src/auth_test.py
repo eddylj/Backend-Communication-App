@@ -265,7 +265,7 @@ def test_auth_passwordreset_reset_base():
 
     # passed = {
     #     'u_id' : 0,
-    #     'token' : 
+    #     'token' :
     # }
     # Not sure about if JWT for the token is possible
     assert auth.auth_login('validemail@gmail.com', 'asdf1234qwer')['u_id'] == 0
