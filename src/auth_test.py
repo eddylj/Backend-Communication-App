@@ -1,11 +1,14 @@
 """
 Tests to test the login, logout and register functions in auth.py
 """
+import time
+import jwt
 import pytest
 import auth
 from error import InputError
-from other import clear
+from other import clear, SECRET
 from user import user_profile
+
 
 user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 
