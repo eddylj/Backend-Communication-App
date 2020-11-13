@@ -873,6 +873,123 @@ def test_message_unpin_not_owner():
     with pytest.raises(AccessError):
         message.message_unpin(token2, msg_id)
 
+############################## MESSAGE_SEND_LATER TESTS ##############################
+
+def test_message_send_later_valid(test_data):
+    """
+    Base case for message_send_later().
+    """
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id0 = test_data.u_id(0)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channels[0]
+
+    channel.channel_invite(token0, channel_id, u_id1)
+
+    # Sends two messages in the future
+    future_time1 = round(time.time()) + 1
+    message.message_send_later(token0, channel_id, "I'm famous", future_time1)
+
+    future_time2 = round(time.time()) + 2
+    message.message_send_later(token1, channel_id, "Plz", future_time2)
+
+    assert not channel.channel_messages(token0, channel_id, 0)['messages']
+    time.sleep(2.1)
+
+    messages = channel.channel_messages(token0, channel_id, 0)['messages']
+    assert len(messages) == 2
+    assert messages[1]['u_id'] == u_id0
+    assert messages[0]['u_id'] == u_id1
+    assert messages[1]['time_created'] == future_time1
+    assert messages[0]['time_created'] == future_time2
+    assert messages[1]['message'] == "I'm famous"
+    assert messages[0]['message'] == "Plz"
+
+    clear()
+
+def test_message_send_later_invalid_channel(test_data):
+    """
+    Test case for message_send_later() where the message is sent to a channel id that is invalid.
+    """
+    token0 = test_data.token(0)
+
+    # An invalid channel id
+    channel_id = 123213
+
+    future_time = round(time.time()) + 10
+
+    with pytest.raises(InputError):
+        message.message_send_later(token0, channel_id, "Hallo", future_time)
+
+    clear()
+
+def test_message_send_later_too_long(test_data):
+    """
+    Test case for message_send_later(), where the passed message exceeds the 1000
+    character limit.
+    """
+    token = test_data.token(0)
+    channel_id = test_data.channels[0]
+
+    # 1008-character string
+    long_message = (
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean "
+        "commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus "
+        "et magnis dis parturient montes, nascetur ridiculus mus. Donec quam "
+        "felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla "
+        "consequat massa quis enim. Donec pede justo, fringilla vel, aliquet "
+        "nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, "
+        "venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. "
+        "Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. "
+        "Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, "
+        "consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, "
+        "viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus "
+        "varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies "
+        "nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. "
+        "Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem "
+        "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam."
+    )
+
+    future_time = round(time.time()) + 10
+
+    with pytest.raises(InputError):
+        message.message_send_later(token, channel_id, long_message, future_time)
+
+    clear()
+
+def test_message_send_later_invalid_time(test_data):
+    """
+    Test case for message_send_later() where the specified time to send the message
+    is in the past.
+    """
+    token = test_data.token(0)
+    channel_id = test_data.channels[0]
+
+    # An invalid time 10 seconds in the past
+    past_time = round(time.time() - 10)
+
+    with pytest.raises(InputError):
+        message.message_send_later(token, channel_id, "rawr", past_time)
+
+    clear()
+
+def test_message_send_later_not_member(test_data):
+    """
+    Test case for message_send_later(), where the caller is trying to send a message
+    to a channel they're not part of.
+    """
+    token1 = test_data.token(1)
+    channel_id = test_data.channels[0]
+
+    # A valid time 10sec in the future
+    future_time = round(time.time() + 10)
+
+    with pytest.raises(AccessError):
+        message.message_send_later(token1, channel_id, "Hello", future_time)
+
+    clear()
+
     ############################## MESSAGE_REACT TESTS ##############################
 
 def test_message_react_valid():
