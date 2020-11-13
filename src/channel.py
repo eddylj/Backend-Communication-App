@@ -92,6 +92,7 @@ def channel_details(token, channel_id):
         user_details['u_id'] = data['users'][user]['u_id']
         user_details['name_first'] = data['users'][user]['name_first']
         user_details['name_last'] = data['users'][user]['name_last']
+        user_details['profile_img_url'] = f"{data['users'][user]['u_id']}.jpg"
         owners.append(user_details)
 
     members = []
@@ -100,6 +101,7 @@ def channel_details(token, channel_id):
         user_details['u_id'] = data['users'][user]['u_id']
         user_details['name_first'] = data['users'][user]['name_first']
         user_details['name_last'] = data['users'][user]['name_last']
+        user_details['profile_img_url'] = f"{data['users'][user]['u_id']}.jpg"
         members.append(user_details)
 
     return {

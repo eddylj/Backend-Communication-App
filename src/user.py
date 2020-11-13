@@ -7,11 +7,10 @@ from data import data
 from error import InputError, AccessError
 from other import get_active, is_valid, validate_token
 
-def user_profile(token, u_id):
+def user_profile(token, u_id, url):
     '''
     Return information on the user (u_id, email, first name, last name, handle)
     '''
-
     caller_id = get_active(token)
     if caller_id is None:
         raise AccessError
@@ -23,11 +22,12 @@ def user_profile(token, u_id):
     user = data['users'][u_id]
 
     return_user = {
-        'u_id' : user['u_id'],
-        'email' : user['email'],
-        'name_first' : user['name_first'],
-        'name_last' : user['name_last'],
-        'handle_str' : user['handle_str'],
+        'u_id': user['u_id'],
+        'email': user['email'],
+        'name_first': user['name_first'],
+        'name_last': user['name_last'],
+        'handle_str': user['handle_str'],
+        'profile_img_url': f"{url}/static/{u_id}.jpg"
     }
 
     return {'user': return_user}

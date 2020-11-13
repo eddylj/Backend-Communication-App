@@ -90,6 +90,7 @@ def users_all(token):
         users.append(dict(info))
 
     for user in users:
+        user['profile_img_url'] = f"{user['u_id']}.jpg"
         del user['password']
         del user['permission_id']
 

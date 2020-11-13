@@ -100,12 +100,10 @@ def details():
     Route to flask server to get all the details of a channel including name of
     the channel and all the members of the channel
     """
-    # token = request.args.get('token')
-    # channel_id = request.args.get('channel_id')
+    token = request.args.get('token')
+    channel_id = request.args.get('channel_id')
 
-    return dumps(
-        channel.channel_details(request.args.get('token'), int(request.args.get('channel_id')))
-    )
+    output = channel.channel_details(token, int(channel_id), request.url_root)
 
 @APP.route("/channel/messages", methods=['GET'])
 def messages():
@@ -244,12 +242,14 @@ def profile():
     """
     Route to flask server to allow a user to look at their profile on flockr
     """
-    # token = request.args.get('token')
-    # u_id = request.args.get('u_id')
+    token = request.args.get('token')
+    u_id = request.args.get('u_id')
+    output = user.user_profile(token, int(u_id), request.url_root)
+    # output = user.user_profile(token, int(u_id))
+    # img_url = output['user']['profile_img_url']
+    # output['user']['profile_img_url'] = str(request.url_root) + img_url
+    return dumps(output)
 
-    return dumps(
-        user.user_profile(request.args.get('token'), int(request.args.get('u_id')))
-    )
 
 @APP.route("/user/profile/setname", methods=['PUT'])
 def setname():
@@ -292,9 +292,8 @@ def usersall():
     """
     # token = request.args.get('token')
 
-    return dumps(
-        other.users_all(request.args.get('token'))
-    )
+    output = other.users_all(request.args.get('token'), request.url_root)
+    return dumps(output)
 
 @APP.route("/user/profile/uploadphoto", methods=['POST'])
 def upload_photo():
@@ -305,7 +304,6 @@ def upload_photo():
     y_start = data['y_start']
     x_end = data['x_end']
     y_end = data['y_end']
-    print(token, img_url, x_start, y_start, x_end, y_end)
     return dumps(user.user_profile_uploadphoto(
         token, img_url, x_start, y_start, x_end, y_end
         ))
