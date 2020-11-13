@@ -4,7 +4,7 @@ Functions to send, remove and edit messages
 import time
 from data import data
 from error import InputError, AccessError
-from other import get_active, validate_token
+from other import get_active, validate_token, is_flockr_owner
 
 @validate_token
 def message_send(caller_id, channel_id, message):
