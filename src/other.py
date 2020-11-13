@@ -14,8 +14,7 @@ def clear():
     """
     Function to clear the data
     """
-    data['users']['by_uid'].clear()
-    data['users']['by_email'].clear()
+    data['users'].clear()
     data['channels'].clear()
     data['tokens'].clear()
     data['messages'].clear()

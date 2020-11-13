@@ -2,6 +2,8 @@
 Database for all users, channels, tokens and messages, stored in the global variable
 'data'
 """
+# class Channel:
+#     def __init__(self, channel_id, name, owners, )
 
 class User:
     """
@@ -42,7 +44,10 @@ class User:
         return self.__email
     def set_email(self, new_email):
         """ Changes the user's email. """
+        all_users = data['users'].list_all(by_email=True)
+        del all_users[self.__email]
         self.__email = new_email
+        all_users[new_email] = self
 
     def get_password(self):
         """ Gets the password hash of the user. """
@@ -82,12 +87,61 @@ class User:
         """ Changes whether or not the password is being reset. """
         self.__reset_status = is_being_reset
 
+    def output(self):
+        return {
+            'u_id': self.__u_id,
+            'email': self.__email,
+            'name_first': self.__name_first,
+            'name_last': self.__name_last,
+            'handle_str': self.__handle_str,
+            'profile_img_url': None
+        }
+
+class Users:
+    """
+    Users object which contains dictionaries of user, keyed by ID and email, and
+    accessor and mutator functions to see current users and add new ones.
+    """
+    def __init__(self):
+        self.__users_by_id = {}
+        self.__users_by_email = {}
+
+    def get_user(self, u_id=None, email=None):
+        """
+        Given a unique identifier (ID or email), returns a reference to that
+        user.
+        """
+        if u_id is not None:
+            return self.__users_by_id[u_id]
+        elif email is not None:
+            return self.__users_by_email[email]
+
+    def add_user(self, user):
+        """ Adds a user object to both dictionaries. """
+        self.__users_by_id[user.get_uid()] = user
+        self.__users_by_email[user.get_email()] = user
+
+    def list_all(self, by_email=None):
+        """
+        Lists all users. Returns the dictionary with u_id as keys by default,
+        but can return the dictionary with email keys if by_email is given.
+        """
+        if by_email is not None:
+            return self.__users_by_email
+        return self.__users_by_id
+
+    def num_users(self):
+        """ Returns the current number of registered users. """
+        return len(self.__users_by_id)
+
+    def clear(self):
+        """ Clears the data stored in this Users object. """
+        self.__users_by_id.clear()
+        self.__users_by_email.clear()
+
 data = {
     # Stores registered users by u_id and email
-    'users': {
-        'by_uid': {},
-        'by_email': {}
-    },
+    'users': Users(),
     # Stores active channels
     'channels': [],
     # Stores active tokens by u_id

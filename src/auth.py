@@ -7,6 +7,7 @@ import hashlib
 import smtplib
 import ssl
 import jwt
+# from data import *
 from data import data, User
 from error import InputError
 from other import is_valid, SECRET
@@ -32,15 +33,18 @@ def auth_login(email, password):
                 - Email entered does not belong to a user.
                 - Password is not correct.
     """
+    # Checking if a user is registered with the provided email.
     try:
-        user = data['users']['by_email'][email]
+        user = data['users'].get_user(email=email)
     except KeyError:
         raise InputError
 
+    # Checking if provided password matches up.
     if not validate_pw(user, password):
         raise InputError
-    u_id = user.get_uid()
 
+    # Checking if user is already logged in.
+    u_id = user.get_uid()
     try:
         token = data['tokens'][u_id]
     except KeyError:
@@ -48,7 +52,7 @@ def auth_login(email, password):
         token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
         data['tokens'][u_id] = token
 
-    return{
+    return {
         'u_id': u_id,
         'token': token
     }
@@ -82,11 +86,13 @@ def auth_logout(token):
         {is_success (bool)}:
             Whether or not token does correspond to an active token.
     """
+    # Checking if token is valid.
     try:
         u_id = jwt.decode(token, SECRET, algorithms='HS256')['u_id']
     except jwt.exceptions.DecodeError:
         return {'is_success': False}
 
+    # Checking if token is active.
     try:
         del data['tokens'][u_id]
         return {'is_success': True}
@@ -125,42 +131,38 @@ def auth_register(email, password, name_first, name_last):
                 - name_last is not between 1 and 50 characters inclusively
                   in length
     """
-    u_id = len(data['users']['by_uid'])
+    u_id = data['users'].num_users()
+
+    if not (1 <= len(name_first) <= 50 and 1 <= len(name_last) <= 50):
+        raise InputError
 
     if not is_valid(email):
         raise InputError
 
-    if email in data['users']['by_email']:
-        raise InputError
-
-    number = 0
-    for _, user in data['users']['by_uid'].items():
-        if user.get_name() == f"{name_first} {name_last}":
-            number += 1
-
     is_valid_password(password)
     password = hashlib.sha256(password.encode())
 
-    if not 1 <= len(name_first) <= 50:
+    if email in data['users'].list_all(by_email=True):
         raise InputError
 
-    if not 1 <= len(name_last) <= 50:
-        raise InputError
+    # Consider changing to data['users']['by_name']
+    number = 0
+    for _, user in data['users'].list_all().items():
+        if user.get_name() == f"{name_first} {name_last}":
+            number += 1
 
     new_user = User(
         u_id, email, password, name_first, name_last,
         handle_str=(name_first + name_last)[:20].lower()
     )
 
-    # Permission_id for owner (automatically for u_id 0)
     if u_id == 0:
         new_user.set_permissions(1)
 
     if number != 0:
         new_user.set_handle(new_handle(new_user.get_handle(), number))
 
-    data['users']['by_uid'][u_id] = new_user
-    data['users']['by_email'][email] = new_user
+    data['users'].add_user(new_user)
 
     payload = {'u_id': u_id, 'session': time()}
     token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
@@ -198,7 +200,7 @@ def auth_passwordreset_request(email):
         InputError: If no user is registered with the provided email.
     """
     try:
-        user = data['users']['by_email'][email]
+        user = data['users'].get_user(email=email)
     except KeyError:
         raise InputError
 
@@ -255,7 +257,11 @@ def auth_passwordreset_reset(reset_code, new_password):
     except (jwt.exceptions.DecodeError, jwt.exceptions.ExpiredSignatureError):
         raise InputError
 
-    user = data['users']['by_uid'][u_id]
+    try:
+        user = data['users'].get_user(u_id=u_id)
+    except KeyError:
+        raise InputError
+
     if not user.get_reset_status():
         raise InputError
 
