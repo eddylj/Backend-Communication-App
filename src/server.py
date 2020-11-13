@@ -3,7 +3,7 @@ Creating routes for the flask server
 """
 
 from json import dumps
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from error import InputError
 import auth
@@ -28,7 +28,7 @@ def default_handler(err):
     response.content_type = 'application/json'
     return response
 
-APP = Flask(__name__)
+APP = Flask(__name__, static_url_path='/static/')
 CORS(APP)
 
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
@@ -295,6 +295,10 @@ def usersall():
     return dumps(
         other.users_all(request.args.get('token'))
     )
+
+@APP.route("/static/<path:filename>")
+def serve_image(filename):
+    return send_from_directory('', filename)
 
 if __name__ == "__main__":
     APP.run(port=0) # Do not edit this port

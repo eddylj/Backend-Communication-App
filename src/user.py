@@ -1,9 +1,11 @@
 '''
 Functions used to return and change information regarding user's data
 '''
+import requests
+from PIL import Image
 from data import data
 from error import InputError, AccessError
-from other import get_active, is_valid
+from other import get_active, is_valid, validate_token
 
 def user_profile(token, u_id):
     '''
@@ -103,6 +105,24 @@ def user_profile_sethandle(token, handle_str):
     data['users'][caller_id]['handle_str'] = handle_str
 
     return {}
+
+@validate_token
+def user_profile_uploadphoto(user_id, img_url, x_start, y_start, x_end, y_end):
+    filename = save_image(user_id, img_url)
+    crop_image(filename, x_start, y_start, x_end, y_end)
+
+def save_image(user_id, img_url):
+    filename = f"src/imgurl/{user_id}.jpg"
+    image = requests.get(img_url)
+    file = open(filename, "wb+")
+    file.write(image.content)
+    file.close()
+    return filename
+
+def crop_image(filename, x_start, y_start, x_end, y_end):
+    image = Image.open(filename)
+    cropped = image.crop((x_start, y_start, x_end, y_end))
+    cropped.save(filename)
 
 def is_user(u_id):
     '''

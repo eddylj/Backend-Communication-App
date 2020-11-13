@@ -212,6 +212,7 @@ def auth_passwordreset_request(email):
                 def end_reset(user):
                     user.pop('pw_reset', None)
                 threading.Timer(600, end_reset, [user])
+                server.quit()
                 return {}
 
     raise InputError
