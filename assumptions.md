@@ -78,3 +78,15 @@
 ## Server
 ### /message
 - Some black-box HTTP message tests which need to call /channel/messages for comparison cannot be done because of the latency affecting the accuracy of the timestamp.
+
+## Standup
+- Caller must be in the specified channel to use standup functions. If the caller isn't in the channel, AccessError gets raised.
+### standup_start()
+- Length inputs less than 1 are treated as InputErrors. Float inputs greater than 1 are rounded down to it's floor (largest integer not greater than it).
+- If the caller/user that started the standup leaves or logs out before it finishes, the final composite message still gets sent under their name.
+- If nothing was sent during the standup through standup_send, no message gets sent into the channel at the end.
+- On the other hand, if the composite message is longer than 1000 characters, it still gets sent at the conclusion of the standup.
+- The message sent at the end of standup is treated as a regular message that ignores the length limit. It can still be editted.
+### standup_send()
+- If a sender of a message leaves the channel before the standup finishes, their message still gets sent.
+- A user can join a channel mid-standup and send messages into it.
