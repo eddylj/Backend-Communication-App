@@ -7,7 +7,7 @@ import hashlib
 import smtplib
 import ssl
 import jwt
-from data import data
+from data import data, User
 from error import InputError
 from other import is_valid, SECRET
 
@@ -33,7 +33,8 @@ def auth_login(email, password):
                 - Password is not correct.
     """
     for (index, user) in enumerate(data['users']):
-        if user['email'] == email and validate_pw(user, password):
+        if user.get_email() == email and validate_pw(user, password):
+            # May change token storage to a dictionary with a key/user.
             for token in data['tokens']:
                 if jwt.decode(token, SECRET, algorithms='HS256')['u_id'] == index:
                     return {
@@ -63,7 +64,7 @@ def validate_pw(user, password):
                 hash.
     """
     password = hashlib.sha256(password.encode())
-    return password.hexdigest() == user['password'].hexdigest()
+    return password.hexdigest() == user.get_password().hexdigest()
 
 def auth_logout(token):
     """
@@ -123,13 +124,13 @@ def auth_register(email, password, name_first, name_last):
 
     number = 0
     for user in data['users']:
-        if user['email'] == email:
+        if user.get_email() == email:
             raise InputError
-        if (user['name_first'] == name_first and
-                user['name_last'] == name_last):
+        if user.get_name() == f"{name_first} {name_last}":
             number += 1
 
     is_valid_password(password)
+    password = hashlib.sha256(password.encode())
 
     if not 1 <= len(name_first) <= 50:
         raise InputError
@@ -137,28 +138,24 @@ def auth_register(email, password, name_first, name_last):
     if not 1 <= len(name_last) <= 50:
         raise InputError
 
-    new_user = {
-        'u_id': u_id,
-        'email': email,
-        'password': hashlib.sha256(password.encode()),
-        'name_first': name_first,
-        'name_last': name_last,
-        'handle_str': (name_first + name_last)[:20].lower(),
-        'permission_id' : 2,
-    }
+    new_user = User(
+        u_id, email, password, name_first, name_last,
+        handle_str=(name_first + name_last)[:20].lower()
+    )
 
     # Permission_id for owner (automatically for u_id 0)
     if u_id == 0:
-        new_user['permission_id'] = 1
+        new_user.set_permissions(1)
 
     if number != 0:
-        new_user['handle_str'] = new_handle(new_user['handle_str'], number)
+        new_user.set_handle(new_handle(new_user.get_handle(), number))
 
     data['users'].append(new_user)
 
     payload = {'u_id': u_id, 'session': time()}
     token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
     data['tokens'].append(token)
+    # data['tokens'][u_id] = token
 
     return {
         'u_id': u_id,
@@ -192,13 +189,13 @@ def auth_passwordreset_request(email):
         InputError: If no user is registered with the provided email.
     """
     for user in data['users']:
-        if user['email'] == email:
+        if user.get_email() == email:
             authenticator = "flockrauth@gmail.com"
             password = "7P9adNdsvdVYgRu"
             with start_email_server() as server:
                 server.login(authenticator, password)
                 payload = {
-                    'u_id': user['u_id'],
+                    'u_id': user.get_uid(),
                     'exp': time() + 600
                 }
                 reset_code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
@@ -207,10 +204,10 @@ def auth_passwordreset_request(email):
                            "This code expires in 10 minutes.")
 
                 server.sendmail(authenticator, email, message)
-                user['pw_reset'] = True
+                user.set_reset_status(True)
                 # Might not work, needs testing
                 def end_reset(user):
-                    user.pop('pw_reset', None)
+                    user.set_reset_status(False)
                 threading.Timer(600, end_reset, [user])
                 server.quit()
                 return {}
@@ -247,21 +244,22 @@ def auth_passwordreset_reset(reset_code, new_password):
     except (jwt.exceptions.DecodeError, jwt.exceptions.ExpiredSignatureError):
         raise InputError
     user = data['users'][u_id]
-    if "pw_reset" not in user:
+    if not user.get_reset_status():
         raise InputError
 
     is_valid_password(new_password)
     new_password = hashlib.sha256(new_password.encode())
-    if user['password'].hexdigest() == new_password.hexdigest():
+    if user.get_password().hexdigest() == new_password.hexdigest():
         raise InputError
-    user['password'] = new_password
-    del user["pw_reset"]
+    user.set_password(new_password)
+    user.set_reset_status(False)
 
     return {}
 
 def is_valid_password(password):
     """
-    Checks if a password is valid (6 or more characters in length).
+    Checks if a password is valid (6 or more characters in length). Raises
+    InputError if not.
     """
     if len(password) < 6:
         raise InputError
