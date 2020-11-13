@@ -1,10 +1,12 @@
 """
 Functions to send, remove and edit messages
 """
+import threading
+import bisect
 import time
 from data import data
 from error import InputError, AccessError
-from other import get_active, validate_token
+from other import get_active, validate_token, is_valid_channel, is_flockr_owner
 
 @validate_token
 def message_send(caller_id, channel_id, message):
@@ -267,6 +269,70 @@ def message_unpin(token, message_id):
 
     return {}
 
+@validate_token
+def message_send_later(caller_id, channel_id, message, time_sent):
+    """
+    Sends a message from a user to the channel specified by channel_id
+    automatically at a specified time in the future.
+
+    Parameters:
+        token (str)         : User's authorisation hash.
+        channel_id (int)    : Target channel.
+        message (str)       : Message string to be sent.
+        time_sent (int)     : Unix timestamp when the message will be sent.
+
+    Returns:
+        {'message_id'(int)}:
+            A dictionary containing the unique identifier of the message.
+    Raises:
+        AccessError:
+            When:
+                - Token is invalid.
+                - The caller is not a member of the channel.
+        InputError:
+            When:
+                - Channel_id does not correspond to an existing channel.
+                - Message isn't between 1 and 1000 characters in length.
+                - Time_sent is in the past.
+    """
+    countdown = time_sent - round(time.time())
+
+    if countdown <= 0:
+        raise InputError
+
+    if not is_valid_channel(channel_id):
+        raise InputError
+
+    channel = data['channels'][channel_id]
+
+    if caller_id not in channel['members']:
+        raise AccessError
+
+    is_valid_message(message)
+
+    message_id = len(data['messages'])
+    data['messages'].append({})
+
+    args = [caller_id, message_id, channel_id, message]
+    threading.Timer(countdown, send_later_resolve, args).start()
+
+    return {'message_id': message_id}
+
+def send_later_resolve(sender_id, message_id, channel_id, message):
+    timestamp = round(time.time())
+
+    data['messages'][message_id] = {
+        'channel_id': channel_id,
+        'u_id': sender_id
+    }
+
+    new_message = {
+        'message_id' : message_id,
+        'u_id' : sender_id,
+        'message' : message,
+        'time_created' : timestamp,
+    }
+    data['channels'][channel_id]['messages'].insert(0, new_message)
 
 def is_message(message_id):
     """
@@ -277,6 +343,13 @@ def is_message(message_id):
         -1 < message_id < len(data['messages']) and
         data['messages'][message_id] != {}
     )
+
+def is_valid_message(message):
+    """ Checks if a message is between 1 and 1000, raise InputError if not. """
+    if not 0 < len(message) <= 1000:
+        raise InputError
+    return True
+
 
 def message_react(token, message_id, react_id):
     """
