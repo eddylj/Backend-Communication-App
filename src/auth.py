@@ -32,23 +32,26 @@ def auth_login(email, password):
                 - Email entered does not belong to a user.
                 - Password is not correct.
     """
-    for (index, user) in enumerate(data['users']):
-        if user.get_email() == email and validate_pw(user, password):
-            # May change token storage to a dictionary with a key/user.
-            for token in data['tokens']:
-                if jwt.decode(token, SECRET, algorithms='HS256')['u_id'] == index:
-                    return {
-                        'u_id': index,
-                        'token': token,
-                    }
-            payload = {'u_id': index, 'session': time()}
-            token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
-            data['tokens'].append(token)
-            return {
-                'u_id': index,
-                'token': token,
-            }
-    raise InputError
+    try:
+        user = data['users']['by_email'][email]
+    except KeyError:
+        raise InputError
+
+    if not validate_pw(user, password):
+        raise InputError
+    u_id = user.get_uid()
+
+    try:
+        token = data['tokens'][u_id]
+    except KeyError:
+        payload = {'u_id': u_id, 'session': time()}
+        token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
+        data['tokens'][u_id] = token
+
+    return{
+        'u_id': u_id,
+        'token': token
+    }
 
 def validate_pw(user, password):
     """
@@ -80,9 +83,14 @@ def auth_logout(token):
             Whether or not token does correspond to an active token.
     """
     try:
-        data['tokens'].remove(token)
+        u_id = jwt.decode(token, SECRET, algorithms='HS256')['u_id']
+    except jwt.exceptions.DecodeError:
+        return {'is_success': False}
+
+    try:
+        del data['tokens'][u_id]
         return {'is_success': True}
-    except ValueError:
+    except KeyError:
         return {'is_success': False}
 
 def auth_register(email, password, name_first, name_last):
@@ -117,15 +125,16 @@ def auth_register(email, password, name_first, name_last):
                 - name_last is not between 1 and 50 characters inclusively
                   in length
     """
-    u_id = len(data['users'])
+    u_id = len(data['users']['by_uid'])
 
     if not is_valid(email):
         raise InputError
 
+    if email in data['users']['by_email']:
+        raise InputError
+
     number = 0
-    for user in data['users']:
-        if user.get_email() == email:
-            raise InputError
+    for _, user in data['users']['by_uid'].items():
         if user.get_name() == f"{name_first} {name_last}":
             number += 1
 
@@ -150,12 +159,12 @@ def auth_register(email, password, name_first, name_last):
     if number != 0:
         new_user.set_handle(new_handle(new_user.get_handle(), number))
 
-    data['users'].append(new_user)
+    data['users']['by_uid'][u_id] = new_user
+    data['users']['by_email'][email] = new_user
 
     payload = {'u_id': u_id, 'session': time()}
     token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
-    data['tokens'].append(token)
-    # data['tokens'][u_id] = token
+    data['tokens'][u_id] = token
 
     return {
         'u_id': u_id,
@@ -188,31 +197,33 @@ def auth_passwordreset_request(email):
     Raises:
         InputError: If no user is registered with the provided email.
     """
-    for user in data['users']:
-        if user.get_email() == email:
-            authenticator = "flockrauth@gmail.com"
-            password = "7P9adNdsvdVYgRu"
-            with start_email_server() as server:
-                server.login(authenticator, password)
-                payload = {
-                    'u_id': user.get_uid(),
-                    'exp': time() + 600
-                }
-                reset_code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
-                message = ("Subject: Flockr password reset\n\n"
-                           "Your password reset code is: " + reset_code + "\n"
-                           "This code expires in 10 minutes.")
+    try:
+        user = data['users']['by_email'][email]
+    except KeyError:
+        raise InputError
 
-                server.sendmail(authenticator, email, message)
-                user.set_reset_status(True)
-                # Might not work, needs testing
-                def end_reset(user):
-                    user.set_reset_status(False)
-                threading.Timer(600, end_reset, [user])
-                server.quit()
-                return {}
+    authenticator = "flockrauth@gmail.com"
+    password = "7P9adNdsvdVYgRu"
+    with start_email_server() as server:
+        server.login(authenticator, password)
+        payload = {
+            'u_id': user.get_uid(),
+            'exp': time() + 600
+        }
+        code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
+        message = ("Subject: Flockr password reset\n\n"
+                   "Your password reset code is: " + code + "\n"
+                   "This code expires in 10 minutes.")
 
-    raise InputError
+        server.sendmail(authenticator, email, message)
+        user.set_reset_status(True)
+        # Might not work, needs testing
+        def end_reset(user):
+            user.set_reset_status(False)
+        threading.Timer(600, end_reset, [user])
+        server.quit()
+
+    return {}
 
 # Consider adding either:
 #   - Logout after password reset
@@ -243,7 +254,8 @@ def auth_passwordreset_reset(reset_code, new_password):
         u_id = jwt.decode(reset_code, SECRET, algorithms='HS256')['u_id']
     except (jwt.exceptions.DecodeError, jwt.exceptions.ExpiredSignatureError):
         raise InputError
-    user = data['users'][u_id]
+
+    user = data['users']['by_uid'][u_id]
     if not user.get_reset_status():
         raise InputError
 

@@ -14,7 +14,8 @@ def clear():
     """
     Function to clear the data
     """
-    data['users'].clear()
+    data['users']['by_uid'].clear()
+    data['users']['by_email'].clear()
     data['channels'].clear()
     data['tokens'].clear()
     data['messages'].clear()
@@ -32,20 +33,41 @@ def get_active(token):
         u_id (int)  : The corresponding u_id if token is active.
         None        : If token isn't active.
     """
-    if token in data['tokens']:
-        return jwt.decode(token, SECRET, algorithms='HS256')['u_id']
-    return None
+    try:
+        caller_id = jwt.decode(token, SECRET, algorithms='HS256')['u_id']
+    except jwt.exceptions.DecodeError:
+        return None
+
+    # Checking if token is active.
+    try:
+        if token != data['tokens'][caller_id]:
+            raise AccessError
+    except KeyError:
+        return None
+
+    return caller_id
 
 # Wrapper.validated attribute to skip validate_token taken from:
 # https://stackoverflow.com/questions/41206565/bypassing-a-decorator-for-unit-testing
-# To replace get_active
+# EAFP style
 def validate_token(function):
     def wrapper(*args):
-        if args[0] in data['tokens']:
-            caller_id = jwt.decode(args[0], SECRET, algorithms='HS256')['u_id']
-        else:
+        token = args[0]
+        # Checking if token is signed properly.
+        try:
+            caller_id = jwt.decode(token, SECRET, algorithms='HS256')['u_id']
+        except jwt.exceptions.DecodeError:
             raise AccessError
+
+        # Checking if token is active.
+        try:
+            if token != data['tokens'][caller_id]:
+                raise AccessError
+        except KeyError:
+            raise AccessError
+
         return function(caller_id, *args[1:])
+
     wrapper.validated = function
     return wrapper
 

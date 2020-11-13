@@ -83,12 +83,15 @@ class User:
         self.__reset_status = is_being_reset
 
 data = {
-    # Stores registered users
-    'users': [],
+    # Stores registered users by u_id and email
+    'users': {
+        'by_uid': {},
+        'by_email': {}
+    },
     # Stores active channels
     'channels': [],
-    # Stores active tokens
-    'tokens': [],
+    # Stores active tokens by u_id
+    'tokens': {},
     # Stores messages
     'messages': [],
 }
