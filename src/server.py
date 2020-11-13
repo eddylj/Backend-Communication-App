@@ -296,9 +296,23 @@ def usersall():
         other.users_all(request.args.get('token'))
     )
 
+@APP.route("/user/profile/uploadphoto", methods=['POST'])
+def upload_photo():
+    data = request.get_json()
+    token = data['token']
+    img_url = data['img_url']
+    x_start = data['x_start']
+    y_start = data['y_start']
+    x_end = data['x_end']
+    y_end = data['y_end']
+    print(token, img_url, x_start, y_start, x_end, y_end)
+    return dumps(user.user_profile_uploadphoto(
+        token, img_url, x_start, y_start, x_end, y_end
+        ))
+
 @APP.route("/static/<path:filename>")
 def serve_image(filename):
     return send_from_directory('', filename)
 
 if __name__ == "__main__":
-    APP.run(port=0) # Do not edit this port
+    APP.run(port=0, debug=True) # Do not edit this port

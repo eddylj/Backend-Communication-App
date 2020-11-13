@@ -87,7 +87,7 @@ def users_all(token):
 
     users = []
     for info in data['users']:
-        users.append(info)
+        users.append(dict(info))
 
     for user in users:
         del user['password']

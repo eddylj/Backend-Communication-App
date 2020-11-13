@@ -109,12 +109,14 @@ def user_profile_sethandle(token, handle_str):
 @validate_token
 def user_profile_uploadphoto(user_id, img_url, x_start, y_start, x_end, y_end):
     filename = save_image(user_id, img_url)
+    print(filename)
     crop_image(filename, x_start, y_start, x_end, y_end)
+    return {}
 
 def save_image(user_id, img_url):
-    filename = f"src/imgurl/{user_id}.jpg"
+    filename = f"src/static/{user_id}.jpg"
     image = requests.get(img_url)
-    file = open(filename, "wb+")
+    file = open(filename, "wb")
     file.write(image.content)
     file.close()
     return filename
