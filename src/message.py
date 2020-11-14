@@ -2,7 +2,7 @@
 Functions to send, remove and edit messages
 """
 import threading
-import bisect
+# import bisect
 import time
 from data import data
 from error import InputError, AccessError
@@ -219,8 +219,7 @@ def message_pin(token, message_id):
     if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
         raise AccessError
 
-    for (index, msg) in enumerate(channel_data['messages']):
-    # for msg in channel_data['messages']:    
+    for msg in channel_data['messages']:
         # Find the message in the channels database
         if msg['message_id'] == message_id:
             # Already pinned
@@ -258,7 +257,8 @@ def message_unpin(token, message_id):
     if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
         raise AccessError
 
-    for (index, msg) in enumerate(channel_data['messages']):
+    # for (index, msg) in enumerate(channel_data['messages']):
+    for msg in channel_data['messages']:
         # Find the message in the channels database
         if msg['message_id'] == message_id:
             # Already unpinned
@@ -320,6 +320,9 @@ def message_send_later(caller_id, channel_id, message, time_sent):
     return {'message_id': message_id}
 
 def send_later_resolve(sender_id, message_id, channel_id, message):
+    """
+    Resolve send later helper function
+    """
     timestamp = round(time.time())
 
     data['messages'][message_id] = {
@@ -382,7 +385,7 @@ def message_react(token, message_id, react_id):
     # only issue with this is that itll work for react_id 1 but not for 1,2,3..
     # etc. if the reacts aren't coming in increasing
     # order, ie. the the reacts list will not be in increasing order of react_id.
-    for (index, msg) in enumerate(channel_data['messages']):
+    for msg in channel_data['messages']:
         # Find the message in the channels database
         if msg['message_id'] == message_id:
             if msg['reacts'] == []:
@@ -398,12 +401,12 @@ def message_react(token, message_id, react_id):
                 # if caller_id msg['reacts'][react_id]['is_the_user_reacted'] = True:
                 if caller_id in msg['reacts'][react_id - 1]['u_ids']:
                     raise InputError
-                else:
-                    # Append the token to the 'reacts' list
-                    msg['reacts'][react_id - 1]['u_ids'].append(caller_id)
-                    # Change 'is_the_user_reacted' if the user is reacting to their own message
-                    if caller_id == msg['u_id']:
-                        msg['reacts'][react_id - 1]['is_the_user_reacted'] = True
+
+                # Append the token to the 'reacts' list
+                msg['reacts'][react_id - 1]['u_ids'].append(caller_id)
+                # Change 'is_the_user_reacted' if the user is reacting to their own message
+                if caller_id == msg['u_id']:
+                    msg['reacts'][react_id - 1]['is_the_user_reacted'] = True
 
             break
 
@@ -435,27 +438,27 @@ def message_unreact(token, message_id, react_id):
     if react_id != 1:
         raise InputError
 
-    for (index, msg) in enumerate(channel_data['messages']):
+    for msg in channel_data['messages']:
         # Find the message in the channels database
         if msg['message_id'] == message_id:
             # If there arent any reacts that the user can unreact, raise InputError
             if msg['reacts'] == []:
                 raise InputError
-            else:
-                # Removing the uid from the list of reacts
-                if caller_id not in msg['reacts'][react_id - 1]['u_ids']:
-                    raise InputError
 
-                if caller_id == msg['u_id']:
-                    # If the user is the person who sent the message, update 'is_the_user_reacted'
-                    msg['reacts'][react_id - 1]['is_the_user_reacted'] = False
+            # Removing the uid from the list of reacts
+            if caller_id not in msg['reacts'][react_id - 1]['u_ids']:
+                raise InputError
 
-                msg['reacts'][react_id - 1]['u_ids'].remove(caller_id)
+            if caller_id == msg['u_id']:
+                # If the user is the person who sent the message, update 'is_the_user_reacted'
+                msg['reacts'][react_id - 1]['is_the_user_reacted'] = False
 
-                # If the list of reacts is now empty, remove the dictionary from the reacts list.
-                if msg['reacts'][react_id - 1]['u_ids'] == []:
-                    #removekey(msg['reacts'], react_id - 2)
-                    msg['reacts'] = []
+            msg['reacts'][react_id - 1]['u_ids'].remove(caller_id)
+
+            # If the list of reacts is now empty, remove the dictionary from the reacts list.
+            if msg['reacts'][react_id - 1]['u_ids'] == []:
+                #removekey(msg['reacts'], react_id - 2)
+                msg['reacts'] = []
 
             break
 

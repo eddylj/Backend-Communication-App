@@ -677,7 +677,6 @@ def test_message_pin_not_owner():
     # Create 2 users
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
-    u_id1 = account1['u_id']
 
     account2 = auth.auth_register(*user2)
     token2 = account2['token']
@@ -855,7 +854,6 @@ def test_message_unpin_not_owner():
     # Create 2 users
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
-    u_id1 = account1['u_id']
 
     account2 = auth.auth_register(*user2)
     token2 = account2['token']
@@ -1056,9 +1054,6 @@ def test_message_react_invalid_message_id():
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
 
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
     react_id = 1
 
     # message_id not valid
@@ -1077,7 +1072,6 @@ def test_message_react_invalid_react_id():
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     # Send messages
-    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
     # Input error when react_id is not valid
@@ -1225,8 +1219,7 @@ def test_message_unreact_invalid_message_id():
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
 
-        # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+    # Create channel
 
     react_id = 1
 
@@ -1246,7 +1239,6 @@ def test_message_unreact_invalid_react_id():
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     # Send messages
-    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
     # Input error when react_id is not valid

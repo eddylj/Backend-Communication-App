@@ -298,7 +298,7 @@ def unpin():
     return dumps(
         message.message_unpin(data['token'], data['message_id'])
     )
-    
+
 # USER FUNCTIONS
 @APP.route("/user/profile", methods=['GET'])
 def profile():

@@ -38,6 +38,9 @@ def get_active(token):
 
 # To replace get_active
 def validate_token(function):
+    """
+    Function to replace get_active
+    """
     def wrapper(*args):
         if args[0] in data['tokens']:
             caller_id = jwt.decode(args[0], SECRET, algorithms='HS256')['u_id']
@@ -143,4 +146,7 @@ def search(token, query_str):
     return {'messages': result}
 
 def is_flockr_owner(u_id):
+    """
+    Boolean function which returns if the given u_id is flockr owner or not
+    """
     return data['users'][u_id]['permission_id'] == 1

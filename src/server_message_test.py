@@ -627,13 +627,11 @@ def test_message_pin_base_http(url):
     # Create 2 users
     r = requests.post(f"{url}/auth/register", json=user1)
     account1 = r.json()
-    token1 = account1['token']
     u_id1 = account1['u_id']
 
     r = requests.post(f"{url}/auth/register", json=user2)
     account2 = r.json()
     token2 = account2['token']
-    u_id2 = account2['u_id']
 
     # Create channel
     test_channel['token'] = token2
@@ -695,7 +693,6 @@ def test_message_pin_inputerror_http(url):
     r = requests.post(f"{url}/auth/register", json=user1)
     account = r.json()
     token = account['token']
-    u_id = account['u_id']
 
     # Create channel
     test_channel['token'] = token
@@ -753,7 +750,6 @@ def test_message_unpin_base_http(url):
     r = requests.post(f"{url}/auth/register", json=user2)
     account2 = r.json()
     token2 = account2['token']
-    u_id2 = account2['u_id']
 
     # Create channel
     test_channel['token'] = token2
@@ -826,7 +822,6 @@ def test_message_unpin_inputerror_http(url):
     r = requests.post(f"{url}/auth/register", json=user1)
     account = r.json()
     token = account['token']
-    u_id = account['u_id']
 
     # Create channel
     test_channel['token'] = token
@@ -875,7 +870,6 @@ def test_message_react_base_http(url):
     r = requests.post(f"{url}/auth/register", json=user2)
     account2 = r.json()
     token2 = account2['token']
-    u_id2 = account2['u_id']
 
     # Create channel
     test_channel['token'] = token2
@@ -916,7 +910,6 @@ def test_message_react_inputerror_http(url):
     r = requests.post(f"{url}/auth/register", json=user)
     account = r.json()
     token = account['token']
-    u_id = account['u_id']
 
 
     # Create channel
@@ -983,13 +976,11 @@ def test_message_unreact_base_http(url):
 
     r = requests.post(f"{url}/auth/register", json=user1)
     account1 = r.json()
-    token1 = account1['token']
     u_id1 = account1['u_id']
 
     r = requests.post(f"{url}/auth/register", json=user2)
     account2 = r.json()
     token2 = account2['token']
-    u_id2 = account2['u_id']
 
     # Create channel
     test_channel['token'] = token2
@@ -1045,7 +1036,6 @@ def test_message_unreact_inputerror_http(url):
     r = requests.post(f"{url}/auth/register", json=user)
     account = r.json()
     token = account['token']
-    u_id = account['u_id']
 
 
     # Create channel

@@ -47,7 +47,7 @@ def user_profile_setname(token, name_first, name_last):
     if not 1 <= len(name_last) <= 50:
         raise InputError
 
-    if (data['users'][caller_id]['name_first'] == name_first and
+    if (data['users'][caller_id]['name_first'] == name_first and\
         data['users'][caller_id]['name_last'] == name_last):
         raise InputError
 
