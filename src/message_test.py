@@ -1056,7 +1056,7 @@ def test_message_react_invalid_message_id():
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
 
-        # Create channel
+    # Create channel
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     react_id = 1
@@ -1073,7 +1073,7 @@ def test_message_react_invalid_react_id():
     account1 = auth.auth_register(*user1)
     token1 = account1['token']
 
-        # Create channel
+    # Create channel
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     # Send messages
