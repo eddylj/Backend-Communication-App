@@ -119,6 +119,20 @@ class Users:
         self.__users_by_id = {}
         self.__users_by_email = {}
 
+    def get_user(self, u_id=None, email=None):
+        """
+        Given a unique identifier (ID or email), returns a reference to that
+        user.
+        """
+        try:
+            if u_id is not None:
+                return self.__users_by_id[u_id]
+            elif email is not None:
+                return self.__users_by_email[email]
+            raise Exception("Must provide a parameter to Users.get_user()")
+        except KeyError:
+            raise InputError
+
     def is_user(self, u_id=None, email=None):
         """
         Checks that a user with either a given u_id or email, exists in this
@@ -134,20 +148,6 @@ class Users:
             raise Exception("Must provide a parameter to Users.is_user()")
         except KeyError:
             return False
-
-    def get_user(self, u_id=None, email=None):
-        """
-        Given a unique identifier (ID or email), returns a reference to that
-        user.
-        """
-        try:
-            if u_id is not None:
-                return self.__users_by_id[u_id]
-            elif email is not None:
-                return self.__users_by_email[email]
-            raise Exception("Must provide a parameter to Users.get_user()")
-        except KeyError:
-            raise InputError
 
     def add_user(self, user):
         """ Adds a user object to the database. """
@@ -216,7 +216,7 @@ class Channel:
         self.__owners = Users()
         self.__members = Users()
         self.__is_public = is_public
-        self.__messages = []
+        self.__messages = Messages()
 
         self.join(creator)
         self.__owners.add_user(creator)
@@ -299,6 +299,19 @@ class Channels:
         except KeyError:
             raise InputError
 
+    def add_channel(self, channel):
+        """
+        Adds a channel to the internal dictionary, with it's channel_id as the
+        key.
+        """
+        self.__channels[channel.get_id()] = channel
+    def remove_channel(self, channel):
+        """ Removes a channel from the internal dictionary. """
+        try:
+            del self.__channels[channel.get_id()]
+        except KeyError:
+            raise InputError
+
     def list_all(self):
         """
         Returns a list of dictionaries containing two keys:
@@ -314,19 +327,6 @@ class Channels:
             })
         return output
 
-    def add_channel(self, channel):
-        """
-        Adds a channel to the internal dictionary, with it's channel_id as the
-        key.
-        """
-        self.__channels[channel.get_id()] = channel
-    def remove_channel(self, channel):
-        """ Removes a channel from the internal dictionary. """
-        try:
-            del self.__channels[channel.get_id()]
-        except KeyError:
-            raise InputError
-
     def num_channels(self):
         """ Returns the number of existing channels """
         return len(self.__channels)
@@ -335,7 +335,71 @@ class Channels:
         """ Clears all the data stored in the Channels object. """
         self.__channels.clear()
 
-class Messages
+class Message:
+    def __init__(self, message_id, channel, sender_id, message, timestamp):
+        self.__message_id = message_id
+        self.__channel = channel
+        self.__u_id = sender_id
+        self.__message = message
+        self.__time_created = timestamp
+        self.__reacts = {}
+        self.__is_pinned = False
+
+    def get_id(self):
+        return self.__message_id
+
+    def get_channel(self):
+        return self.__channel
+
+    def is_sender(self, u_id):
+        return self.__u_id == u_id
+
+    def get_message(self):
+        return self.__message
+
+    def get_timestamp(self):
+        return self.__time_created
+    def set_time(self, timestamp):
+        self.__time_created = timestamp
+
+    def get_reacts(self):
+        return self.__reacts
+
+    def is_pinned(self):
+        return self.__is_pinned
+
+class Messages:
+    def __init__(self):
+        self.__messages_list = []
+        self.__messages_dict = {}
+
+    def is_message(self, message_id):
+        return (
+            -1 < message_id < self.num_messages() and
+            self.__messages_list[message_id] is not None
+        )
+
+    def get_message(self, message_id):
+        try:
+            return self.__messages_dict[message_id]
+        except KeyError:
+            raise InputError
+
+    def add_message(self, new_message):
+        self.__messages_list.insert(0, new_message)
+        self.__messages_dict[new_message.get_id()] = new_message
+
+    def remove_message(self, message_id):
+        self.__messages_list[message_id] = None
+        self.__messages_dict[message_id] = None
+
+    def num_messages(self):
+        return len(self.__messages_list)
+
+    def clear(self):
+        self.__messages_list.clear()
+        self.__messages_dict.clear()
+
 data = {
     # Stores registered users by u_id and email
     'users': Users(),
@@ -344,5 +408,5 @@ data = {
     # Stores active tokens by u_id
     'tokens': {},
     # Stores messages
-    'messages': [],
+    'messages': Messages(),
 }

@@ -4,7 +4,7 @@ Functions to send, remove and edit messages
 import threading
 import bisect
 import time
-from data import data
+from data import data, Message
 from error import InputError, AccessError
 from other import get_active, validate_token, is_valid_channel
 
@@ -35,33 +35,24 @@ def message_send(caller_id, channel_id, message):
     # Keeping the timestamp as close to the start of function as possible.
     timestamp = round(time.time())
 
-    # If the user is not part of the channel
-    if caller_id not in data['channels'][channel_id]['members']:
+    channel = data['channels'].get_channel(channel_id)
+
+    if not channel.is_member(caller_id):
         raise AccessError
 
     # If the message is too long
     is_valid_message(message)
 
-    message_id = len(data['messages'])
-    new_message = {
-        'message_id' : message_id,
-        'u_id' : caller_id,
-        'message' : message,
-        'time_created' : timestamp,
-        'reacts': [{'react_id': 1, 'u_ids': [], 'is_this_user_reacted': False}]
-    }
+    message_id = data['messages'].num_messages()
+    new_message = Message(message_id, channel, caller_id, message, timestamp)
 
-    # Inserts new message at the start of the messages stored in channel data.
-    data['channels'][channel_id]['messages'].insert(0, new_message)
+    channel.get_messages().add_message(new_message)
+    data['messages'].add_message(new_message)
 
-    # Storing channel_id and caller_id only in message data
-    data['messages'].append({'channel_id': channel_id, 'u_id': caller_id})
+    return {'message_id': message_id,}
 
-    return {
-        'message_id': message_id,
-    }
-
-def message_remove(token, message_id):
+@validate_token
+def message_remove(caller_id, message_id):
     """
     Removes a message from the channel's database that is storing it. Replaces
     the data stored in the messages data with an empty dictionary to preserve
@@ -85,39 +76,22 @@ def message_remove(token, message_id):
         InputError:
             - When the message doesn't exist (never sent/already deleted).
     """
-    # Check if token is valid
-    u_id = get_active(token)
-    if u_id is None:
-        raise AccessError
-
     # If message doesn't exist already
-    if not is_message(message_id):
+    if not data['messages'].is_message(message_id):
         raise InputError
 
-    channel_id = data['messages'][message_id]['channel_id']
-    channel_data = data['channels'][channel_id]
+    message = data['messages'].get_message(message_id)
+    channel = message.get_channel()
 
-    # If not sender of message and not owner of channel
-    if u_id != data['messages'][message_id]['u_id']:
-        if u_id not in channel_data['owners']:
+    if not message.is_sender(caller_id):
+        if not channel.is_owner(caller_id):
             raise AccessError
-    elif u_id not in channel_data['members']:
+    elif not channel.is_member(caller_id):
         raise AccessError
 
-    # Remove from messages database
-    data['messages'][message_id] = {}
+    data['messages'].remove_message(message_id)
 
-    # Remove from channel database
-    for (index, msg) in enumerate(channel_data['messages']):
-        if msg['message_id'] == message_id:
-            channel_data['messages'].pop(index)
-            break
-
-    # Coverage treats the for loop on line 75 as incomplete if it breaks early
-    # and states that it never jumps to 82. Clearly doesn't make sense since
-    # theres no early returns or exits in the loop. Once the loop breaks,
-    # function will return on 82. Coverage exception cautiously applied.
-    return {} # pragma: no cover
+    return {}
 
 @validate_token
 def message_edit(caller_id, message_id, message):
@@ -151,9 +125,7 @@ def message_edit(caller_id, message_id, message):
     # Keeping the timestamp as close to the start of function as possible.
     timestamp = round(time.time())
 
-    # If message doesn't exist already
-    if not is_message(message_id):
-        raise InputError
+    data['messages'].get_message(message_id)
 
     # If the message is too long
     if len(message) > 1000:
