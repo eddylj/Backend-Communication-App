@@ -259,6 +259,46 @@ def edit():
         message.message_edit(data['token'], data['message_id'], data['message'])
     )
 
+@APP.route("/message/react", methods=['POST'])
+def react():
+    """
+    Route to flask server to allow a user to react to a message in a channel
+    """
+    data = request.get_json()
+    return dumps(
+        message.message_react(data['token'], data['message_id'], data['react_id'])
+    )
+
+@APP.route("/message/unreact", methods=['POST'])
+def unreact():
+    """
+    Route to flask server to allow a user to unreact a message in a channel
+    """
+    data = request.get_json()
+    return dumps(
+        message.message_unreact(data['token'], data['message_id'], data['react_id'])
+    )
+
+@APP.route("/message/pin", methods=['POST'])
+def pin():
+    """
+    Route to flask server to allow a user to pin a message in a channel
+    """
+    data = request.get_json()
+    return dumps(
+        message.message_pin(data['token'], data['message_id'])
+    )
+
+@APP.route("/message/unpin", methods=['POST'])
+def unpin():
+    """
+    Route to flask server to allow a user to unpin a message in a channel
+    """
+    data = request.get_json()
+    return dumps(
+        message.message_unpin(data['token'], data['message_id'])
+    )
+    
 # USER FUNCTIONS
 @APP.route("/user/profile", methods=['GET'])
 def profile():
