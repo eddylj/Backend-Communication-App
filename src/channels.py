@@ -72,14 +72,8 @@ def channels_create(caller_id, name, is_public):
 
     channel_id = data['channels'].num_channels()
     caller = data['users'].get_user(u_id=caller_id)
-    owners = Users()
-    owners.add_user(caller)
-    members = Users()
-    members.add_user(caller)
-    # messages = Messages()
-    new_channel = Channel(channel_id, name, owners, members, is_public, [])
+    new_channel = Channel(caller, channel_id, name, is_public)
 
-    caller.join_channel(new_channel)
     data['channels'].add_channel(new_channel)
 
     return {'channel_id': channel_id}

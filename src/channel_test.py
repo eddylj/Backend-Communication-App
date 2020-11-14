@@ -7,7 +7,7 @@ import channel
 import channels
 import message
 from error import InputError, AccessError
-from other import clear, SECRET
+from other import clear
 
 user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -17,45 +17,22 @@ user3 = ('alsoalsovalid@gmail.com', '1234abc!@#', 'Mark', 'Head')
 ############################# CHANNEL_INVITE TESTS #############################
 
 # BASE CASE
-def test_channel_invite_valid():
+def test_channel_invite_valid(test_data):
     """
     Base test for channel_invite
     """
-    clear()
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    print(SECRET)
-    print(token1)
-    u_id1 = account1['u_id']
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id0 = test_data.u_id(0)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channels[0]
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    print(token2)
-    u_id2 = account2['u_id']
+    channel.channel_invite(token0, channel_id, u_id1)
 
-    channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
-
-    user1_details = {
-        'u_id': u_id1,
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-    }
-
-    user2_details = {
-        'u_id': u_id2,
-        'name_first': 'Andras',
-        'name_last': 'Arato',
-    }
-
-    passed = {
-        'name': 'test channel',
-        'owner_members': [user1_details],
-        'all_members': [user1_details, user2_details]
-    }
-
-    channel.channel_join(token2, channel_id)
-
-    assert channel.channel_details(token1, channel_id) == passed
+    details = channel.channel_details(token1, channel_id)
+    assert len(details['all_members']) == 2
+    assert len(details['owner_members']) == 1
+    assert details['owner_members'][0]['u_id'] == u_id0
 
 # INVALID CHANNEL_ID
 def test_channel_invite_channel_invalid():

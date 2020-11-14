@@ -142,7 +142,7 @@ def auth_register(email, password, name_first, name_last):
     is_valid_password(password)
     password = hashlib.sha256(password.encode())
 
-    if email in data['users'].list_all(by_email=True):
+    if data['users'].is_user(email=email):
         raise InputError
 
     # Consider changing to data['users']['by_name']

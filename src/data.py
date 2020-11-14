@@ -2,24 +2,25 @@
 Database for all users, channels, tokens and messages, stored in the global variable
 'data'
 """
-
+from error import InputError
 class User:
     """
     User class which holds the necessary identifiers of a user, as well as
     accessor and mutator methods for each attribute.
 
     Attributes:
-        - u_id          (int)   : Unique identifier for the user.
-        - email         (str)   : Email which the user registered/logs in with.
-        - password      (str)   : SHA256 hash of the user's password.
-        - name_first    (str)   : User's first name.
-        - name_last     (str)   : User's last name.
-        - handle_str    (str)   : User's public handle, which is generating from
-                                  their name.
-        - channels      (list)  : List of all channels the user is part of.
-        - permission_id (int)   : User's access level (1 = Admin, 2 = Member)
-        - reset_status  (bool)  : Whether or not the user requested a password
-                                  reset in the last 10 minutes.
+        - u_id          (int)       : Unique identifier for the user.
+        - email         (str)       : Email which the user registered/logs in
+                                      with.
+        - password      (str)       : SHA256 hash of the user's password.
+        - name_first    (str)       : User's first name.
+        - name_last     (str)       : User's last name.
+        - handle_str    (str)       : User's public handle, which is generating
+                                      from their name.
+        - channels      (Channels)  : List of all channels the user is part of.
+        - permission_id (int)       : User's access level (1=Admin, 2=Member)
+        - reset_status  (bool)      : Whether or not the user requested a
+                                      password reset in the last 10 minutes.
     """
     def __init__(self, u_id, email, password, name_first, name_last, handle_str,
                  permission_id=None):
@@ -84,14 +85,7 @@ class User:
 
     def get_channels(self):
         """ Gets all channels the user is a member of. """
-        return self.__channels.list_all()
-
-    def join_channel(self, channel):
-        """ Adds a channel to the channels the user is a member of. """
-        self.__channels.add_channel(channel)
-    def leave_channel(self, channel):
-        """ Removes a channel from the channels the user is a member of. """
-        self.__channels.remove_channel(channel)
+        return self.__channels
 
     def get_reset_status(self):
         """ Returns whether or not a password reset was requested. """
@@ -100,7 +94,7 @@ class User:
         """ Changes whether or not the password is being reset. """
         self.__reset_status = is_being_reset
 
-    def get_output(self, url=None):
+    def output(self, url=None):
         path = f"{url}/static/{self.__u_id}.jpg" if url is not None else None
         return {
             'u_id': self.__u_id,
@@ -120,16 +114,35 @@ class Users:
         self.__users_by_id = {}
         self.__users_by_email = {}
 
+    def is_user(self, u_id=None, email=None):
+        """
+        Checks that a user with either a given u_id or email, exists in this
+        Users object.
+        """
+        try:
+            if u_id is not None:
+                _ = self.__users_by_id[u_id]
+                return True
+            if email is not None:
+                _ = self.__users_by_email[email]
+                return True
+            raise Exception("Must provide a parameter to Users.is_user()")
+        except KeyError:
+            return False
+
     def get_user(self, u_id=None, email=None):
         """
         Given a unique identifier (ID or email), returns a reference to that
         user.
         """
-        if u_id is not None:
-            return self.__users_by_id[u_id]
-        elif email is not None:
-            return self.__users_by_email[email]
-        raise Exception("Must provide a parameter to Users.get_user()")
+        try:
+            if u_id is not None:
+                return self.__users_by_id[u_id]
+            elif email is not None:
+                return self.__users_by_email[email]
+            raise Exception("Must provide a parameter to Users.get_user()")
+        except KeyError:
+            raise InputError
 
     def add_user(self, user):
         """ Adds a user object to the database. """
@@ -151,21 +164,23 @@ class Users:
         del self.__users_by_id[user.get_id()]
         del self.__users_by_email[user.get_email()]
 
-    def list_all(self, by_email=None, detailed=None, url=None):
+    def list_all(self, by_email=None):
         """
         Lists all users. Returns the dictionary with u_id as keys by default,
         but can return the dictionary with email keys if by_email is given.
-        If the detailed parameter is given, list_all will return a list of
-        dictionaries containing in-depth details of all users.
         """
-        if detailed is not None:
-            result = []
-            for _, user in self.__users_by_id.items():
-                result.append(user.output(url=url))
-            return result
         if by_email is not None:
             return self.__users_by_email
         return self.__users_by_id
+
+    def list_all_details(self, url=None):
+        """
+        Returns a list of dictionaries containing in-depth details of all users.
+        """
+        result = []
+        for _, user in self.__users_by_id.items():
+            result.append(user.output(url=url))
+        return result
 
     def num_users(self):
         """ Returns the current number of registered users. """
@@ -177,68 +192,58 @@ class Users:
         self.__users_by_email.clear()
 
 class Channel:
-    def __init__(self, channel_id, name, owners, members, is_public, messages):
+    def __init__(self, creator, channel_id, name, is_public):
         self.__channel_id = channel_id
         self.__name = name
-        self.__owners = owners
-        self.__members = members
+        self.__owners = Users()
+        self.__members = Users()
         self.__is_public = is_public
-        self.__messages = messages
+        self.__messages = []
+
+        self.join(creator)
+        self.__owners.add_user(creator)
 
     def get_id(self):
         return self.__channel_id
 
-    # Not needed, but could be an extra functionality
-    # def set_name(self, new_name):
-    #     self.__name = new_name
-
     def get_name(self):
         return self.__name
 
+    def get_members(self):
+        return self.__members
     def is_member(self, u_id):
-        try:
-            self.__members.get_user(u_id=u_id)
-            return True
-        except KeyError:
-            return False
-    def add_member(self, user):
-        self.__members.add_user(user)
-    def remove_member(self, u_id):
-        self.__members.remove_user(u_id=u_id)
+        return self.__members.is_user(u_id=u_id)
 
+    def get_owners(self):
+        return self.__owners
     def is_owner(self, u_id):
-        try:
-            self.__owners.get_user(u_id=u_id)
-            return True
-        except KeyError:
-            return False
-    def add_owner(self, user):
-        self.__owners.add_user(user)
-    def remove_owner(self, u_id):
-        self.__owners.remove_user(u_id=u_id)
+        return self.__owners.is_user(u_id=u_id)
 
-    # Break this down.
-    def get_details(self, url=None):
-        return {
-            'name': self.__name,
-            'owner_members': self.__owners.list_all(detailed=True, url=url),
-            'all_members': self.__members.list_all(detailed=True, url=url)
-        }
+    def join(self, user):
+        self.__members.add_user(user)
+        if user.get_permissions() == 1:
+            self.__owners.add_user(user)
+        user.get_channels().add_channel(self)
+    def leave(self, u_id):
+        if self.is_owner(u_id):
+            self.__owners.remove_user(u_id=u_id)
+        self.__members.remove_user(u_id=u_id)
 
     def is_public(self):
         return self.__is_public
 
-    # def get_messages(self, start=None):
-    #     if start is None:
-    #         return self.__messages
-    #     if start + 50
+    def get_messages(self):
+        return self.__messages
 
 class Channels:
     def __init__(self):
         self.__channels = {}
 
     def get_channel(self, channel_id):
-        return self.__channels[channel_id]
+        try:
+            return self.__channels[channel_id]
+        except KeyError:
+            raise InputError
 
     def list_all(self):
         output = []

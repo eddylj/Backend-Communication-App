@@ -5,7 +5,7 @@ above functions.
 '''
 from data import data
 from error import InputError, AccessError
-from other import get_active, is_valid_channel, validate_token
+from other import is_valid_channel, validate_token
 
 @validate_token
 def channel_invite(caller_id, channel_id, u_id):
@@ -35,23 +35,15 @@ def channel_invite(caller_id, channel_id, u_id):
                 - token is invalid.
     """
     channel = data['channels'].get_channel(channel_id)
+    user = data['users'].get_user(u_id)
+
     if not channel.is_member(caller_id):
         raise AccessError
-
-    if not is_valid_channel(channel_id):
-        raise InputError
-
-    try:
-        user = data['users'].get_user(u_id)
-    except KeyError:
-        raise InputError
 
     if channel.is_member(u_id):
         raise InputError
 
-    channel.add_member(user)
-    if user.get_permissions() == 1:
-        channel.add_owner(user)
+    channel.join(user)
 
     return {}
 
@@ -79,15 +71,18 @@ def channel_details(caller_id, channel_id, url=None):
                 - token is invalid.
     """
     channel = data['channels'].get_channel(channel_id)
+
     if not channel.is_member(caller_id):
         raise AccessError
 
-    if not is_valid_channel(channel_id):
-        raise InputError
+    return {
+        'name': channel.get_name(),
+        'owner_members': channel.get_owners().list_all_details(url=url),
+        'all_members': channel.get_members().list_all_details(url=url)
+    }
 
-    return channel.get_details(url=url)
-
-def channel_messages(token, channel_id, start):
+@validate_token
+def channel_messages(caller_id, channel_id, start):
     """
     Given a Channel with ID channel_id that the caller is part of, return up to
     50 messages between index "start" and "start + 50". Message with index 0 is
@@ -121,10 +116,6 @@ def channel_messages(token, channel_id, start):
                 - the caller is not a member of the channel.
                 - token is invalid.
     """
-    caller_id = get_active(token)
-    if caller_id is None:
-        raise AccessError
-
     if not is_valid_channel(channel_id):
         raise InputError
 
@@ -147,7 +138,8 @@ def channel_messages(token, channel_id, start):
         'end': end,
     }
 
-def channel_leave(token, channel_id):
+@validate_token
+def channel_leave(caller_id, channel_id):
     """
     Given a channel ID, the user leaves the corresponding channel. The last
     member of a channel may leave, however the channel still remains and can
@@ -168,22 +160,16 @@ def channel_leave(token, channel_id):
                 - the caller is not a member of the channel.
                 - token is invalid.
     """
-    caller_id = get_active(token)
-    if caller_id is None:
+    channel = data['channels'].get_channel(channel_id)
+
+    if not channel.is_member(caller_id):
         raise AccessError
 
-    if not is_valid_channel(channel_id):
-        raise InputError
-
-    if not is_member(channel_id, caller_id):
-        raise AccessError
-
-    if is_owner(channel_id, caller_id):
-        data['channels'][channel_id]['owners'].remove(caller_id)
-    data['channels'][channel_id]['members'].remove(caller_id)
+    channel.leave(caller_id)
     return {}
 
-def channel_join(token, channel_id):
+@validate_token
+def channel_join(caller_id, channel_id):
     """
     Given a channel_id of a channel that the caller can join, adds them to that
     channel. Flockr owner (first account created) can join private channels.
@@ -206,25 +192,21 @@ def channel_join(token, channel_id):
                   the flockr owner.
                 - token is invalid.
     """
-    caller_id = get_active(token)
-    if caller_id is None:
+    user = data['users'].get_user(u_id=caller_id)
+    channel = data['channels'].get_channel(channel_id)
+
+    if not channel.is_public() and user.get_permissions() != 1:
         raise AccessError
 
-    if not is_valid_channel(channel_id):
+    if channel.is_member(caller_id):
         raise InputError
 
-    if not data['channels'][channel_id]['is_public'] and caller_id != 0:
-        raise AccessError
+    channel.join(user)
 
-    if is_member(channel_id, caller_id):
-        raise InputError
-
-    data['channels'][channel_id]['members'].append(caller_id)
-    if data['users'][caller_id]['permission_id'] == 1:
-        data['channels'][channel_id]['owners'].append(caller_id)
     return {}
 
-def channel_addowner(token, channel_id, u_id):
+@validate_token
+def channel_addowner(caller_id, channel_id, u_id):
     """
     Make the user corresponding to u_id an owner of the channel corresponding to
     channel_id.
@@ -248,23 +230,22 @@ def channel_addowner(token, channel_id, u_id):
                   owner.
                 - token is invalid.
     """
-    caller_id = get_active(token)
-    if caller_id is None:
+    caller = data['users'].get_user(u_id=caller_id)
+    channel = data['channels'].get_channel(channel_id)
+
+    if not channel.is_owner(caller_id) and caller.get_permissions() != 1:
         raise AccessError
 
-    if not is_valid_channel(channel_id):
+    if channel.is_owner(u_id):
         raise InputError
 
-    if is_owner(channel_id, u_id):
-        raise InputError
+    user = data['users'].get_user(u_id=u_id)
+    channel.get_owners().add_user(user)
 
-    if not is_owner(channel_id, caller_id) and data['users'][caller_id]['permission_id'] != 1:
-        raise AccessError
-
-    data['channels'][channel_id]['owners'].append(u_id)
     return {}
 
-def channel_removeowner(token, channel_id, u_id):
+@validate_token
+def channel_removeowner(caller_id, channel_id, u_id):
     """
     Remove the user corresponding to u_id from owners of the channel
     corresponding to channel_id.
@@ -288,23 +269,20 @@ def channel_removeowner(token, channel_id, u_id):
                   owner.
                 - token is invalid.
     """
-    caller_id = get_active(token)
-    if caller_id is None:
-        raise AccessError
-
-    if not is_valid_channel(channel_id):
-        raise InputError
-
-    if not is_owner(channel_id, u_id):
-        raise InputError
-
-    if not is_owner(channel_id, caller_id) and data['users'][caller_id]['permission_id'] != 1:
-        raise AccessError
-
     if caller_id == u_id:
         raise InputError
 
-    data['channels'][channel_id]['owners'].remove(u_id)
+    channel = data['channels'].get_channel(channel_id)
+    user = data['users'].get_user(caller_id)
+
+    if not channel.is_owner(caller_id) and user.get_permissions() != 1:
+        raise AccessError
+
+    if not channel.is_owner(u_id):
+        raise InputError
+
+    channel.get_owners().remove_user(u_id=u_id)
+
     return {}
 
 def is_member(channel_id, u_id):
