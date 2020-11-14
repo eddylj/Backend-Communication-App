@@ -18,7 +18,7 @@ def test_standup_start_valid(test_data):
     token1 = test_data.token(1)
     u_id0 = test_data.u_id(0)
     u_id1 = test_data.u_id(1)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     channel.channel_invite(token0, channel_id, u_id1)
 
@@ -49,7 +49,7 @@ def test_standup_start_no_messages(test_data):
     nothing was sent during the standup.
     """
     token = test_data.token(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     standup.standup_start(token, channel_id, 1)
 
@@ -71,7 +71,7 @@ def test_standup_start_invalid_channel(test_data):
         standup.standup_start(token0, 123, 1)
 
     # Assumed that you must be in the channel to start a standup.
-    channel_id = test_data.channels[1]
+    channel_id = test_data.channel(1)
     with pytest.raises(AccessError):
         standup.standup_start(token0, channel_id, 1)
 
@@ -84,7 +84,7 @@ def test_standup_start_already_active(test_data):
     """
     token = test_data.token(0)
 
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
     standup.standup_start(token, channel_id, 1)
     assert standup.standup_active(token, channel_id)['is_active']
 
@@ -106,7 +106,7 @@ def test_standup_start_sender_leave_before_end(test_data):
     token1 = test_data.token(1)
     u_id0 = test_data.u_id(0)
     u_id1 = test_data.u_id(1)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     channel.channel_invite(token0, channel_id, u_id1)
 
@@ -134,7 +134,7 @@ def test_standup_start_caller_leave_before_end(test_data):
     token1 = test_data.token(1)
     u_id0 = test_data.u_id(0)
     u_id1 = test_data.u_id(1)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     channel.channel_invite(token0, channel_id, u_id1)
 
@@ -161,7 +161,7 @@ def test_standup_start_caller_logout(test_data):
     token1 = test_data.token(1)
     u_id0 = test_data.u_id(0)
     u_id1 = test_data.u_id(1)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     channel.channel_invite(token0, channel_id, u_id1)
 
@@ -185,7 +185,7 @@ def test_standup_start_invalid_length(test_data):
     standup_start is less than 1. Expected to raise InputError.
     """
     token = test_data.token(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     with pytest.raises(InputError):
         standup.standup_start(token, channel_id, 0.9)
@@ -204,7 +204,7 @@ def test_standup_start_long_composite_message(test_data):
     end of a standup exceeds 1000 characters in length.
     """
     token = test_data.token(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     standup.standup_start(token, channel_id, 1)
 
@@ -226,7 +226,7 @@ def test_standup_start_invalid_token(test_data):
     standup_start(). Expected to raise an AccessError.
     """
     token = test_data.token(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     # Tampered token
     with pytest.raises(AccessError):
@@ -247,7 +247,7 @@ def test_standup_start_invalid_token(test_data):
 def test_standup_active_valid(test_data):
     """ Base case for standup_active(), with both active and inactive cases. """
     token = test_data.token(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     assert not standup.standup_active(token, channel_id)['is_active']
     assert standup.standup_active(token, channel_id)['time_finish'] is None
@@ -273,7 +273,7 @@ def test_standup_active_invalid_channel(test_data):
     """
     token0 = test_data.token(0)
     token1 = test_data.token(1)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     standup.standup_start(token0, channel_id, 1)
 
@@ -292,7 +292,7 @@ def test_standup_active_invalid_token(test_data):
     standup_active(). Expected to raise an AccessError.
     """
     token = test_data.token(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     standup.standup_start(token, channel_id, 1)
 
@@ -318,7 +318,7 @@ def test_standup_send_valid(test_data):
     token0 = test_data.token(0)
     token1 = test_data.token(1)
     u_id1 = test_data.u_id(1)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     channel.channel_invite(token0, channel_id, u_id1)
 
@@ -344,7 +344,7 @@ def test_standup_send_join_ongoing(test_data):
     token0 = test_data.token(0)
     token1 = test_data.token(1)
     u_id0 = test_data.u_id(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     standup.standup_start(token0, channel_id, 2)
 
@@ -371,7 +371,7 @@ def test_standup_send_invalid_channel(test_data):
     """
     token0 = test_data.token(0)
     token1 = test_data.token(1)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     standup.standup_start(token0, channel_id, 1)
 
@@ -389,7 +389,7 @@ def test_standup_send_invalid_message(test_data):
     A message is invalid when it's not between 1-1000 characters in length.
     """
     token = test_data.token(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     standup.standup_start(token, channel_id, 1)
 
@@ -428,7 +428,7 @@ def test_standup_send_inactive_standup(test_data):
         2. There has been standups held in this channel.
     """
     token = test_data.token(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     with pytest.raises(InputError):
         standup.standup_send(token, channel_id, "Hello")
@@ -448,7 +448,7 @@ def test_standup_send_invalid_token(test_data):
     standup_send(). Expected to raise an AccessError.
     """
     token = test_data.token(0)
-    channel_id = test_data.channels[0]
+    channel_id = test_data.channel(0)
 
     standup.standup_start(token, channel_id, 1)
 

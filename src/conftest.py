@@ -8,14 +8,17 @@ user1 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
 
 class Data:
     def __init__(self, users, chans):
-        self.users = users
-        self.channels = chans
+        self.__users = users
+        self.__channels = chans
 
-    def token(self, user):
-        return self.users[user]['token']
+    def token(self, user_id):
+        return self.__users[user_id]['token']
 
-    def u_id(self, user):
-        return self.users[user]['u_id']
+    def channel(self, channel_id):
+        return self.__channels[channel_id]
+
+    def u_id(self, user_id):
+        return self.__users[user_id]['u_id']
 
 # Pytest fixture to always register 2 users and create 2 channels.
 @pytest.fixture
