@@ -776,7 +776,7 @@ def test_message_invalid_token():
 #     with pytest.raises(AccessError):
 #         message.message_unpin(token2, msg_id)
 
-############################## MESSAGE_SEND_LATER TESTS ##############################
+########################### MESSAGE_SEND_LATER TESTS ###########################
 
 def test_message_send_later_valid(test_data):
     """
@@ -813,7 +813,8 @@ def test_message_send_later_valid(test_data):
 
 def test_message_send_later_invalid_channel(test_data):
     """
-    Test case for message_send_later() where the message is sent to a channel id that is invalid.
+    Test case for message_send_later() where the message is sent to a channel id
+    that is invalid.
     """
     token0 = test_data.token(0)
 
@@ -829,8 +830,8 @@ def test_message_send_later_invalid_channel(test_data):
 
 def test_message_send_later_too_long(test_data):
     """
-    Test case for message_send_later(), where the passed message exceeds the 1000
-    character limit.
+    Test case for message_send_later(), where the passed message exceeds the
+    1000 character limit.
     """
     token = test_data.token(0)
     channel_id = test_data.channel(0)
@@ -863,8 +864,8 @@ def test_message_send_later_too_long(test_data):
 
 def test_message_send_later_invalid_time(test_data):
     """
-    Test case for message_send_later() where the specified time to send the message
-    is in the past.
+    Test case for message_send_later() where the specified time to send the
+    message is in the past.
     """
     token = test_data.token(0)
     channel_id = test_data.channel(0)
