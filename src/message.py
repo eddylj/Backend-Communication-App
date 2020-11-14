@@ -6,7 +6,7 @@ import bisect
 import time
 from data import data, Message
 from error import InputError, AccessError
-from other import get_active, validate_token, is_valid_channel
+from other import validate_token
 
 @validate_token
 def message_send(caller_id, channel_id, message):
@@ -46,8 +46,8 @@ def message_send(caller_id, channel_id, message):
     message_id = data['messages'].num_messages()
     new_message = Message(message_id, channel, caller_id, message, timestamp)
 
-    channel.get_messages().add_message(new_message)
-    data['messages'].add_message(new_message)
+    channel.get_messages().add_message(new_message, message_id)
+    data['messages'].add_message(new_message, message_id)
 
     return {'message_id': message_id,}
 
@@ -191,7 +191,7 @@ def message_send_later(caller_id, channel_id, message, time_sent):
     is_valid_message(message)
 
     message_id = data['messages'].num_messages()
-    data['messages'].add_message(None)
+    data['messages'].add_message(None, message_id)
 
     args = [caller_id, message_id, channel, message]
     threading.Timer(countdown, send_later_resolve, args).start()
@@ -202,8 +202,8 @@ def send_later_resolve(sender_id, message_id, channel, message):
     timestamp = round(time.time())
 
     new_message = Message(message_id, channel, sender_id, message, timestamp)
-    data['messages'].add_message(new_message)
-    channel.get_messages().add_message(new_message)
+    data['messages'].add_message(new_message, message_id)
+    channel.get_messages().add_message(new_message, message_id)
 
 @validate_token
 def message_react(caller_id, message_id, react_id):

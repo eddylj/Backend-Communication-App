@@ -12,58 +12,30 @@ user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user2 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
 
-# Consider changing user registration to fixtures
-
 ############################# MESSAGE_SEND TESTS ###############################
 
-def test_message_send_valid():
+def test_message_send_valid(test_data):
     """
     Base case for message_send().
     """
-    clear()
-
-    # Create 2 users
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # Invite user 2 into the channel
-    channel.channel_invite(token1, channel_id, u_id2)
+    token0 = test_data.token(0)
+    u_id0 = test_data.u_id(0)
+    channel_id = test_data.channel(0)
 
     # Send messages
-    timestamp1 = round(time.time())
-    msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
+    timestamp = round(time.time())
+    msg_id = message.message_send(token0, channel_id, "Hello")['message_id']
 
-    timestamp2 = round(time.time())
-    msg_id2 = message.message_send(token2, channel_id, "Goodbye")['message_id']
+    messages = channel.channel_messages(token0, channel_id, 0)
+    assert messages['start'] == 0
+    assert messages['end'] == -1
 
-    expected = [
-        {
-            'message_id': msg_id2,
-            'u_id': u_id2,
-            'message': "Goodbye",
-            'time_created': timestamp2
-        },
-        {
-            'message_id': msg_id1,
-            'u_id': u_id1,
-            'message': "Hello",
-            'time_created': timestamp1
-        }
-    ]
-
-    assert channel.channel_messages(token1, channel_id, 0) == {
-        'messages': expected,
-        'start': 0,
-        'end': -1
-    }
+    messages = messages['messages']
+    assert len(messages) == 1
+    assert messages[0]['message_id'] == msg_id
+    assert messages[0]['u_id'] == u_id0
+    assert messages[0]['message'] == "Hello"
+    assert messages[0]['time_created'] == timestamp
 
 def test_message_send_too_long():
     """
@@ -166,48 +138,22 @@ def test_message_remove_nonexistent():
     with pytest.raises(InputError):
         message.message_remove(token, msg_id)
 
-def test_message_remove_not_owner():
+def test_message_remove_not_owner(test_data):
     """
     Test case for message_remove(), where the caller isn't the user who sent the
     message, or an owner of the channel/Flockr.
     """
-    clear()
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-    # Create 2 users
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
+    channel.channel_invite(token0, channel_id, u_id1)
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # Invite user 2 into the channel
-    channel.channel_invite(token1, channel_id, u_id2)
-
-    timestamp = round(time.time())
-    msg_id = message.message_send(token1, channel_id, "Hello")['message_id']
+    msg_id = message.message_send(token0, channel_id, "Hello")['message_id']
 
     with pytest.raises(AccessError):
-        message.message_remove(token2, msg_id)
-
-    expected = [
-        {
-            'message_id': msg_id,
-            'u_id': u_id1,
-            'message': "Hello",
-            'time_created': timestamp
-        }
-    ]
-
-    assert channel.channel_messages(token1, channel_id, 0) == {
-        'messages': expected,
-        'start': 0,
-        'end': -1
-    }
+        message.message_remove(token1, msg_id)
 
 def test_message_remove_as_owner():
     """
@@ -269,47 +215,26 @@ def test_message_remove_not_member():
 
 ############################## MESSAGE_EDIT TESTS ##############################
 
-def test_message_edit_valid():
+def test_message_edit_valid(test_data):
     """
     Base case for message_edit(). Editing a message normally and checking
     against channel_messages().
     """
-    clear()
+    token = test_data.token(0)
+    u_id = test_data.u_id(0)
+    channel_id = test_data.channel(0)
 
-    account = auth.auth_register(*user)
-    token = account['token']
-    u_id = account['u_id']
-
-    channel_id = channels.channels_create(token, "Testing", True)['channel_id']
-
-    timestamp = round(time.time())
     msg_id = message.message_send(token, channel_id, "Hello")['message_id']
-
-    expected = [
-        {
-            'message_id': msg_id,
-            'u_id': u_id,
-            'message': "Hello",
-            'time_created': timestamp
-        }
-    ]
-
-    assert channel.channel_messages(token, channel_id, 0) == {
-        'messages': expected,
-        'start': 0,
-        'end': -1
-    }
 
     timestamp = round(time.time())
     message.message_edit(token, msg_id, "Goodbye")
 
-    expected[0]['message'] = "Goodbye"
-    expected[0]['time_created'] = timestamp
-    assert channel.channel_messages(token, channel_id, 0) == {
-        'messages': expected,
-        'start': 0,
-        'end': -1
-    }
+    messages = channel.channel_messages(token, channel_id, 0)['messages']
+    assert len(messages) == 1
+    assert messages[0]['message_id'] == msg_id
+    assert messages[0]['u_id'] == u_id
+    assert messages[0]['message'] == "Goodbye"
+    assert messages[0]['time_created'] == timestamp
 
 def test_message_edit_empty():
     """
@@ -333,88 +258,47 @@ def test_message_edit_empty():
         'end': -1
     }
 
-def test_message_edit_not_owner():
+def test_message_edit_not_owner(test_data):
     """
     Test case for message_edit(), where the caller isn't the user who sent the
     message, or an owner of the channel/Flockr.
     """
-    clear()
-
-    # Create 2 users
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
     # Invite user 2 into the channel
-    channel.channel_invite(token1, channel_id, u_id2)
+    channel.channel_invite(token0, channel_id, u_id1)
 
-    timestamp = round(time.time())
-    msg_id = message.message_send(token1, channel_id, "Hello")['message_id']
-
-    expected = [
-        {
-            'message_id': msg_id,
-            'u_id': u_id1,
-            'message': "Hello",
-            'time_created': timestamp
-        }
-    ]
+    msg_id = message.message_send(token0, channel_id, "Hello")['message_id']
 
     with pytest.raises(AccessError):
-        message.message_edit(token2, msg_id, "Goodbye")
+        message.message_edit(token1, msg_id, "Goodbye")
 
-    assert channel.channel_messages(token1, channel_id, 0) == {
-        'messages': expected,
-        'start': 0,
-        'end': -1
-    }
-
-def test_message_edit_as_owner():
+def test_message_edit_as_owner(test_data):
     """
     Testing if an owner of the flockr or channel can freely edit messages.
     """
-    clear()
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-    # Create 2 users
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # Invite user 2 into the channel
-    channel.channel_invite(token1, channel_id, u_id2)
+    channel.channel_invite(token0, channel_id, u_id1)
 
     # User 2 sends a message, then user 1 edits it.
-    msg_id = message.message_send(token2, channel_id, "Goodbye")['message_id']
+    msg_id = message.message_send(token1, channel_id, "Goodbye")['message_id']
     timestamp = round(time.time())
-    message.message_edit(token1, msg_id, "Hello")
+    message.message_edit(token0, msg_id, "Hello")
 
-    expected = [
-        {
-            'message_id': msg_id,
-            'u_id': u_id2,
-            'message': "Hello",
-            'time_created': timestamp
-        }
-    ]
-
-    assert channel.channel_messages(token1, channel_id, 0) == {
-        'messages': expected,
-        'start': 0,
-        'end': -1
-    }
+    messages = channel.channel_messages(token0, channel_id, 0)['messages']
+    assert len(messages) == 1
+    assert messages[0]['message_id'] == msg_id
+    # Sender ID not expected to change from original.
+    assert messages[0]['u_id'] == u_id1
+    assert messages[0]['message'] == "Hello"
+    assert messages[0]['time_created'] == timestamp
 
 def test_message_edit_not_member():
     """
@@ -892,122 +776,122 @@ def test_message_invalid_token():
 #     with pytest.raises(AccessError):
 #         message.message_unpin(token2, msg_id)
 
-# ############################## MESSAGE_SEND_LATER TESTS ##############################
+############################## MESSAGE_SEND_LATER TESTS ##############################
 
-# def test_message_send_later_valid(test_data):
-#     """
-#     Base case for message_send_later().
-#     """
-#     token0 = test_data.token(0)
-#     token1 = test_data.token(1)
-#     u_id0 = test_data.u_id(0)
-#     u_id1 = test_data.u_id(1)
-#     channel_id = test_data.channels[0]
+def test_message_send_later_valid(test_data):
+    """
+    Base case for message_send_later().
+    """
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id0 = test_data.u_id(0)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-#     channel.channel_invite(token0, channel_id, u_id1)
+    channel.channel_invite(token0, channel_id, u_id1)
 
-#     # Sends two messages in the future
-#     future_time1 = round(time.time()) + 1
-#     message.message_send_later(token0, channel_id, "I'm famous", future_time1)
+    # Sends two messages in the future
+    future_time1 = round(time.time()) + 1
+    message.message_send_later(token0, channel_id, "I'm famous", future_time1)
 
-#     future_time2 = round(time.time()) + 2
-#     message.message_send_later(token1, channel_id, "Plz", future_time2)
+    future_time2 = round(time.time()) + 2
+    message.message_send_later(token1, channel_id, "Plz", future_time2)
 
-#     assert not channel.channel_messages(token0, channel_id, 0)['messages']
-#     time.sleep(2.1)
+    assert not channel.channel_messages(token0, channel_id, 0)['messages']
+    time.sleep(2.1)
 
-#     messages = channel.channel_messages(token0, channel_id, 0)['messages']
-#     assert len(messages) == 2
-#     assert messages[1]['u_id'] == u_id0
-#     assert messages[0]['u_id'] == u_id1
-#     assert messages[1]['time_created'] == future_time1
-#     assert messages[0]['time_created'] == future_time2
-#     assert messages[1]['message'] == "I'm famous"
-#     assert messages[0]['message'] == "Plz"
+    messages = channel.channel_messages(token0, channel_id, 0)['messages']
+    assert len(messages) == 2
+    assert messages[1]['u_id'] == u_id0
+    assert messages[0]['u_id'] == u_id1
+    assert messages[1]['time_created'] == future_time1
+    assert messages[0]['time_created'] == future_time2
+    assert messages[1]['message'] == "I'm famous"
+    assert messages[0]['message'] == "Plz"
 
-#     clear()
+    clear()
 
-# def test_message_send_later_invalid_channel(test_data):
-#     """
-#     Test case for message_send_later() where the message is sent to a channel id that is invalid.
-#     """
-#     token0 = test_data.token(0)
+def test_message_send_later_invalid_channel(test_data):
+    """
+    Test case for message_send_later() where the message is sent to a channel id that is invalid.
+    """
+    token0 = test_data.token(0)
 
-#     # An invalid channel id
-#     channel_id = 123213
+    # An invalid channel id
+    channel_id = 123213
 
-#     future_time = round(time.time()) + 10
+    future_time = round(time.time()) + 10
 
-#     with pytest.raises(InputError):
-#         message.message_send_later(token0, channel_id, "Hallo", future_time)
+    with pytest.raises(InputError):
+        message.message_send_later(token0, channel_id, "Hallo", future_time)
 
-#     clear()
+    clear()
 
-# def test_message_send_later_too_long(test_data):
-#     """
-#     Test case for message_send_later(), where the passed message exceeds the 1000
-#     character limit.
-#     """
-#     token = test_data.token(0)
-#     channel_id = test_data.channels[0]
+def test_message_send_later_too_long(test_data):
+    """
+    Test case for message_send_later(), where the passed message exceeds the 1000
+    character limit.
+    """
+    token = test_data.token(0)
+    channel_id = test_data.channel(0)
 
-#     # 1008-character string
-#     long_message = (
-#         "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean "
-#         "commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus "
-#         "et magnis dis parturient montes, nascetur ridiculus mus. Donec quam "
-#         "felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla "
-#         "consequat massa quis enim. Donec pede justo, fringilla vel, aliquet "
-#         "nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, "
-#         "venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. "
-#         "Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. "
-#         "Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, "
-#         "consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, "
-#         "viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus "
-#         "varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies "
-#         "nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. "
-#         "Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem "
-#         "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam."
-#     )
+    # 1008-character string
+    long_message = (
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean "
+        "commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus "
+        "et magnis dis parturient montes, nascetur ridiculus mus. Donec quam "
+        "felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla "
+        "consequat massa quis enim. Donec pede justo, fringilla vel, aliquet "
+        "nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, "
+        "venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. "
+        "Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. "
+        "Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, "
+        "consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, "
+        "viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus "
+        "varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies "
+        "nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. "
+        "Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem "
+        "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam."
+    )
 
-#     future_time = round(time.time()) + 10
+    future_time = round(time.time()) + 10
 
-#     with pytest.raises(InputError):
-#         message.message_send_later(token, channel_id, long_message, future_time)
+    with pytest.raises(InputError):
+        message.message_send_later(token, channel_id, long_message, future_time)
 
-#     clear()
+    clear()
 
-# def test_message_send_later_invalid_time(test_data):
-#     """
-#     Test case for message_send_later() where the specified time to send the message
-#     is in the past.
-#     """
-#     token = test_data.token(0)
-#     channel_id = test_data.channels[0]
+def test_message_send_later_invalid_time(test_data):
+    """
+    Test case for message_send_later() where the specified time to send the message
+    is in the past.
+    """
+    token = test_data.token(0)
+    channel_id = test_data.channel(0)
 
-#     # An invalid time 10 seconds in the past
-#     past_time = round(time.time() - 10)
+    # An invalid time 10 seconds in the past
+    past_time = round(time.time() - 10)
 
-#     with pytest.raises(InputError):
-#         message.message_send_later(token, channel_id, "rawr", past_time)
+    with pytest.raises(InputError):
+        message.message_send_later(token, channel_id, "rawr", past_time)
 
-#     clear()
+    clear()
 
-# def test_message_send_later_not_member(test_data):
-#     """
-#     Test case for message_send_later(), where the caller is trying to send a message
-#     to a channel they're not part of.
-#     """
-#     token1 = test_data.token(1)
-#     channel_id = test_data.channels[0]
+def test_message_send_later_not_member(test_data):
+    """
+    Test case for message_send_later(), where the caller is trying to send a message
+    to a channel they're not part of.
+    """
+    token1 = test_data.token(1)
+    channel_id = test_data.channel(0)
 
-#     # A valid time 10sec in the future
-#     future_time = round(time.time() + 10)
+    # A valid time 10sec in the future
+    future_time = round(time.time() + 10)
 
-#     with pytest.raises(AccessError):
-#         message.message_send_later(token1, channel_id, "Hello", future_time)
+    with pytest.raises(AccessError):
+        message.message_send_later(token1, channel_id, "Hello", future_time)
 
-#     clear()
+    clear()
 
 # ############################## MESSAGE_REACT TESTS ##############################
 

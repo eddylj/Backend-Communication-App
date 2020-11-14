@@ -403,10 +403,10 @@ class Messages:
         except KeyError:
             raise InputError
 
-    def add_message(self, new_message):
+    def add_message(self, new_message, message_id):
         if new_message is not None:
             self.__messages_list.insert(0, new_message)
-        self.__messages_dict[new_message.get_id()] = new_message
+        self.__messages_dict[message_id] = new_message
 
     def remove_message(self, message_id):
         def b_search(start, end, message_id):

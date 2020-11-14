@@ -5,7 +5,7 @@ above functions.
 '''
 from data import data
 from error import InputError, AccessError
-from other import is_valid_channel, validate_token
+from other import validate_token
 
 @validate_token
 def channel_invite(caller_id, channel_id, u_id):
@@ -100,7 +100,7 @@ def channel_messages(caller_id, channel_id, start):
     Returns:
         {messages, start, end}:
             A dictionary of messages in the format:
-                {message_id, u_id, message, time_created}
+                {message_id, u_id, message, time_created, reacts, is_pinned}
             as well as the start index given by the user and the end index (-1
             if all messages have been returned, start + 50 otherwise).
 
