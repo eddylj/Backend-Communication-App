@@ -356,6 +356,8 @@ class Message:
 
     def get_message(self):
         return self.__message
+    def set_message(self, new_message):
+        self.__message = new_message
 
     def get_timestamp(self):
         return self.__time_created
@@ -368,6 +370,19 @@ class Message:
     def is_pinned(self):
         return self.__is_pinned
 
+    def compare(self, message):
+        return self.__message == message
+
+    def output(self):
+        return {
+            'message_id': self.__message_id,
+            'u_id': self.__u_id,
+            'message': self.__message,
+            'time_created': self.__time_created,
+            'reacts': self.__reacts,
+            'is_pinned': self.__is_pinned,
+        }
+
 class Messages:
     def __init__(self):
         self.__messages_list = []
@@ -376,25 +391,50 @@ class Messages:
     def is_message(self, message_id):
         return (
             -1 < message_id < self.num_messages() and
-            self.__messages_list[message_id] is not None
+            self.__messages_dict[message_id] is not None
         )
 
     def get_message(self, message_id):
         try:
-            return self.__messages_dict[message_id]
+            message = self.__messages_dict[message_id]
+            if message is not None:
+                return message
+            raise InputError
         except KeyError:
             raise InputError
 
     def add_message(self, new_message):
-        self.__messages_list.insert(0, new_message)
+        if new_message is not None:
+            self.__messages_list.insert(0, new_message)
         self.__messages_dict[new_message.get_id()] = new_message
 
     def remove_message(self, message_id):
-        self.__messages_list[message_id] = None
+        def b_search(start, end, message_id):
+            if start >= end:
+                return None
+            mid = (start + end) // 2
+            msg_id = self.__messages_list[mid].get_id()
+
+            if msg_id == message_id:
+                return mid
+
+            if msg_id < message_id:
+                return b_search(start, mid - 1, message_id)
+            return b_search(mid + 1, end, message_id)
+
+        index = b_search(0, len(self.__messages_list), message_id)
+        self.__messages_list.pop(index)
         self.__messages_dict[message_id] = None
 
-    def num_messages(self):
-        return len(self.__messages_list)
+    def get_details(self, start, end):
+        if end < 0:
+            end = len(self.__messages_list)
+        return [self.__messages_list[i].output() for i in range(start, end)]
+
+    def num_messages(self, sent=None):
+        if sent is not None:
+            return len(self.__messages_list)
+        return len(self.__messages_dict)
 
     def clear(self):
         self.__messages_list.clear()

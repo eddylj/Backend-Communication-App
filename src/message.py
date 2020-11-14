@@ -90,6 +90,7 @@ def message_remove(caller_id, message_id):
         raise AccessError
 
     data['messages'].remove_message(message_id)
+    channel.get_messages().remove_message(message_id)
 
     return {}
 
@@ -125,39 +126,31 @@ def message_edit(caller_id, message_id, message):
     # Keeping the timestamp as close to the start of function as possible.
     timestamp = round(time.time())
 
-    data['messages'].get_message(message_id)
+    # Also checks if message has been deleted
+    stored_message = data['messages'].get_message(message_id)
+    channel = stored_message.get_channel()
 
     # If the message is too long
     if len(message) > 1000:
         raise InputError
 
-    channel_id = data['messages'][message_id]['channel_id']
-    channel_data = data['channels'][channel_id]
-    channel_messages = data['channels'][channel_id]['messages']
-
     # If not sender of message and not owner of channel
-    if caller_id != data['messages'][message_id]['u_id']:
-        if caller_id not in channel_data['owners']:
+    if not stored_message.is_sender(caller_id):
+        if not channel.is_owner(caller_id):
             raise AccessError
-    elif caller_id not in channel_data['members']:
+    elif not channel.is_member(caller_id):
         raise AccessError
 
-    for (index, msg) in enumerate(channel_messages):
-        if msg['message_id'] == message_id:
-            # If passed message is the same as existing message
-            if message == msg['message']:
-                raise InputError
-            # If message is an empty string
-            if message == "":
-                channel_messages.pop(index)
-            else:
-                msg['message'] = message
-                msg['time_created'] = timestamp
-            break
+    if stored_message.compare(message):
+        raise InputError
+    if message == "":
+        data['messages'].remove_message(message_id)
+        channel.get_messages().remove_message(message_id)
+    else:
+        stored_message.set_time(timestamp)
+        stored_message.set_message(message)
 
-    # Same scenario as message_remove. Coverage doesn't account for breaks.
-    # Coverage exception cautiously applied.
-    return {} # pragma: no cover
+    return {}
 
 @validate_token
 def message_send_later(caller_id, channel_id, message, time_sent):
@@ -190,39 +183,27 @@ def message_send_later(caller_id, channel_id, message, time_sent):
     if countdown <= 0:
         raise InputError
 
-    if not is_valid_channel(channel_id):
-        raise InputError
+    channel = data['channels'].get_channel(channel_id)
 
-    channel = data['channels'][channel_id]
-
-    if caller_id not in channel['members']:
+    if not channel.is_member(caller_id):
         raise AccessError
 
     is_valid_message(message)
 
-    message_id = len(data['messages'])
-    data['messages'].append({})
+    message_id = data['messages'].num_messages()
+    data['messages'].add_message(None)
 
-    args = [caller_id, message_id, channel_id, message]
+    args = [caller_id, message_id, channel, message]
     threading.Timer(countdown, send_later_resolve, args).start()
 
     return {'message_id': message_id}
 
-def send_later_resolve(sender_id, message_id, channel_id, message):
+def send_later_resolve(sender_id, message_id, channel, message):
     timestamp = round(time.time())
 
-    data['messages'][message_id] = {
-        'channel_id': channel_id,
-        'u_id': sender_id
-    }
-
-    new_message = {
-        'message_id' : message_id,
-        'u_id' : sender_id,
-        'message' : message,
-        'time_created' : timestamp,
-    }
-    data['channels'][channel_id]['messages'].insert(0, new_message)
+    new_message = Message(message_id, channel, sender_id, message, timestamp)
+    data['messages'].add_message(new_message)
+    channel.get_messages().add_message(new_message)
 
 @validate_token
 def message_react(caller_id, message_id, react_id):

@@ -116,26 +116,25 @@ def channel_messages(caller_id, channel_id, start):
                 - the caller is not a member of the channel.
                 - token is invalid.
     """
-    if not is_valid_channel(channel_id):
-        raise InputError
+    channel = data['channels'].get_channel(channel_id)
 
-    messages = data['channels'][channel_id]['messages']
-    if start > len(messages) or start < 0:
-        raise InputError
-
-    if not is_member(channel_id, caller_id):
+    if not channel.is_member(caller_id):
         raise AccessError
 
-    if start + 50 < len(messages):
+    messages = channel.get_messages()
+    num_sent_messages = messages.num_messages(sent=True)
+    if not 0 <= start <= num_sent_messages:
+        raise InputError
+
+    if start + 50 < num_sent_messages:
         end = start + 50
-        messages = messages[start:end]
     else:
         end = -1
 
     return {
-        'messages': messages,
+        'messages': messages.get_details(start, end),
         'start': start,
-        'end': end,
+        'end': end
     }
 
 @validate_token
