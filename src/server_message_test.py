@@ -735,14 +735,16 @@ def test_message_pin_not_member(url):
     channel and are owners
     '''
 
-    # Create 2 users
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
+    # Register a user and create a channel with one message in it.
+    r = requests.post(f"{url}/auth/register", json=user)
+    account1 = r.json()
+    token1 = account1['token']
+    u_id1 = account1['u_id']
 
     r = requests.post(f"{url}/auth/register", json=user2)
-    account = r.json()
-    token2 = account['token']
+    account2 = r.json()
+    token2 = account2['token']
+    u_id2 = account2['u_id']
 
     # Create channel
     test_channel['token'] = token2
@@ -793,178 +795,50 @@ def test_message_pin_not_owner(url):
     account = r.json()
     token2 = account['token']
 
-    # Create channel
-    test_channel['token'] = token2
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
 
     # Invite user 2 into the channel
     invite_payload = {
         'token': token2,
-        'channel_id': channel['channel_id'],
-        'u_id': u_id1
+        'channel_id': channel_id,
+        'u_id': u_id1,
     }
     requests.post(f"{url}/channel/invite", json=invite_payload)
 
+    # Send messages
     send_payload = {
-        'token': token2,
-        'channel_id': channel['channel_id'],
-        'message': "that one"
+        'token' : token2,
+        'channel_id' : channel_id,
+        'message' : "Hello",
     }
     r = requests.post(f"{url}/message/send", json=send_payload)
-    message = r.json()
+    msg_id1 = r.json()['message_id']
+
+
+    send_payload = {
+        'token' : token2,
+        'channel_id' : channel_id,
+        'message' : "goodnight",
+    }
+    r = requests.post(f"{url}/message/send", json=send_payload)
+    msg_id2 = r.json()['message_id']
+
 
     pin_payload = {
-        'token': token2,
-        'message_id': message['message_id']
+        'token' : token2,
+        'message_id' : msg_id1,
     }
     response = requests.post(f"{url}/message/pin", json=pin_payload)
-    assert response.status_code == 400
-
-############################## MESSAGE_UNPIN TESTS ##############################
-def test_message_unpin_valid_http(url):
-    '''
-    Base Test for message_unpin. Owner pinning a message and checking with channel_messages()
-    ''' 
-    # Create 2 users
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
-
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account = r.json()
-    token2 = account['token']
-
-    # Create channel
-    test_channel['token'] = token2
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
-    # Invite user 1 into the channel
-    invite_payload = {
-        'token': token2,
-        'channel_id': channel['channel_id'],
-        'u_id': u_id1
-    }
-    requests.post(f"{url}/channel/invite", json=invite_payload)
-
-    # User 2 sends two messages
-    send_payload = {
-        'token': token2,
-        'channel_id': channel['channel_id'],
-        'message': "Hello"
-    }
-    r = requests.post(f"{url}/message/send", json=send_payload)
-    message1 = r.json()
-
-    send_payload = {
-        'token': token2,
-        'channel_id': channel['channel_id'],
-        'message': "what it do"
-    }
-    r = requests.post(f"{url}/message/send", json=send_payload)
-    message2 = r.json()
+    print(response.status_code)
+    assert response.status_code == 200
 
     pin_payload = {
-        'token': token1,
-        'message_id': message1['message_id']
+        'token' : token1,
+        'message_id' : msg_id2,
     }
-    requests.post(f"{url}/message/pin", json=pin_payload)
+    response = requests.post(f"{url}/message/pin", json=pin_payload)
+    assert response.status_code == 200
 
-    pin_payload = {
-        'token': token2,
-        'message_id': message2['message_id']
-    }
-    requests.post(f"{url}/message/pin", json=pin_payload)
 
-    get_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
-        'start': 0
-    }
-    r = requests.get(f"{url}/channel/messages", params=get_payload)
-    messages = r.json()
-    assert messages == {
-        'messages': [],
-        'start': 0,
-        'end': -1
-    }
-
-    unpin_payload = {
-        'token': token1,
-        'message_id': message2['message_id']
-    }
-    requests.post(f"{url}/message/unpin", json=unpin_payload)
-
-    unpin_payload = {
-        'token': token2,
-        'message_id': message1['message_id']
-    }
-    requests.post(f"{url}/message/unpin", json=unpin_payload)
-
-    get_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
-        'start': 0
-    }
-    r = requests.get(f"{url}/channel/messages", params=get_payload)
-    messages = r.json()
-    assert messages == {
-        'messages': [],
-        'start': 0,
-        'end': -1
-    }
-
-def test_message_unpin_invalid_message_id(url): 
-    '''
-    Test case for an invalid message ID of a message that doesn't exist in the channel
-    '''
-
-    # Create a user
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
-
-    # Create channel
-    test_channel['token'] = token1
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
-    unpin_payload = {
-        'token': token1,
-        'message_id': 12345
-    }
-    response = requests.post(f"{url}/message/unpin", json=unpin_payload)
-    assert response.status_code == 400
-
-    # User 1 sends two messages
-    send_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
-        'message': "Hello"
-    }
-    r = requests.post(f"{url}/message/send", json=send_payload)
-    message1 = r.json()
-
-    send_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
-        'message': "what it do"
-    }
-    r = requests.post(f"{url}/message/send", json=send_payload)
-    message2 = r.json()
-
-    pin_payload = {
-        'token': token1,
-        'message_id': message1['message_id']
-    }
-    requests.post(f"{url}/message/pin", json=pin_payload)
-
-    unpin_payload = {
-        'token': token1,
-        'message_id': message1['message_id']
-    }
-    requests.post(f"{url}/message/unpin", json=unpin_payload)
 
     unpin_payload = {
         'token': token1,
