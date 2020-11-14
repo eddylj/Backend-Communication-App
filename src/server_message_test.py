@@ -664,7 +664,7 @@ def test_message_pin_base_http(url):
         'message' : "goodnight",
     }
     r = requests.post(f"{url}/message/send", json=send_payload)
-    msg_id1 = r.json()['message_id']
+    msg_id2 = r.json()['message_id']
 
 
     # Owner of Channel pinning
@@ -678,7 +678,7 @@ def test_message_pin_base_http(url):
 
     # Owner of Flockr pinning
     pin_payload = {
-        'token' : token1,
+        'token' : token2,
         'message_id' : msg_id2,
     }
     r = requests.post(f"{url}/message/pin", json=pin_payload)
@@ -784,7 +784,7 @@ def test_message_unpin_base_http(url):
         'message' : "goodnight",
     }
     r = requests.post(f"{url}/message/send", json=send_payload)
-    msg_id1 = r.json()['message_id']
+    msg_id2 = r.json()['message_id']
 
 
     # Owner of Channel pinning
@@ -817,7 +817,7 @@ def test_message_unpin_base_http(url):
     }
     requests.post(f"{url}/message/unpin", json=pin_payload)
 
-def test_message_unpin_inputerror_http():
+def test_message_unpin_inputerror_http(url):
     """
     Unpin tests to test that the server gives errors
     """
@@ -853,11 +853,11 @@ def test_message_unpin_inputerror_http():
     msg_id = r.json()['message_id']
     
 
-    pin_payload = {
+    unpin_payload = {
         'token' : token,
         'message_id' : msg_id,
     }
-    r = requests.post(f"{url}/message/pin", json=pin_payload)
+    r = requests.post(f"{url}/message/unpin", json=unpin_payload)
     assert r.status_code == 400
 
 ############################## MESSAGE_REACT TESTS ##############################
@@ -889,7 +889,7 @@ def test_message_react_base_http(url):
         'u_id' : u_id1
     }
 
-    requests.post(f"{url}/channels/create", json=invite_payload)
+    requests.post(f"{url}/channel/invite", json=invite_payload)
 
     send_payload = {
         'token' : token2,
@@ -928,7 +928,7 @@ def test_message_react_inputerror_http(url):
     react_id = 1
 
     react_payload = {
-        'token' : token1,
+        'token' : token,
         'message_id' : 123415,
         'react_id' : react_id,
     }
@@ -938,7 +938,7 @@ def test_message_react_inputerror_http(url):
 
     # Invalid react_id
     send_payload = {
-        'token' : token2,
+        'token' : token,
         'channel_id' : channel_id,
         'message' : "Hello",
     }
@@ -948,7 +948,7 @@ def test_message_react_inputerror_http(url):
     react_id = 123415
 
     react_payload = {
-        'token' : token1,
+        'token' : token,
         'message_id' : msg_id1,
         'react_id' : 123415,
     }
@@ -958,14 +958,14 @@ def test_message_react_inputerror_http(url):
 
     # react twice
     react_payload = {
-        'token' : token1,
+        'token' : token,
         'message_id' : msg_id1,
         'react_id' : react_id,
     }
     requests.post(f"{url}/message/react", json=react_payload)
 
     react_payload = {
-        'token' : token1,
+        'token' : token,
         'message_id' : msg_id1,
         'react_id' : react_id,
     }
@@ -1003,7 +1003,7 @@ def test_message_unreact_base_http(url):
         'u_id' : u_id1
     }
 
-    requests.post(f"{url}/channels/create", json=invite_payload)
+    requests.post(f"{url}/channel/invite", json=invite_payload)
 
     # Send messages
     send_payload = {
@@ -1019,22 +1019,24 @@ def test_message_unreact_base_http(url):
     react_id = 1
 
     react_payload = {
-        'token' : token1,
+        'token' : token2,
         'message_id' : msg_id1,
         'react_id' : react_id,
     }
     requests.post(f"{url}/message/react", json=react_payload)
 
+
     # Unreact
-    react_id = 1
 
     unreact_payload = {
-        'token' : token1,
+        'token' : token2,
         'message_id' : msg_id1,
         'react_id' : react_id,
     }
-    r = requests.post(f"{url}/message/unreact", json=react_payload)
+    r = requests.post(f"{url}/message/unreact", json=unreact_payload)
     assert r.status_code == 200
+
+
 
 def test_message_unreact_inputerror_http(url):
     """
@@ -1055,7 +1057,7 @@ def test_message_unreact_inputerror_http(url):
     react_id = 1
 
     unreact_payload = {
-        'token' : token1,
+        'token' : token,
         'message_id' : 123415,
         'react_id' : react_id,
     }
@@ -1065,7 +1067,7 @@ def test_message_unreact_inputerror_http(url):
 
     # Invalid react_id
     send_payload = {
-        'token' : token2,
+        'token' : token,
         'channel_id' : channel_id,
         'message' : "Hello",
     }
@@ -1075,17 +1077,17 @@ def test_message_unreact_inputerror_http(url):
     react_id = 123415
 
     unreact_payload = {
-        'token' : token1,
+        'token' : token,
         'message_id' : 123415,
         'react_id' : react_id,
     }
-    r = requests.post(f"{url}/message/runeact", json=unreact_payload)
+    r = requests.post(f"{url}/message/unreact", json=unreact_payload)
     assert r.status_code == 400
 
 
     # unreact when not reacted
     unreact_payload = {
-        'token' : token1,
+        'token' : token,
         'message_id' : msg_id1,
         'react_id' : react_id,
     }

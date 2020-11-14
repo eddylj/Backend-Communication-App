@@ -454,14 +454,15 @@ def message_unreact(token, message_id, react_id):
 
                 # If the list of reacts is now empty, remove the dictionary from the reacts list.
                 if msg['reacts'][react_id - 1]['u_ids'] == []:
-                    removekey(msg['reacts'], react_id - 1)
+                    #removekey(msg['reacts'], react_id - 2)
+                    msg['reacts'] = []
 
             break
 
     return {}
 
 
-def removekey(d, key):
-    r = dict(d)
-    del r[key]
-    return r
+# def removekey(d, key):
+#     r = dict(d)
+#     del r[key]
+#     return r
