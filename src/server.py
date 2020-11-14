@@ -81,6 +81,27 @@ def logout():
         auth.auth_logout(data['token'])
     )
 
+# @APP.route("/auth/passwordreset/request", methods=['POST'])
+# def request():
+#     """
+#     Route to flask server to request a password reset
+#     """
+#     data = request.get_json()
+
+#     return dumps(
+#         auth.auth_passwordreset_request(data['email'])
+#     )
+
+# @APP.route("/auth/passwordreset/reset", methods=['POST'])
+# def request():
+#     """
+#     Route to flask server to reset a password
+#     """
+#     data = request.get_json()
+
+#     return dumps(
+#         auth.auth_passwordreset_reset(data['reset_code'], data['new_password'])
+#     )
 
 # CHANNEL FUNCTIONS
 @APP.route("/channel/invite", methods=['POST'])
