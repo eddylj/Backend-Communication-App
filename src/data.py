@@ -95,6 +95,11 @@ class User:
         self.__reset_status = is_being_reset
 
     def output(self, url=None):
+        """
+        Filters sensitive data from the current User object and returns the rest
+        in a dictionary. An additional profile_img_url (where the User's display
+        picture is stored) is also returned.
+        """
         path = f"{url}/static/{self.__u_id}.jpg" if url is not None else None
         return {
             'u_id': self.__u_id,
@@ -108,7 +113,7 @@ class User:
 class Users:
     """
     Users object which contains dictionaries of user, keyed by ID and email, and
-    accessor and mutator functions to see current users and add new ones.
+    accessor and mutator methods to see current users and add/remove new ones.
     """
     def __init__(self):
         self.__users_by_id = {}
@@ -192,6 +197,19 @@ class Users:
         self.__users_by_email.clear()
 
 class Channel:
+    """
+    Channel class which stores its own identifying attributes, as well as a
+    record of users and messages in it.
+
+    Attributes:
+        - channel_id    (int)   : Unique identifier for the channel.
+        - name          (str)   : Name of the channel.
+        - owners        (Users) : Users class of users with owner permissions in
+                                  the channel.
+        - members       (Users) : Users class of all users in the channel.
+        - is_public     (bool)  : Whether or not the channel is public.
+        - messages      (List)  : List of all messages sent in the channel.
+    """
     def __init__(self, creator, channel_id, name, is_public):
         self.__channel_id = channel_id
         self.__name = name
@@ -204,48 +222,90 @@ class Channel:
         self.__owners.add_user(creator)
 
     def get_id(self):
+        """ Returns the ID of the channel. """
         return self.__channel_id
 
     def get_name(self):
+        """ Returns the name of the channel. """
         return self.__name
 
     def get_members(self):
+        """ Returns the Users object holding all users in the channel. """
         return self.__members
     def is_member(self, u_id):
+        """
+        Checks whether or not a user with u_id is a member of this channel.
+        """
         return self.__members.is_user(u_id=u_id)
 
     def get_owners(self):
+        """ Returns the Users object holding all owners in the channel. """
         return self.__owners
     def is_owner(self, u_id):
+        """
+        Checks whether or not a user with u_id is an owner of this channel.
+        """
         return self.__owners.is_user(u_id=u_id)
 
     def join(self, user):
+        """
+        Adds a user to members, and owners if necessary. Also updates the
+        channels the user is part of in their own class.
+        """
         self.__members.add_user(user)
         if user.get_permissions() == 1:
             self.__owners.add_user(user)
         user.get_channels().add_channel(self)
     def leave(self, u_id):
+        """
+        Removes a user from members, and owners if necessary. Also updates the
+        channels the user is part of in their own class.
+        """
         if self.is_owner(u_id):
             self.__owners.remove_user(u_id=u_id)
         self.__members.remove_user(u_id=u_id)
+        user = data['users'].get_user(u_id=u_id)
+        user.get_channels().remove_channel(self)
 
     def is_public(self):
+        """
+        Returns whether or not the channel is public.
+        """
         return self.__is_public
 
     def get_messages(self):
+        """
+        Returns the list of messages stored in this channel.
+        """
         return self.__messages
 
 class Channels:
+    """
+    Channels object which contains dictionaries of channel objects keyed by ID,
+    as well as methods to add and remove them. Other useful properties such as
+    number of existing channels are also included.
+    """
     def __init__(self):
         self.__channels = {}
 
     def get_channel(self, channel_id):
+        """
+        Tries to access a channel given it's channel_id. If the channel isn't
+        stored in the Channels object or channel_id is invalid, InputError is
+        raised.
+        """
         try:
             return self.__channels[channel_id]
         except KeyError:
             raise InputError
 
     def list_all(self):
+        """
+        Returns a list of dictionaries containing two keys:
+            - channel_id (int): The unique identifier of the channel.
+            - name       (str): The name of the channel at creation.
+        for all the channels stored.
+        """
         output = []
         for _, channel in self.__channels.items():
             output.append({
@@ -255,16 +315,27 @@ class Channels:
         return output
 
     def add_channel(self, channel):
+        """
+        Adds a channel to the internal dictionary, with it's channel_id as the
+        key.
+        """
         self.__channels[channel.get_id()] = channel
     def remove_channel(self, channel):
-        del self.__channels[channel.get_id()]
+        """ Removes a channel from the internal dictionary. """
+        try:
+            del self.__channels[channel.get_id()]
+        except KeyError:
+            raise InputError
 
     def num_channels(self):
+        """ Returns the number of existing channels """
         return len(self.__channels)
 
     def clear(self):
+        """ Clears all the data stored in the Channels object. """
         self.__channels.clear()
 
+class Messages
 data = {
     # Stores registered users by u_id and email
     'users': Users(),
