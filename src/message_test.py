@@ -1016,7 +1016,7 @@ def test_message_react_valid():
     channel.channel_invite(token2, channel_id, u_id1)
 
     # Send messages
-    timestamp1 = int(time.time())
+    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
 
     # Not sure where we get react id for now, however react id = 1 is thumbs up i believe
@@ -1077,7 +1077,7 @@ def test_message_react_invalid_react_id():
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     # Send messages
-    timestamp1 = int(time.time())
+    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
     # Input error when react_id is not valid
@@ -1097,7 +1097,7 @@ def test_message_react_already_active_react_id():
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     # Send messages
-    timestamp1 = int(time.time())
+    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
     react_id = 1
@@ -1156,7 +1156,7 @@ def test_message_unreact_valid():
     channel.channel_invite(token2, channel_id, u_id1)
 
     # Send messages
-    timestamp1 = int(time.time())
+    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token2, channel_id, "Hello")['message_id']
 
     # Not sure where we get react id for now, however react id = 1 is thumbs up i believe
@@ -1246,7 +1246,7 @@ def test_message_unreact_invalid_react_id():
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     # Send messages
-    timestamp1 = int(time.time())
+    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
     # Input error when react_id is not valid
@@ -1266,10 +1266,10 @@ def test_message_unreact_already_active_react_id():
     channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
 
     # Send messages
-    timestamp1 = int(time.time())
+    timestamp1 = round(time.time())
     msg_id1 = message.message_send(token1, channel_id, "Hello")['message_id']
 
-    timestamp2 = int(time.time())
+    timestamp2 = round(time.time())
     msg_id2 = message.message_send(token1, channel_id, "cs cs")['message_id']
 
     react_id = 1
