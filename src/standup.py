@@ -10,31 +10,31 @@ User functions include:
 import threading
 import time
 from data import data
+from message import is_valid_message
 from error import InputError, AccessError
-from other import validate_token, is_valid_channel
+from other import validate_token
 
-# MAYBE CHANGE TO MESSAGE_SEND WITH DECORATORS
-def standup_resolve(sender_id, channel_id):
-    """
-    Sends the standup buffer string as a message into a given channel. Ignores
-    length limitations and access rules unlike message_send. The standup key
-    in channel data is then removed entirely, signifying the end of the standup.
-    """
-    timestamp = round(time.time())
-    channel = data['channels'][channel_id]
-    if len(channel['standup']['buffer']) != 0:
-        message_id = len(data['messages'])
-        new_message = {
-            'message_id' : message_id,
-            'u_id' : sender_id,
-            'message' : channel['standup']['buffer'],
-            'time_created' : timestamp,
-        }
+# def standup_resolve(sender_id, channel_id):
+#     """
+#     Sends the standup buffer string as a message into a given channel. Ignores
+#     length limitations and access rules unlike message_send. The standup key
+#     in channel data is then removed entirely, signifying the end of the standup.
+#     """
+#     timestamp = round(time.time())
+#     channel = data['channels'][channel_id]
+#     if len(channel['standup']['buffer']) != 0:
+#         message_id = len(data['messages'])
+#         new_message = {
+#             'message_id' : message_id,
+#             'u_id' : sender_id,
+#             'message' : channel['standup']['buffer'],
+#             'time_created' : timestamp,
+#         }
 
-        channel['messages'].insert(0, new_message)
-        data['messages'].append({'channel_id': channel_id, 'u_id': sender_id})
+#         channel['messages'].insert(0, new_message)
+#         data['messages'].append({'channel_id': channel_id, 'u_id': sender_id})
 
-    del channel['standup']
+#     del channel['standup']
 
 @validate_token
 def standup_start(caller_id, channel_id, length):
@@ -69,23 +69,17 @@ def standup_start(caller_id, channel_id, length):
     if length <= 0:
         raise InputError
 
-    if not is_valid_channel(channel_id):
-        raise InputError
+    channel = data['channels'].get_channel(channel_id)
 
-    channel = data['channels'][channel_id]
-
-    if caller_id not in channel['members']:
+    if not channel.is_member(caller_id):
         raise AccessError
 
-    if 'standup' in channel:
+    if channel.has_standup():
         raise InputError
 
     time_finish = round(time.time()) + length
-    channel['standup'] = {
-        'time_finish': time_finish,
-        'buffer': ""
-    }
-    threading.Timer(length, standup_resolve, [caller_id, channel_id]).start()
+    channel.start_standup(time_finish)
+    threading.Timer(length, channel.end_standup, [caller_id]).start()
 
     return {'time_finish': time_finish}
 
@@ -112,21 +106,18 @@ def standup_active(caller_id, channel_id):
         InputError:
             When channel_id does not correspond to an existing channel.
     """
-    # Can't use Timer.is_active() here since it's a local variable in start.
-    if not is_valid_channel(channel_id):
-        raise InputError
+    channel = data['channels'].get_channel(channel_id)
 
-    channel = data['channels'][channel_id]
-    if caller_id not in channel['members']:
+    if not channel.is_member(caller_id):
         raise AccessError
 
-    is_active = 'standup' in channel
-    time_finish = channel['standup']['time_finish'] if is_active else None
+    is_active = channel.has_standup()
+    time_finish = channel.standup_time_finish()
 
     return {'is_active': is_active, 'time_finish': time_finish}
 
 @validate_token
-def standup_send(sender_id, channel_id, message):
+def standup_send(caller_id, channel_id, message):
     """
     Adds a message to the standup buffer, provided there is an active standup in
     the specified channel.
@@ -150,22 +141,18 @@ def standup_send(sender_id, channel_id, message):
                 - There isn't an active standup in the channel.
                 - The message exceeds 1000 characters in length.
     """
-    if not is_valid_channel(channel_id):
-        raise InputError
+    channel = data['channels'].get_channel(channel_id)
+    user = data['users'].get_user(caller_id)
 
-    channel = data['channels'][channel_id]
-    if sender_id not in channel['members']:
+    if not channel.is_member(caller_id):
         raise AccessError
 
-    if not 0 < len(message) <= 1000:
+    is_valid_message(message)
+
+    if not channel.has_standup():
         raise InputError
 
-    if not 'standup' in channel:
-        raise InputError
-
-    message = data['users'][sender_id]['handle_str'] + ": " + message
-    if len(channel['standup']['buffer']) != 0:
-        channel['standup']['buffer'] += "\n"
-    channel['standup']['buffer'] += message
+    message = user.get_handle() + ": " + message
+    channel.standup_buffer(message)
 
     return {}

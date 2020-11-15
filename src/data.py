@@ -2,6 +2,8 @@
 Database for all users, channels, tokens and messages, stored in the global variable
 'data'
 """
+import threading
+import time
 import re
 import bisect
 import os.path
@@ -122,7 +124,15 @@ class User:
 class Users:
     """
     Users object which contains dictionaries of user, keyed by ID and email, and
-    accessor and mutator methods to see current users and add/remove new ones.
+    accessor and mutator methods, listed here:
+        - get_user()
+        - is_user()
+        - add_user()
+        - remove_user()
+        - list_all()
+        - list_all_details()
+        - num_users()
+        - clear()
     """
     def __init__(self):
         self.__users_by_id = {}
@@ -207,7 +217,7 @@ class Users:
 
 class Channel:
     """
-    Channel class which stores its own identifying attributes, as well as a
+    Channel object which stores its own identifying attributes, as well as a
     record of users and messages in it.
 
     Attributes:
@@ -226,7 +236,7 @@ class Channel:
         self.__members = Users()
         self.__is_public = is_public
         self.__messages = Messages()
-
+        self.__standup = None
         self.join(creator)
         self.__owners.add_user(creator)
 
@@ -283,12 +293,62 @@ class Channel:
         return self.__is_public
 
     def get_messages(self):
-        """
-        Returns the Messages object stored in this channel.
-        """
+        """ Returns the Messages object stored in this channel. """
         return self.__messages
-    
+
+    def has_standup(self):
+        """
+        Returns whether or not there is an ongoing standup in this channel.
+        """
+        return self.__standup is not None
+
+    def standup_time_finish(self):
+        """ Returns the time of which the current standup ends. """
+        if self.__standup is None:
+            return None
+        return self.__standup['time_finish']
+
+    def start_standup(self, time_finish):
+        """
+        Initiates the standup attribute to a dictionary, which contains the
+        time of conclusion and a message buffer.
+        """
+        self.__standup = {
+            'time_finish': time_finish,
+            'buffer': ""
+        }
+
+    def end_standup(self, sender_id):
+        """
+        Sends the standup buffer string as a message into a given channel.
+        Ignores length limitations and access rules unlike message_send(). The
+        standup attribute is set to None, signifying the end of the standup.
+        """
+        timestamp = round(time.time())
+
+        if self.__standup['buffer'] != "":
+            message_id = data['messages'].num_messages()
+            new_message = Message(message_id, self, sender_id,
+                                  self.__standup['buffer'], timestamp)
+            self.get_messages().add_message(new_message, message_id)
+            data['messages'].add_message(new_message, message_id)
+
+        self.__standup = None
+
+    def standup_buffer(self, message_str):
+        """ Adds a message string to the standup buffer. """
+        if self.__standup is None:
+            raise InputError
+
+        if self.__standup['buffer']:
+            self.__standup['buffer'] += "\n"
+        self.__standup['buffer'] += message_str
+
     def output(self):
+        """
+        Returns a dictionary containing basic information (ID and name) of the
+        channel.
+        """
         return {
             'channel_id': self.__channel_id,
             'name': self.__name
@@ -297,8 +357,14 @@ class Channel:
 class Channels:
     """
     Channels object which contains dictionaries of channel objects keyed by ID,
-    as well as methods to add and remove them. Other useful properties such as
-    number of existing channels are also included.
+    as well as accessor and mutator methods, listed here:
+        - get_channel()
+        - add_channel()
+        - remove_channel()
+        - list_all()
+        - list_all_details()
+        - num_channels()
+        - clear()
     """
     def __init__(self):
         self.__channels = {}
@@ -328,6 +394,9 @@ class Channels:
             raise InputError
 
     def list_all(self):
+        """
+        Returns the dictionary of Channel objects keyed by their channel_id.
+        """
         return self.__channels
 
     def list_all_details(self):
@@ -351,6 +420,20 @@ class Channels:
         self.__channels.clear()
 
 class Message:
+    """
+    Message object which holds the necessary identifiers of a message, as well
+    as accessor and mutator methods for each attribute.
+
+    Attributes:
+        - message_id    (int)       : Unique identifier of the message.
+        - channel       (Channel)   : Channel which the message was sent to.
+        - u_id          (int)       : Original sender's ID.
+        - message       (str)       : Contents of the message.
+        - time_created  (int)       : Unix timestamp of when the message was
+                                      sent/last altered.
+        - reacts        (Dict)      : Reactions on the message.
+        - is_pinned     (bool)      : Whether or not the message is pinned.
+    """
     def __init__(self, message_id, channel, sender_id, message, timestamp):
         self.__message_id = message_id
         self.__channel = channel
@@ -361,27 +444,51 @@ class Message:
         self.__is_pinned = False
 
     def get_id(self):
+        """ Gets the message_id of the message. """
         return self.__message_id
 
     def get_channel(self):
+        """ Gets the channel where the message was sent to. """
         return self.__channel
 
     def is_sender(self, u_id):
+        """
+        Given an ID corresponding to a user, checks whether or not that user was
+        the original sender of the message.
+        """
         return self.__u_id == u_id
 
     def get_message(self):
+        """ Gets the text contents of the message. """
         return self.__message
     def set_message(self, new_message):
+        """ Changes the text contents of the message. """
         self.__message = new_message
 
     def get_timestamp(self):
+        """ Gets the timestamp of the message. """
         return self.__time_created
     def set_time(self, timestamp):
+        """ Changes the timestamp of the message to the given one. """
         self.__time_created = timestamp
 
     def get_reacts(self, react_id):
-        return self.__reacts[react_id]
+        """
+        Given a react_id, return the dictionary corresponding to that react.
+        If there are no reacts with react_id under this message, InputError is
+        raised.
+        """
+        try:
+            return self.__reacts[react_id]
+        except IndexError:
+            raise InputError
     def add_react(self, user_id, react_id):
+        """
+        Adds a react with react_id from the user with user_id to the message.
+        If there hasn't been any reacts with that ID yet, create a new entry
+        in the reacts dictionary for it. User_id is inserted into the list of
+        reactors while maintaining order.
+        """
         if react_id not in self.__reacts:
             self.__reacts[react_id] = {
                 'react_id': react_id,
@@ -392,6 +499,12 @@ class Message:
         if user_id == self.__u_id:
             self.__reacts[react_id]['is_the_user_reacted'] = True
     def already_reacted(self, user_id, react_id):
+        """
+        Checks whether or not a user has already reacted with react_id. If no
+        reacts with react_id are found, raise InputError. Return None if user
+        hasn't reacted with react_id.
+        """
+        # Binary search since list is ordered
         def b_search(start, end, user_id):
             if start >= end:
                 return None
@@ -409,6 +522,11 @@ class Message:
         except KeyError:
             raise InputError
     def remove_react(self, user_id, react_id):
+        """
+        Removes a react from the message, given a user_id and react_id. If the
+        user is the last react before deletion, the entire react entry is
+        removed.
+        """
         index = self.already_reacted(user_id, react_id)
         if index is None:
             raise InputError
@@ -420,16 +538,27 @@ class Message:
             self.__reacts[react_id]['is_the_user_reacted'] = False
 
     def is_pinned(self):
+        """ Checks whether or not the message is currently pinned. """
         return self.__is_pinned
     def pin(self):
+        """ Pins the message. """
         self.__is_pinned = True
     def unpin(self):
+        """ Unpins the message.  """
         self.__is_pinned = False
 
     def compare(self, message):
+        """
+        Compares whether or not a message string is exactly the same as the
+        existing one.
+        """
         return self.__message == message
 
     def output(self):
+        """
+        Outputs a dictionary with keys as required by the project specs for a
+        message object.
+        """
         return {
             'message_id': self.__message_id,
             'u_id': self.__u_id,
@@ -440,11 +569,29 @@ class Message:
         }
 
 class Messages:
+    """
+    Messages object which contains a dictionary and a list of message objects,
+    both, keyed by ID. The list only holds existing messages, while the
+    dictionary contains all messages sent, including deleted ones. Also includes
+    accessor and mutator methods, listed here:
+        - get_message()
+        - add_message()
+        - remove_message()
+        - get_details()
+        - search_for()
+        - list_all_details()
+        - num_messages()
+        - clear()
+    """
     def __init__(self):
         self.__messages_list = []
         self.__messages_dict = {}
 
     def get_message(self, message_id):
+        """
+        Tries to return the message with the corresponding message_id. If no
+        message with that ID exists in this Messages object, raise InputError.
+        """
         try:
             message = self.__messages_dict[message_id]
             if message is not None:
@@ -454,11 +601,20 @@ class Messages:
             raise InputError
 
     def add_message(self, new_message, message_id):
+        """
+        Adds a message to the dictionary of messages. Since messages can be sent
+        in the future, a check is also performed to see if the message is to be
+        added to the list as well.
+        """
         if new_message is not None:
             self.__messages_list.insert(0, new_message)
         self.__messages_dict[message_id] = new_message
 
     def remove_message(self, message_id):
+        """
+        Removes a message from the list and dictionary. Also checks if the
+        message exists or not.
+        """
         def b_search(start, end, message_id):
             if start >= end:
                 return None
@@ -479,11 +635,18 @@ class Messages:
         self.__messages_dict[message_id] = None
 
     def get_details(self, start, end):
+        """
+        Gets a list of formatted details of all messages in the Messages object.
+        """
         if end < 0:
             end = len(self.__messages_list)
         return [self.__messages_list[i].output() for i in range(start, end)]
 
     def search_for(self, query_str):
+        """
+        Searches through all messages against a case-insensitive regular
+        expression.
+        """
         results = []
         for message in self.__messages_list:
             if re.search(query_str, message.get_message(), re.IGNORECASE):
@@ -491,11 +654,19 @@ class Messages:
         return results
 
     def num_messages(self, sent=None):
+        """
+        Returns the number of messages sent (including deleted and scheduled) by
+        default. If the sent parameter is passed in, only messages which exist
+        at this moment is counted.
+        """
         if sent is not None:
             return len(self.__messages_list)
         return len(self.__messages_dict)
 
     def clear(self):
+        """
+        Clears the list and dictionary of all data.
+        """
         self.__messages_list.clear()
         self.__messages_dict.clear()
 
