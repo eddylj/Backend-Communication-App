@@ -37,7 +37,7 @@ def test_message_send_valid(test_data):
     assert messages[0]['message'] == "Hello"
     assert messages[0]['time_created'] == timestamp
 
-def test_message_send_too_long():
+def test_message_send_too_long(test_data):
     """
     Test case for message_send(), where the passed message exceeds the 1000
     character limit.
@@ -46,7 +46,7 @@ def test_message_send_too_long():
 
     account = auth.auth_register(*user)
     token = account['token']
-
+    
     channel_id = channels.channels_create(token, "Testing", True)['channel_id']
 
     # 1008-character string
@@ -71,25 +71,18 @@ def test_message_send_too_long():
     with pytest.raises(InputError):
         message.message_send(token, channel_id, long_message)
 
-def test_message_send_not_member():
+def test_message_send_not_member(test_data):
     """
     Test case for message_send(), where the caller is trying to send a message
     to a channel they're not part of.
     """
     clear()
 
-    # Create 2 users
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-
-    # Create channel using user1
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
+    token1 = test_data.token(1)
+    channel_id = test_data.channel(0)
 
     with pytest.raises(AccessError):
-        message.message_send(token2, channel_id, "Hello")
+        message.message_send(token1, channel_id, "Hello")
 
 ############################# MESSAGE_REMOVE TESTS #############################
 
@@ -155,7 +148,7 @@ def test_message_remove_not_owner(test_data):
     with pytest.raises(AccessError):
         message.message_remove(token1, msg_id)
 
-def test_message_remove_as_owner():
+def test_message_remove_as_owner(test_data):
     """
     Testing if an owner of the flockr or channel can freely remove messages.
     """
@@ -185,12 +178,13 @@ def test_message_remove_as_owner():
         'end': -1
     }
 
-def test_message_remove_not_member():
+def test_message_remove_not_member(test_data):
     """
     Edge case for message_remove(), where the caller isn't even in the channel
     where the message is sent. This includes the Flockr owner.
     """
     clear()
+    
 
     # Create 2 users
     account1 = auth.auth_register(*user1)
@@ -400,7 +394,7 @@ def test_message_edit_identical():
         message.message_edit(token, msg_id, "Hello")
 
 # Checking invalid token
-def test_message_invalid_token():
+def test_message_invalid_token(test_data):
     """
     Test for invalid tokens throughout all message functions
     """
@@ -428,7 +422,7 @@ def test_message_invalid_token():
 
 ############################## MESSAGE_PIN TESTS ##############################
 
-def test_message_pin_valid():
+def test_message_pin_valid(test_data):
     '''
     Base Test for message_pin. Owner pinning a message and checking with channel_messages()
     '''
@@ -509,7 +503,7 @@ def test_message_pin_invalid_message_id():
     with pytest.raises(InputError):
         message.message_pin(token1, msg_id1)
 
-def test_message_pin_not_member():
+def test_message_pin_not_member(test_data):
     '''
     Test Case for when the user is pinning a message when they are not a member of the
     channel and are owners
