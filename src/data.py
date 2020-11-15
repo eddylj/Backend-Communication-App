@@ -128,7 +128,7 @@ class Users:
         try:
             if u_id is not None:
                 return self.__users_by_id[u_id]
-            elif email is not None:
+            if email is not None:
                 return self.__users_by_email[email]
             raise Exception("Must provide a parameter to Users.get_user()")
         except KeyError:
