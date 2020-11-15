@@ -210,3 +210,24 @@ def test_auth_logout_fail_http(url):
     r = requests.post(f"{url}/auth/logout", json={'token': account['token']})
     status = r.json()
     assert status['is_success'] is True
+
+######################## AUTH_PASSWORDRESET_RESET TESTS ########################
+def test_auth_passwordreset_reset_base_http(url):
+    """
+    Http test for making sure the function works
+    """
+    r = requests.post(f"{url}/auth/register", json=user)
+    account = r.json()
+    token = account['token']
+
+    email = "validemail@gmail.com"
+    new_password = "asdf1234qwer"
+
+    # Request a password reset
+    req_payload = {
+        'email' : email,
+    }
+    r = requests.post(f"{url}/auth/passwordreset/request", json=req_payload)
+    assert r.status_code == 200
+
+
