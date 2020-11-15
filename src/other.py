@@ -1,6 +1,8 @@
 """
 Different Functions used throughout the program
 """
+import os
+import glob
 import re
 import time
 import hashlib
@@ -18,6 +20,10 @@ def clear():
     data['channels'].clear()
     data['tokens'].clear()
     data['messages'].clear()
+
+    images = glob.glob("/src/static/*.jpg")
+    for image in images:
+        os.remove(image)
 
 # Wrapper.validated attribute to skip validate_token taken from:
 # https://stackoverflow.com/questions/41206565/bypassing-a-decorator-for-unit-testing

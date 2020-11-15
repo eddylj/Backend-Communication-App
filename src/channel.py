@@ -283,29 +283,3 @@ def channel_removeowner(caller_id, channel_id, u_id):
     channel.get_owners().remove_user(u_id=u_id)
 
     return {}
-
-def is_member(channel_id, u_id):
-    """
-    Checks if a user (u_id) is a member of a specified channel (channel_id).
-
-    Parameters:
-        channel_id (int): Channel's ID.
-        u_id (int)      : User's ID.
-
-    Returns:
-        (bool): Whether or not user is in the specifiec channel.
-    """
-    return u_id in data['channels'][channel_id]['members']
-
-def is_owner(channel_id, u_id):
-    """
-    Checks if a user (u_id) is an owner of a specified channel (channel_id).
-
-    Parameters:
-        channel_id (int): Channel's ID.
-        u_id (int)      : User's ID.
-
-    Returns:
-        (bool): Whether or not user is an owner in the specifiec channel.
-    """
-    return u_id in data['channels'][channel_id]['owners']
