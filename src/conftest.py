@@ -2,11 +2,16 @@
 Conftest file which holds a pytest fixture which registers two users and creates
 a channel for each of them.
 """
+import re
 import requests
+from subprocess import Popen, PIPE
+from time import sleep
+import signal
 import pytest
 import auth
 import channels
 from other import clear
+
 
 user0 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user1 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')

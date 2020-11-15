@@ -2,7 +2,6 @@
 Tests for all functions in user.py
 '''
 import requests
-from echo_http_test import url
 
 user = {
     'email': 'validemail@gmail.com',

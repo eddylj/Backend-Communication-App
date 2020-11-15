@@ -2,7 +2,6 @@
 This module contains tests for user routes in server.py.
 """
 import requests
-from echo_http_test import url
 
 user1 = {
     'email': 'validemail@gmail.com',
@@ -124,7 +123,6 @@ def test_user_setemail_invalid_http(url):
     r = requests.post(f"{url}/auth/register", json=user1)
     account = r.json()
     token = account['token']
-    u_id = account['u_id']
 
     # Attempting to change email to an invalid one.
     email_payload = {
