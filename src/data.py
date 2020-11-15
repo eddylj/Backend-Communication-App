@@ -5,7 +5,7 @@ Database for all users, channels, tokens and messages, stored in the global vari
 import time
 import re
 import bisect
-import os.path
+import requests
 from error import InputError
 
 class User:
@@ -101,9 +101,9 @@ class User:
         picture is stored) is also returned.
         """
         if url is not None:
-            path = f"{url}/static/{self.__u_id}.jpg"
-            # path = f"/static/{self.__u_id}.jpg"
-            if not os.path.isfile(path):
+            path = f"{url}src/static/{self.__u_id}.jpg"
+            image = requests.get(path)
+            if image.status_code != 200:
                 path = None
         else:
             path = None

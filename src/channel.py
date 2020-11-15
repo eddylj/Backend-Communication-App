@@ -75,6 +75,11 @@ def channel_details(caller_id, channel_id, url=None):
     if not channel.is_member(caller_id):
         raise AccessError
 
+    print("#####################")
+    print(channel.get_owners().list_all_details(url=url))
+    print(channel.get_members().list_all_details(url=url))
+    print("#####################")
+
     return {
         'name': channel.get_name(),
         'owner_members': channel.get_owners().list_all_details(url=url),
