@@ -102,6 +102,7 @@ class User:
         """
         if url is not None:
             path = f"{url}/static/{self.__u_id}.jpg"
+            # path = f"/static/{self.__u_id}.jpg"
             if not os.path.isfile(path):
                 path = None
         else:
