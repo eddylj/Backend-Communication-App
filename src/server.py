@@ -293,6 +293,17 @@ def unpin():
         message.message_unpin(data['token'], data['message_id'])
     )
 
+@APP.route("/message/sendlater", methods=['POST'])
+def send_later():
+    data = request.get_json()
+    token = data['token']
+    channel_id = data['channel_id']
+    message = data['message']
+    time_sent = data['time_sent']
+    return dumps(
+        message.message_send_later(token, channel_id, message, time_sent)
+    )
+
 # USER FUNCTIONS
 @APP.route("/user/profile", methods=['GET'])
 def profile():
@@ -348,6 +359,12 @@ def usersall():
     """
     return dumps(other.users_all(request.args.get('token'), request.url_root))
 
+@APP.route("/search", methods=['GET'])
+def search():
+    token = request.args.get('token')
+    query_str = request.args.get('query_str')
+    return dumps(other.search(token, query_str))
+
 @APP.route("/user/profile/uploadphoto", methods=['POST'])
 def upload_photo():
     """
@@ -365,9 +382,9 @@ def upload_photo():
         token, img_url, x_start, y_start, x_end, y_end
     ))
 
-@APP.route("/static/<path:filename>")
-def serve_image(filename):
-    return send_from_directory('', filename)
+@APP.route("/src/static/<path:path>")
+def send_js(path):
+    return send_from_directory('', path)
 
 @APP.route("/standup/start", methods=['POST'])
 def standup_start():
