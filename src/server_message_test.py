@@ -2,6 +2,7 @@
 This module contains tests for message routes in server.py.
 """
 import requests
+import time
 from echo_http_test import url
 
 user = {
@@ -1082,4 +1083,59 @@ def test_message_unreact_inputerror_http(url):
         'react_id' : react_id,
     }
     r = requests.post(f"{url}/message/unreact", json=unreact_payload)
+    assert r.status_code == 400
+
+def test_message_send_later_base_http(url, http_test_data):
+    "Base test which makes sure message_send_later in http outputs correctly"
+    start_payload = {
+        'token' : http_test_data.token(0),
+        'channel_id' : http_test_data.channel(0),
+        'message' : 'hallo guys',
+        'time_sent' : round(time.time()) + 40,
+    }
+    r = requests.post(f"{url}/message/sendlater", json=start_payload)
+    assert r.status_code == 200
+
+def test_message_send_later_fail_http(url, http_test_data):
+
+    # Invalid channel_id
+    start_payload = {
+        'token' : http_test_data.token(0),
+        'channel_id' : 123415,
+        'message' : 'hallo_guys',
+        'time_sent' : round(time.time()) + 3,
+    }
+    r = requests.post(f"{url}/message/sendlater", json=start_payload)
+    assert r.status_code == 400
+
+    start_payload = {
+        'token' : http_test_data.token(0),
+        'channel_id' : http_test_data.channel(0),
+        'message' : "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean "
+        "commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus "
+        "et magnis dis parturient montes, nascetur ridiculus mus. Donec quam "
+        "felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla "
+        "consequat massa quis enim. Donec pede justo, fringilla vel, aliquet "
+        "nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, "
+        "venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. "
+        "Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. "
+        "Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, "
+        "consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, "
+        "viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus "
+        "varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies "
+        "nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. "
+        "Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem "
+        "quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam.",
+        'time_sent' : round(time.time()) + 3,
+    }
+    r = requests.post(f"{url}/message/sendlater", json=start_payload)
+    assert r.status_code == 400
+
+    start_payload = {
+        'token' : http_test_data.token(0),
+        'channel_id' : http_test_data.channel(0),
+        'message' : 'hallo_guys',
+        'time_sent' : round(time.time()) - 5,
+    }
+    r = requests.post(f"{url}/message/sendlater", json=start_payload)
     assert r.status_code == 400
