@@ -298,10 +298,10 @@ def send_later():
     data = request.get_json()
     token = data['token']
     channel_id = data['channel_id']
-    message = data['message']
+    message_str = data['message']
     time_sent = data['time_sent']
     return dumps(
-        message.message_send_later(token, channel_id, message, time_sent)
+        message.message_send_later(token, channel_id, message_str, time_sent)
     )
 
 # USER FUNCTIONS
