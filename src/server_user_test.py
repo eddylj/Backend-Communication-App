@@ -19,27 +19,14 @@ user2 = {
 
 ############################# USER_PROFILE TESTS ###############################
 
-def test_user_profile_valid_http(url):
+def test_user_profile_valid_http(url, http_test_data):
     """ Base case for user_profile(). """
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    u_id = account['u_id']
-
-    expected = {
-        'u_id': u_id,
-        'email': 'validemail@gmail.com',
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-        'handle_str': 'haydeneverest'
-    }
-
     payload = {
-        'token': account['token'],
-        'u_id': u_id
+        'token': http_test_data.token(0),
+        'u_id': http_test_data.u_id(0)
     }
     r = requests.get(f"{url}/user/profile", params=payload)
-    profile = r.json()
-    assert profile == {'user': expected}
+    assert r.status_code == 200
 
 def test_user_profile_invalid_id_http(url):
     """
@@ -59,36 +46,17 @@ def test_user_profile_invalid_id_http(url):
 
 ########################## USER_PROFILE_SETNAME TESTS ##########################
 
-def test_user_setname_valid_http(url):
+def test_user_setname_valid_http(url, http_test_data):
     """ Base case for user_profile_setname() """
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token = account['token']
-    u_id = account['u_id']
-
+    token = http_test_data.token(0)
     # Changing name to Andras Arato
     setname_payload = {
         'token': token,
         'name_first': "Andras",
         'name_last': "Arato"
     }
-    requests.put(f"{url}/user/profile/setname", json=setname_payload)
-
-    expected = {
-        'u_id': u_id,
-        'email': 'validemail@gmail.com',
-        'name_first': 'Andras',
-        'name_last': 'Arato',
-        'handle_str': 'haydeneverest'
-    }
-
-    payload = {
-        'token': token,
-        'u_id': u_id
-    }
-    r = requests.get(f"{url}/user/profile", params=payload)
-    profile = r.json()
-    assert profile == {'user': expected}
+    r = requests.put(f"{url}/user/profile/setname", json=setname_payload)
+    assert r.status_code == 200
 
 def test_user_setname_invalid_http(url):
     """
@@ -138,35 +106,15 @@ def test_user_setname_repeated_http(url):
 
 ########################## USER_PROFILE_SETEMAIL TESTS #########################
 
-def test_user_setemail_valid_http(url):
+def test_user_setemail_valid_http(url, http_test_data):
     """ Base case for user_profile_setemail(). """
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token = account['token']
-    u_id = account['u_id']
-
     # Changing email
     email_payload = {
-        'token': token,
-        'email': "alsovalid@gmail.com"
+        'token': http_test_data.token(0),
+        'email': "another@gmail.com"
     }
-    requests.put(f"{url}/user/profile/setemail", json=email_payload)
-
-    expected = {
-        'u_id': u_id,
-        'email': 'alsovalid@gmail.com',
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-        'handle_str': 'haydeneverest'
-    }
-
-    payload = {
-        'token': token,
-        'u_id': u_id
-    }
-    r = requests.get(f"{url}/user/profile", params=payload)
-    profile = r.json()
-    assert profile == {'user': expected}
+    r = requests.put(f"{url}/user/profile/setemail", json=email_payload)
+    assert r.status_code == 200
 
 def test_user_setemail_invalid_http(url):
     """
@@ -185,22 +133,6 @@ def test_user_setemail_invalid_http(url):
     }
     response = requests.put(f"{url}/user/profile/setemail", json=email_payload)
     assert response.status_code == 400
-
-    expected = {
-        'u_id': u_id,
-        'email': 'validemail@gmail.com',
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-        'handle_str': 'haydeneverest'
-    }
-
-    payload = {
-        'token': token,
-        'u_id': u_id
-    }
-    r = requests.get(f"{url}/user/profile", params=payload)
-    profile = r.json()
-    assert profile == {'user': expected}
 
 def test_user_setemail_email_taken_http(url):
     """
@@ -236,34 +168,14 @@ def test_user_setemail_repeated_http(url):
 
 ######################### USER_PROFILE_SETHANDLE TESTS #########################
 
-def test_user_sethandle_valid_http(url):
+def test_user_sethandle_valid_http(url, http_test_data):
     """ Base case for user_profile_sethandle() """
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token = account['token']
-    u_id = account['u_id']
-
     handle_payload = {
-        'token': token,
+        'token': http_test_data.token(0),
         'handle_str': "everesthayden"
     }
     r = requests.put(f"{url}/user/profile/sethandle", json=handle_payload)
-
-    expected = {
-        'u_id': u_id,
-        'email': 'validemail@gmail.com',
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-        'handle_str': 'everesthayden'
-    }
-
-    payload = {
-        'token': token,
-        'u_id': u_id
-    }
-    r = requests.get(f"{url}/user/profile", params=payload)
-    profile = r.json()
-    assert profile == {'user': expected}
+    assert r.status_code == 200
 
 def test_user_sethandle_invalid_http(url):
     """
