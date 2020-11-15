@@ -7,7 +7,7 @@ import hashlib
 import smtplib
 import ssl
 import jwt
-from data import data
+from data import data, User
 from error import InputError
 from other import is_valid, SECRET
 
@@ -18,8 +18,8 @@ def auth_login(email, password):
     the user to remain authenticated.
 
     Parameters:
-        email (str)     : User's email
-        password (str)  : User's password
+        email       (str)   : User's email
+        password    (str)   : User's password
 
     Returns:
         {u_id (int), token (str)}:
@@ -33,22 +33,26 @@ def auth_login(email, password):
                 - Email entered does not belong to a user.
                 - Password is not correct.
     """
-    for (index, user) in enumerate(data['users']):
-        if user['email'] == email and validate_pw(user, password):
-            for token in data['tokens']:
-                if jwt.decode(token, SECRET, algorithms='HS256')['u_id'] == index:
-                    return {
-                        'u_id': index,
-                        'token': token,
-                    }
-            payload = {'u_id': index, 'session': time()}
-            token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
-            data['tokens'].append(token)
-            return {
-                'u_id': index,
-                'token': token,
-            }
-    raise InputError
+    # Checking if a user is registered with the provided email.
+    user = data['users'].get_user(email=email)
+
+    # Checking if provided password matches up.
+    if not validate_pw(user, password):
+        raise InputError
+
+    # Checking if user is already logged in.
+    u_id = user.get_id()
+    try:
+        token = data['tokens'][u_id]
+    except KeyError:
+        payload = {'u_id': u_id, 'session': time()}
+        token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
+        data['tokens'][u_id] = token
+
+    return {
+        'u_id': u_id,
+        'token': token
+    }
 
 def validate_pw(user, password):
     """
@@ -56,15 +60,15 @@ def validate_pw(user, password):
     password hash stored in the specified user's data.
 
     Parameters:
-        user (dict)     : User's stored data.
-        password (str)  : Password being checked against data.
+        user        (dict)  : User's stored data.
+        password    (str)   : Password being checked against data.
 
     Returns:
         (bool): Whether or not the entered password's hash matches the stored
                 hash.
     """
     password = hashlib.sha256(password.encode())
-    return password.digest() == user['password'].digest()
+    return password.hexdigest() == user.get_password().hexdigest()
 
 def auth_logout(token):
     """
@@ -73,16 +77,23 @@ def auth_logout(token):
     otherwise false.
 
     Parameters:
-        token (str) : User's authorisation hash.
+        token   (str)   : User's authorisation hash.
 
     Returns:
         {is_success (bool)}:
             Whether or not token does correspond to an active token.
     """
+    # Checking if token is valid.
     try:
-        data['tokens'].remove(token)
+        u_id = jwt.decode(token, SECRET, algorithms='HS256')['u_id']
+    except jwt.exceptions.DecodeError:
+        return {'is_success': False}
+
+    # Checking if token is active.
+    try:
+        del data['tokens'][u_id]
         return {'is_success': True}
-    except ValueError:
+    except KeyError:
         return {'is_success': False}
 
 def auth_register(email, password, name_first, name_last):
@@ -96,10 +107,10 @@ def auth_register(email, password, name_first, name_last):
     characters if needed to stay within the 20 character limit.
 
     Parameters:
-        email (str)     : User's email
-        password (str)  : User's password
-        name_first (str): User's first name
-        name_last (str) : User's last name
+        email       (str)   : User's email
+        password    (str)   : User's password
+        name_first  (str)   : User's first name
+        name_last   (str)   : User's last name
 
     Returns:
         {u_id (int), token (str)}:
@@ -117,50 +128,42 @@ def auth_register(email, password, name_first, name_last):
                 - name_last is not between 1 and 50 characters inclusively
                   in length
     """
-    u_id = len(data['users'])
+    u_id = data['users'].num_users()
+
+    if not (1 <= len(name_first) <= 50 and 1 <= len(name_last) <= 50):
+        raise InputError
 
     if not is_valid(email):
         raise InputError
 
+    is_valid_password(password)
+    password = hashlib.sha256(password.encode())
+
+    if data['users'].is_user(email=email):
+        raise InputError
+
+    # Consider changing to data['users']['by_name']
     number = 0
-    for user in data['users']:
-        if user['email'] == email:
-            raise InputError
-        if (user['name_first'] == name_first and
-                user['name_last'] == name_last):
+    for _, user in data['users'].list_all().items():
+        if user.get_name() == f"{name_first} {name_last}":
             number += 1
 
-    if len(password) < 6:
-        raise InputError
+    new_user = User(
+        u_id, email, password, name_first, name_last,
+        handle_str=(name_first + name_last)[:20].lower()
+    )
 
-    if not 1 <= len(name_first) <= 50:
-        raise InputError
-
-    if not 1 <= len(name_last) <= 50:
-        raise InputError
-
-    new_user = {
-        'u_id': u_id,
-        'email': email,
-        'password': hashlib.sha256(password.encode()),
-        'name_first': name_first,
-        'name_last': name_last,
-        'handle_str': (name_first + name_last)[:20].lower(),
-        'permission_id' : 2,
-    }
-
-    # Permission_id for owner (automatically for u_id 0)
     if u_id == 0:
-        new_user['permission_id'] = 1
+        new_user.set_permissions(1)
 
     if number != 0:
-        new_user['handle_str'] = new_handle(new_user['handle_str'], number)
+        new_user.set_handle(new_handle(new_user.get_handle(), number))
 
-    data['users'].append(new_user)
+    data['users'].add_user(new_user)
 
     payload = {'u_id': u_id, 'session': time()}
     token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
-    data['tokens'].append(token)
+    data['tokens'][u_id] = token
 
     return {
         'u_id': u_id,
@@ -185,7 +188,7 @@ def auth_passwordreset_request(email):
     after 10 minutes.
 
     Parameters:
-        email (str): User's email
+        email (str) : User's email
 
     Returns:
         {}: An empty dictionary if the code was sent successfully.
@@ -193,31 +196,42 @@ def auth_passwordreset_request(email):
     Raises:
         InputError: If no user is registered with the provided email.
     """
-    for user in data['users']:
-        if user['email'] == email:
-            authenticator = "flockrauth@gmail.com"
-            password = "7P9adNdsvdVYgRu"
-            with start_email_server() as server:
-                server.login(authenticator, password)
-                payload = {
-                    'u_id': user['u_id'],
-                    'exp': time() + 600
-                }
-                reset_code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
-                message = ("Subject: Flockr password reset\n\n"
-                           "Your password reset code is: " + reset_code + "\n"
-                           "This code expires in 10 minutes.")
+    user = data['users'].get_user(email=email)
 
-                server.sendmail(authenticator, email, message)
-                user['pw_reset'] = True
-                # Might not work, needs testing
-                def end_reset(user):
-                    user.pop('pw_reset', None)
-                threading.Timer(600, end_reset, [user])
-                server.quit()
-                return {}
+    authenticator = "flockrauth@gmail.com"
+    password = "7P9adNdsvdVYgRu"
+    with start_email_server() as server:
+        server.login(authenticator, password)
 
-    raise InputError
+        # Impractical to test, but here is the version with an expiring code
+        # payload = {
+        #     'u_id': user.get_id(),
+        #     'exp': time() + 600
+        # }
+        # code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
+        # message = ("Subject: Flockr password reset\n\n"
+        #            "Your password reset code is: " + code + "\n"
+        #            "This code expires in 10 minutes.")
+
+        # server.sendmail(authenticator, email, message)
+        # user.set_reset_status(True)
+        # # Might not work, needs testing
+        # def end_reset(user):
+        #     user.set_reset_status(False)
+        # threading.Timer(600, end_reset, [user])
+
+        payload = {
+            'u_id': user.get_id(),
+            'exp': time() + 600
+        }
+        code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
+        message = ("Subject: Flockr password reset\n\n"
+                   "Your password reset code is: " + code + "\n")
+        server.sendmail(authenticator, email, message)
+        user.set_reset_status(True)
+        server.quit()
+
+    return {}
 
 # Consider adding either:
 #   - Logout after password reset
@@ -228,9 +242,9 @@ def auth_passwordreset_reset(reset_code, new_password):
     new password if the reset code can be verified.
 
     Parameters:
-        reset_code (str)    : Code which was sent to the user's email through
-                              auth_passwordreset_request().
-        new_password (str)  : New password to replace old.
+        reset_code      (str)   : Code which was sent to the user's email
+                                  through auth_passwordreset_request().
+        new_password    (str)   : New password to replace old.
 
     Returns:
         {}: An empty dictionary if the user's password was reset successfully.
@@ -248,27 +262,29 @@ def auth_passwordreset_reset(reset_code, new_password):
         u_id = jwt.decode(reset_code, SECRET, algorithms='HS256')['u_id']
     except (jwt.exceptions.DecodeError, jwt.exceptions.ExpiredSignatureError):
         raise InputError
-    user = data['users'][u_id]
-    if "pw_reset" not in user:
+
+    user = data['users'].get_user(u_id=u_id)
+
+    if not user.get_reset_status():
         raise InputError
 
     is_valid_password(new_password)
     new_password = hashlib.sha256(new_password.encode())
-    if user['password'].hexdigest() == new_password.hexdigest():
+    if user.get_password().hexdigest() == new_password.hexdigest():
         raise InputError
-    user['password'] = new_password
-    del user["pw_reset"]
+    user.set_password(new_password)
+    user.set_reset_status(False)
 
     return {}
 
 def is_valid_password(password):
     """
-    Checks if a password is valid (6 or more characters in length).
+    Checks if a password is valid (6 or more characters in length). Raises
+    InputError if not.
     """
     if len(password) < 6:
         raise InputError
     return True
-
 
 def new_handle(handle, num):
     """
@@ -277,8 +293,8 @@ def new_handle(handle, num):
     within the 20 character limit.
 
     Parameters:
-        handle (str): Handle string
-        num (int)   : Integer to be appended to handle
+        handle  (str)   : Handle string
+        num     (int)   : Integer to be appended to handle
 
     Returns:
         (str): The newly generated handle.

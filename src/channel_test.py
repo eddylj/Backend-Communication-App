@@ -7,7 +7,7 @@ import channel
 import channels
 import message
 from error import InputError, AccessError
-from other import clear, SECRET
+from other import clear
 
 user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user1 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
@@ -17,133 +17,91 @@ user3 = ('alsoalsovalid@gmail.com', '1234abc!@#', 'Mark', 'Head')
 ############################# CHANNEL_INVITE TESTS #############################
 
 # BASE CASE
-def test_channel_invite_valid():
+def test_channel_invite_valid(test_data):
     """
-    Base test for channel_invite
+    Base test for channel_invite.
     """
-    clear()
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    print(SECRET)
-    print(token1)
-    u_id1 = account1['u_id']
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id0 = test_data.u_id(0)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    print(token2)
-    u_id2 = account2['u_id']
+    channel.channel_invite(token0, channel_id, u_id1)
 
-    channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
-
-    user1_details = {
-        'u_id': u_id1,
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-    }
-
-    user2_details = {
-        'u_id': u_id2,
-        'name_first': 'Andras',
-        'name_last': 'Arato',
-    }
-
-    passed = {
-        'name': 'test channel',
-        'owner_members': [user1_details],
-        'all_members': [user1_details, user2_details]
-    }
-
-    channel.channel_join(token2, channel_id)
-
-    assert channel.channel_details(token1, channel_id) == passed
+    details = channel.channel_details(token1, channel_id)
+    assert len(details['all_members']) == 2
+    assert len(details['owner_members']) == 1
+    assert details['owner_members'][0]['u_id'] == u_id0
 
 # INVALID CHANNEL_ID
-def test_channel_invite_channel_invalid():
+def test_channel_invite_channel_invalid(test_data):
     """
-    Test channel_invite fails if the channel is invalid
+    Test channel_invite fails if the channel is invalid.
     """
-    clear()
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-
-    account2 = auth.auth_register(*user2)
-    u_id2 = account2['u_id']
-
-    channel_id = 1231512
+    token0 = test_data.token(0)
+    u_id1 = test_data.u_id(1)
+    # Channel_id guaranteed to be invalid
+    channel_id = test_data.channel(0) + test_data.channel(1) + 123
 
     with pytest.raises(InputError):
-        channel.channel_invite(token1, channel_id, u_id2)
+        channel.channel_invite(token0, channel_id, u_id1)
 
 # INVALID U_ID
-def test_channel_invite_user_invalid():
+def test_channel_invite_user_invalid(test_data):
     """
-    Test if channel_invite fails if the u_id is invalid
+    Test if channel_invite fails if the u_id is invalid.
     """
-    clear()
-    account = auth.auth_register(*user)
-    token = account['token']
-    u_id = account['u_id']
-
-    channel_id = channels.channels_create(token, 'test channel', True)['channel_id']
+    token = test_data.token(0)
+    channel_id = test_data.channel(0)
+    # u_id guaranteed to be invalid
+    u_id = test_data.u_id(0) + test_data.u_id(1) + 123
 
     with pytest.raises(InputError):
-        channel.channel_invite(token, channel_id, u_id + 1)
+        channel.channel_invite(token, channel_id, u_id)
 
     with pytest.raises(InputError):
         channel.channel_invite(token, channel_id, u_id * -1)
 
 # INVITING YOURSELF
-def test_channel_invite_self_invite():
+def test_channel_invite_self_invite(test_data):
     """
-    Test channel_invite fails if you invite yourself
+    Test channel_invite fails if you invite yourself.
     """
-    clear()
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-
-    channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
+    token = test_data.token(0)
+    u_id = test_data.u_id(0)
+    channel_id = test_data.channel(0)
 
     with pytest.raises(InputError):
-        channel.channel_invite(token1, channel_id, u_id1)
+        channel.channel_invite(token, channel_id, u_id)
 
 # INVITING WHILE NOT BEING A MEMBER
-def test_channel_invite_non_member():
+def test_channel_invite_non_member(test_data):
     """
-    Test channel_invite fails when you aren't a member of the channel being invite to
+    Test channel_invite fails when you aren't a member of the channel being
+    invite to.
     """
-    clear()
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
+    token0 = test_data.token(0)
+    u_id1 = test_data.u_id(1)
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-
-    account3 = auth.auth_register(*user3)
-    u_id3 = account3['u_id']
-
-    channel_id = channels.channels_create(token1, 'test channel', False)['channel_id']
+    channel_id = test_data.channel(1)
 
     with pytest.raises(AccessError):
-        channel.channel_invite(token2, channel_id, u_id3)
+        channel.channel_invite(token0, channel_id, u_id1)
 
 # INVITING A PERSON THAT'S ALREADY A MEMBER
-def test_channel_invite_already_member():
+def test_channel_invite_already_member(test_data):
     """
-    Test channel_invite fails when you invite an existing member
+    Test channel_invite fails when you invite an existing member.
     """
-    clear()
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    channel_id = channels.channels_create(token1, 'test channel', True)['channel_id']
-    channel.channel_join(token2, channel_id)
+    channel.channel_join(token1, channel_id)
     with pytest.raises(InputError):
-        channel.channel_invite(token1, channel_id, u_id2)
+        channel.channel_invite(token0, channel_id, u_id1)
 
 ############################ CHANNEL_MESSAGES TESTS ############################
 
@@ -234,45 +192,26 @@ def test_channel_messages_pagination():
 ############################# CHANNEL_LEAVE TESTS ##############################
 
 # BASE CASE
-def test_channel_leave_valid():
+def test_channel_leave_valid(test_data):
     """
     Base test for channel_leave
     """
-    clear()
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id0 = test_data.u_id(0)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
+    # Add user1 to owners to check if they remain after they leave the channel.
+    channel.channel_join(token1, channel_id)
+    channel.channel_addowner(token0, channel_id, u_id1)
+    channel.channel_leave(token1, channel_id)
 
-    account3 = auth.auth_register(*user3)
-    token3 = account3['token']
-
-    new_channel = channels.channels_create(token1, 'test channel', True)
-    channel_id = new_channel.get('channel_id')
-    channel.channel_join(token2, channel_id)
-    channel.channel_join(token3, channel_id)
-
-    # Adds user2 to owners to check if they remain after they leave the channel.
-    channel.channel_addowner(token1, channel_id, u_id2)
-    channel.channel_leave(token2, channel_id)
-    # User3 remains a normal member
-    channel.channel_leave(token3, channel_id)
-
-    user1_details = {
-        'u_id': u_id1,
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-    }
-    passed = {
-        'name': 'test channel',
-        'owner_members': [user1_details],
-        'all_members': [user1_details]
-    }
-
-    assert channel.channel_details(token1, channel_id) == passed
+    details = channel.channel_details(token0, channel_id)
+    assert len(details['all_members']) == 1
+    assert details['all_members'][0]['u_id'] == u_id0
+    assert len(details['owner_members']) == 1
+    assert details['owner_members'][0]['u_id'] == u_id0
 
 # INVALID CHANNEL
 def test_channel_leave_invalid_channel():
@@ -306,50 +245,31 @@ def test_channel_leave_not_member():
 ############################ CHANNEL_DETAILS TESTS #############################
 
 # BASE CASE
-def test_channel_details_valid():
+def test_channel_details_valid(test_data):
     """
     Base test for channel_details
     """
-    clear()
-    # Register two users
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id0 = test_data.u_id(0)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-    account2 = auth.auth_register(*user2)
-    u_id2 = account2['u_id']
+    details = channel.channel_details(token0, channel_id)
+    assert details['name'] == "Chan1"
+    assert len(details['owner_members']) == 1
+    assert details['owner_members'][0]["u_id"] == u_id0
+    assert len(details['all_members']) == 1
+    assert details['all_members'][0]["u_id"] == u_id0
 
-    # Create a channel with user1
-    new_channel = channels.channels_create(token1, "Test Channel", True)
-    channel_id = new_channel['channel_id']
+    channel.channel_join(token1, channel_id)
 
-    user1_details = {
-        'u_id': u_id1,
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-    }
-    user2_details = {
-        'u_id': u_id2,
-        'name_first': 'Andras',
-        'name_last': 'Arato',
-    }
-    passed = {
-        'name': 'Test Channel',
-        'owner_members': [user1_details],
-        'all_members': [user1_details],
-    }
-    # user1 owner, user1 member
-    assert channel.channel_details(token1, channel_id) == passed
-
-    channel.channel_invite(token1, channel_id, u_id2)
-
-    passed = {
-        'name': 'Test Channel',
-        'owner_members': [user1_details],
-        'all_members': [user1_details, user2_details],
-    }
-
-    assert channel.channel_details(token1, channel_id) == passed
+    details = channel.channel_details(token0, channel_id)
+    assert len(details['owner_members']) == 1
+    assert details['owner_members'][0]['u_id'] == u_id0
+    assert len(details['all_members']) == 2
+    assert details['all_members'][0]['u_id'] in [u_id0, u_id1]
+    assert details['all_members'][1]['u_id'] in [u_id0, u_id1]
 
 # INVALID CHANNEL
 def test_channel_details_invalid_channel():
@@ -386,40 +306,24 @@ def test_channel_details_not_member():
 ############################# CHANNEL_JOIN TESTS ###############################
 
 # BASE CASE
-def test_channel_join_valid():
+def test_channel_join_valid(test_data):
     """
     Base test for channel_join
     """
-    clear()
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id0 = test_data.u_id(0)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
+    channel.channel_join(token1, channel_id)
 
-    new_channel = channels.channels_create(token1, 'test channel', True)
-    channel_id = new_channel['channel_id']
-    channel.channel_join(token2, channel_id)
-
-    user1_details = {
-        'u_id': u_id1,
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-    }
-    user2_details = {
-        'u_id': u_id2,
-        'name_first': 'Andras',
-        'name_last': 'Arato',
-    }
-    passed = {
-        'name': 'test channel',
-        'owner_members': [user1_details],
-        'all_members': [user1_details, user2_details]
-    }
-
-    assert channel.channel_details(token1, channel_id) == passed
+    details = channel.channel_details(token0, channel_id)
+    assert len(details['all_members']) == 2
+    assert details['all_members'][0]['u_id'] in [u_id0, u_id1]
+    assert details['all_members'][1]['u_id'] in [u_id0, u_id1]
+    assert len(details['owner_members']) == 1
+    assert details['owner_members'][0]['u_id'] == u_id0
 
 # INVALID CHANNEL
 def test_channel_join_invalid_channel():
@@ -467,42 +371,26 @@ def test_channel_join_already_member():
 ########################### CHANNEL_ADDOWNER TESTS #############################
 
 # BASE CASE
-def test_channel_addowner_valid():
+def test_channel_addowner_valid(test_data):
     """
     Base test for channel_addowner
     """
-    clear()
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id0 = test_data.u_id(0)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
+    channel.channel_join(token1, channel_id)
+    channel.channel_addowner(token0, channel_id, u_id1)
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    new_channel = channels.channels_create(token1, 'test channel', True)
-    channel_id = new_channel['channel_id']
-    channel.channel_join(token2, channel_id)
-    channel.channel_addowner(token1, channel_id, u_id2)
-
-    user1_details = {
-        'u_id': u_id1,
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-    }
-    user2_details = {
-        'u_id': u_id2,
-        'name_first': 'Andras',
-        'name_last': 'Arato',
-    }
-    passed = {
-        'name': 'test channel',
-        'owner_members': [user1_details, user2_details],
-        'all_members': [user1_details, user2_details]
-    }
-
-    assert channel.channel_details(token1, channel_id) == passed
+    details = channel.channel_details(token0, channel_id)
+    assert len(details['owner_members']) == 2
+    assert details['owner_members'][0]['u_id'] in [u_id0, u_id1]
+    assert details['owner_members'][1]['u_id'] in [u_id0, u_id1]
+    assert len(details['all_members']) == 2
+    assert details['all_members'][0]['u_id'] in [u_id0, u_id1]
+    assert details['all_members'][1]['u_id'] in [u_id0, u_id1]
 
  # INVALID CHANNEL
 def test_channel_addowner_invalid_channel():
@@ -587,43 +475,26 @@ def test_channel_addowner_auth_not_owner():
 ########################## CHANNEL_REMOVEOWNER TESTS ###########################
 
 # BASE CASE
-def test_channel_removeowner_valid():
+def test_channel_removeowner_valid(test_data):
     """
     Base test for channel_removeowner
     """
-    clear()
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    u_id0 = test_data.u_id(0)
+    u_id1 = test_data.u_id(1)
+    channel_id = test_data.channel(0)
 
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
+    channel.channel_join(token1, channel_id)
+    channel.channel_addowner(token0, channel_id, u_id1)
+    channel.channel_removeowner(token1, channel_id, u_id0)
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    new_channel = channels.channels_create(token1, 'test channel', True)
-    channel_id = new_channel['channel_id']
-    channel.channel_join(token2, channel_id)
-    channel.channel_addowner(token1, channel_id, u_id2)
-    channel.channel_removeowner(token2, channel_id, u_id1)
-
-    user1_details = {
-        'u_id': u_id1,
-        'name_first': 'Hayden',
-        'name_last': 'Everest',
-    }
-    user2_details = {
-        'u_id': u_id2,
-        'name_first': 'Andras',
-        'name_last': 'Arato',
-    }
-    passed = {
-        'name': 'test channel',
-        'owner_members': [user2_details],
-        'all_members': [user1_details, user2_details]
-    }
-
-    assert channel.channel_details(token1, channel_id) == passed
+    details = channel.channel_details(token0, channel_id)
+    assert len(details['owner_members']) == 1
+    assert details['owner_members'][0]['u_id'] == u_id1
+    assert len(details['all_members']) == 2
+    assert details['all_members'][0]['u_id'] in [u_id0, u_id1]
+    assert details['all_members'][1]['u_id'] in [u_id0, u_id1]
 
 # INVALID CHANNEL
 def test_channel_removeowner_invalid_channel():

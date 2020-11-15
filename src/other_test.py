@@ -14,55 +14,26 @@ user3 = ('alsoalsovalid@gmail.com', '1234abc!@#', 'Mark', 'Head')
 
 ################################# CLEAR() TEST #################################
 
-def test_clear():
+def test_clear(test_data):
     """
     Unit test to see if data gets cleared after various function calls.
     """
-    other.clear()
-    # Create 2 users
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
+    token0 = test_data.token(0)
+    token1 = test_data.token(1)
+    channel_id = test_data.channel(0)
 
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    # Create channel
-    channel_id = channels.channels_create(token1, "Testing", True)['channel_id']
-
-    # Invite user 2 into the channel
-    channel.channel_invite(token1, channel_id, u_id2)
+    channel.channel_join(token1, channel_id)
 
     # Send messages
-    message.message_send(token1, channel_id, "Hello")
-    message.message_send(token2, channel_id, "Goodbye")
+    message.message_send(token0, channel_id, "Hello")
+    message.message_send(token1, channel_id, "Goodbye")
 
     other.clear()
-    assert data == {
-        'users': [],
-        'channels': [],
-        'tokens': [],
-        'messages' : [],
-    }
-
-############################## GET_ACTIVE() TEST ###############################
-
-def test_get_active():
-    """
-    Unit test to see if get_active returns the correct u_id given a token.
-    """
-    other.clear()
-    # Create 2 users
-    account1 = auth.auth_register(*user1)
-    token1 = account1['token']
-    u_id1 = account1['u_id']
-
-    account2 = auth.auth_register(*user2)
-    token2 = account2['token']
-    u_id2 = account2['u_id']
-
-    assert other.get_active(token1) == u_id1
-    assert other.get_active(token2) == u_id2
+    assert data['tokens'] == {}
+    assert data['users'].list_all() == {}
+    assert data['channels'].list_all() == {}
+    assert data['messages'].num_messages() == 0
+    assert data['messages'].num_messages(sent=True) == 0
 
 ############################### IS_VALID() TEST ################################
 
@@ -101,21 +72,24 @@ def test_users_all_valid():
             'email': 'validemail@gmail.com',
             'name_first': 'Hayden',
             'name_last': 'Everest',
-            'handle_str': 'haydeneverest'
+            'handle_str': 'haydeneverest',
+            'profile_img_url': None
         },
         {
             'u_id': u_id2,
             'email': 'alsovalid@gmail.com',
             'name_first': 'Andras',
             'name_last': 'Arato',
-            'handle_str': 'andrasarato'
+            'handle_str': 'andrasarato',
+            'profile_img_url': None
         },
         {
             'u_id': u_id3,
             'email': 'alsoalsovalid@gmail.com',
             'name_first': 'Mark',
             'name_last': 'Head',
-            'handle_str': 'markhead'
+            'handle_str': 'markhead',
+            'profile_img_url': None
         }
     ]
 
@@ -242,6 +216,16 @@ def test_search_valid():
 
     assert len(other.search(token, "ello")['messages']) == 5
     assert len(other.search(token, "ThisShouldNotBeFound")['messages']) == 0
+
+def test_search_invalid_query(test_data):
+    """ Test for an empty string passed into search() """
+    token = test_data.token(0)
+    channel_id = test_data.channel(0)
+    
+    message.message_send(token, channel_id, "Hello!")
+
+    with pytest.raises(InputError):
+        other.search(token, "")
 
 def test_search_invalid_token():
     """

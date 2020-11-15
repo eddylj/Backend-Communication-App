@@ -1,3 +1,7 @@
+"""
+Conftest file which holds a pytest fixture which registers two users and creates
+a channel for each of them.
+"""
 import pytest
 import auth
 import channels
@@ -7,19 +11,35 @@ user0 = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 user1 = ('alsovalid@gmail.com', 'aW5Me@l!', 'Andras', 'Arato')
 
 class Data:
+    """
+    Barebones data object which holds the data returned by register, as well
+    as the IDs of channels created in the fixture. For simplicity, there are
+    only two users, User 0 and User 1, who have tokens (0 and 1 respectively)
+    as well as a channel each (likewise, 0 and 1 respectively).
+    """
     def __init__(self, users, chans):
-        self.users = users
-        self.channels = chans
+        self.__users = users
+        self.__channels = chans
 
-    def token(self, user):
-        return self.users[user]['token']
+    def token(self, user_number):
+        """ Gets the token of the nth user. """
+        return self.__users[user_number]['token']
 
-    def u_id(self, user):
-        return self.users[user]['u_id']
+    def channel(self, user_number):
+        """ Gets the channel created by the nth user. """
+        return self.__channels[user_number]
 
-# Pytest fixture to always register 2 users and create 2 channels.
+    def u_id(self, user_number):
+        """ Gets the u_id of the nth user. """
+        return self.__users[user_number]['u_id']
+
 @pytest.fixture
 def test_data():
+    """
+    Pytest fixture which registers two users and creates a channel for each of
+    them. The resulting data is then passed to the test functions as a Data
+    object.
+    """
     clear()
 
     users = register([user0, user1])

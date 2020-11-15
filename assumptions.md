@@ -12,6 +12,9 @@
     - If the number puts the handle over the 20 character limit, the number would replace characters at the end of the handle string instead.
 ### auth_passwordreset_request()
 - If an email is given which does not refer to a registered account, then raise InputError
+- Reset codes will expire after 10 minutes.
+### auth_passwordreset_request()
+- If the new password is the same as the existing one, raise InputError.
 
 ## Channel
 ### channel_invite()
@@ -55,10 +58,14 @@
 - the owner of the flockr can also unpin messages despite not being the owner of the channel, however, they must be in the channel
 - only owners in the channel can unpin
 ### message_react()
-- the authorised user is the user who sends the message
+- The user reacting has to be in the channel where the message was sent. raise AccessError otherwise.
+- If no message with the passed message_id exists, raise InputError.
+^I think this makes more sense^
 ### message_unreact()
-- the authorised user is the user who sends the message
-
+- The user unreacting has to be in the channel where the message was sent. raise AccessError otherwise.
+- If no message with the passed message_id exists, raise InputError.
+^I think this makes more sense^
+- If the user hasn't reacted with an ID of react_id, raise InputError
 
 ## User
 ### user_profile_setname()
@@ -73,6 +80,7 @@
 
 ## Other
 ### search()
+- Query_str cannot be blank/empty. Raise InputError if it is.
 - Searches for messages which contain the query_str, not limited to an exact match.
 - Case insensitive.
 ## Server
