@@ -1109,7 +1109,7 @@ def test_message_unreact_invalid_react_id():
     with pytest.raises(InputError):
         message.message_unreact(token1, msg_id1, 123415)
 
-def test_message_unreact_already_active_react_id():
+def test_message_unreact_already_active_react_id(test_data):
     '''
     Test case for when the message is unreacted and is being unreacted again
     '''
