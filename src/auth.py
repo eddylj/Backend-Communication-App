@@ -33,10 +33,7 @@ def auth_login(email, password):
                 - Password is not correct.
     """
     # Checking if a user is registered with the provided email.
-    try:
-        user = data['users'].get_user(email=email)
-    except KeyError:
-        raise InputError
+    user = data['users'].get_user(email=email)
 
     # Checking if provided password matches up.
     if not validate_pw(user, password):
@@ -198,30 +195,39 @@ def auth_passwordreset_request(email):
     Raises:
         InputError: If no user is registered with the provided email.
     """
-    try:
-        user = data['users'].get_user(email=email)
-    except KeyError:
-        raise InputError
+    user = data['users'].get_user(email=email)
 
     authenticator = "flockrauth@gmail.com"
     password = "7P9adNdsvdVYgRu"
     with start_email_server() as server:
         server.login(authenticator, password)
+
+        # Impractical to test, but here is the version with an expiring code
+        # payload = {
+        #     'u_id': user.get_id(),
+        #     'exp': time() + 600
+        # }
+        # code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
+        # message = ("Subject: Flockr password reset\n\n"
+        #            "Your password reset code is: " + code + "\n"
+        #            "This code expires in 10 minutes.")
+
+        # server.sendmail(authenticator, email, message)
+        # user.set_reset_status(True)
+        # # Might not work, needs testing
+        # def end_reset(user):
+        #     user.set_reset_status(False)
+        # threading.Timer(600, end_reset, [user])
+
         payload = {
             'u_id': user.get_id(),
             'exp': time() + 600
         }
         code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
         message = ("Subject: Flockr password reset\n\n"
-                   "Your password reset code is: " + code + "\n"
-                   "This code expires in 10 minutes.")
-
+                   "Your password reset code is: " + code + "\n")
         server.sendmail(authenticator, email, message)
         user.set_reset_status(True)
-        # Might not work, needs testing
-        def end_reset(user):
-            user.set_reset_status(False)
-        threading.Timer(600, end_reset, [user])
         server.quit()
 
     return {}
@@ -256,10 +262,7 @@ def auth_passwordreset_reset(reset_code, new_password):
     except (jwt.exceptions.DecodeError, jwt.exceptions.ExpiredSignatureError):
         raise InputError
 
-    try:
-        user = data['users'].get_user(u_id=u_id)
-    except KeyError:
-        raise InputError
+    user = data['users'].get_user(u_id=u_id)
 
     if not user.get_reset_status():
         raise InputError

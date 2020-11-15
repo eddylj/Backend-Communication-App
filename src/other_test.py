@@ -217,6 +217,16 @@ def test_search_valid():
     assert len(other.search(token, "ello")['messages']) == 5
     assert len(other.search(token, "ThisShouldNotBeFound")['messages']) == 0
 
+def test_search_invalid_query(test_data):
+    """ Test for an empty string passed into search() """
+    token = test_data.token(0)
+    channel_id = test_data.channel(0)
+    
+    message.message_send(token, channel_id, "Hello!")
+
+    with pytest.raises(InputError):
+        other.search(token, "")
+
 def test_search_invalid_token():
     """
     Test for invalid token passed into search().

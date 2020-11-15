@@ -27,19 +27,14 @@ class User:
         - reset_status  (bool)      : Whether or not the user requested a
                                       password reset in the last 10 minutes.
     """
-    def __init__(self, u_id, email, password, name_first, name_last, handle_str,
-                 permission_id=None):
-
-        if permission_id is None:
-            permission_id = 2
-
+    def __init__(self, u_id, email, password, name_first, name_last, handle_str):
         self.__u_id = u_id
         self.__email = email
         self.__password = password
         self.__name_first = name_first
         self.__name_last = name_last
         self.__handle_str = handle_str
-        self.__permission_id = permission_id
+        self.__permission_id = 2
         self.__channels = Channels()
         self.__reset_status = False
 
@@ -147,7 +142,6 @@ class Users:
                 return self.__users_by_id[u_id]
             if email is not None:
                 return self.__users_by_email[email]
-            raise Exception("Must provide a parameter to Users.get_user()")
         except KeyError:
             raise InputError
 
@@ -163,7 +157,6 @@ class Users:
             if email is not None:
                 _ = self.__users_by_email[email]
                 return True
-            raise Exception("Must provide a parameter to Users.is_user()")
         except KeyError:
             return False
 
@@ -172,18 +165,16 @@ class Users:
         self.__users_by_id[user.get_id()] = user
         self.__users_by_email[user.get_email()] = user
 
-    def remove_user(self, u_id=None, email=None):
+    def remove_user(self, u_id): #=None, email=None):
         """
         Given a unique identifier (ID or email), removes that user from the
         database.
         """
-        if u_id is not None:
-            user = self.get_user(u_id=u_id)
-        elif email is not None:
-            user = self.get_user(email=email)
-        else:
-            raise Exception("Must provide a parameter to Users.remove_user()")
-
+        # if u_id is not None:
+        #     user = self.get_user(u_id=u_id)
+        # elif email is not None:
+        #     user = self.get_user(email=email)
+        user = self.get_user(u_id=u_id)
         del self.__users_by_id[user.get_id()]
         del self.__users_by_email[user.get_email()]
 
@@ -336,9 +327,6 @@ class Channel:
 
     def standup_buffer(self, message_str):
         """ Adds a message string to the standup buffer. """
-        if self.__standup is None:
-            raise InputError
-
         if self.__standup['buffer']:
             self.__standup['buffer'] += "\n"
         self.__standup['buffer'] += message_str
@@ -387,10 +375,7 @@ class Channels:
         self.__channels[channel.get_id()] = channel
     def remove_channel(self, channel):
         """ Removes a channel from the internal dictionary. """
-        try:
-            del self.__channels[channel.get_id()]
-        except KeyError:
-            raise InputError
+        del self.__channels[channel.get_id()]
 
     def list_all(self):
         """
@@ -464,9 +449,6 @@ class Message:
         """ Changes the text contents of the message. """
         self.__message = new_message
 
-    def get_timestamp(self):
-        """ Gets the timestamp of the message. """
-        return self.__time_created
     def set_time(self, timestamp):
         """ Changes the timestamp of the message to the given one. """
         self.__time_created = timestamp
@@ -477,10 +459,8 @@ class Message:
         If there are no reacts with react_id under this message, InputError is
         raised.
         """
-        try:
-            return self.__reacts[react_id]
-        except IndexError:
-            raise InputError
+        return self.__reacts[react_id]
+
     def add_react(self, user_id, react_id):
         """
         Adds a react with react_id from the user with user_id to the message.

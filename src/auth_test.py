@@ -306,3 +306,21 @@ def test_auth_passwordreset_reset_invalid_pw(test_data):
 
     with pytest.raises(InputError):
         auth.auth_passwordreset_reset(reset_code, "123abc!@#")
+
+def test_passwordreset_no_request(test_data):
+    """
+    White-box test to test for an InputError when the user calling reset
+    hasn't made a request for a password reset.
+    """
+    token = test_data.token(0)
+    u_id = test_data.u_id(0)
+    auth.auth_logout(token)
+    
+    payload = {
+        'u_id': u_id,
+        'exp': time.time() + 600
+    }
+    reset_code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
+
+    with pytest.raises(InputError):
+        auth.auth_passwordreset_reset(reset_code, "y#51d*T")

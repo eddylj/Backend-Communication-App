@@ -23,7 +23,7 @@ class Data:
 
     def token(self, user_number):
         """ Gets the token of the nth user. """
-        return self.__users[user_id]['token']
+        return self.__users[user_number]['token']
 
     def channel(self, user_number):
         """ Gets the channel created by the nth user. """
@@ -31,7 +31,7 @@ class Data:
 
     def u_id(self, user_number):
         """ Gets the u_id of the nth user. """
-        return self.__users[user_id]['u_id']
+        return self.__users[user_number]['u_id']
 
 @pytest.fixture
 def test_data():
