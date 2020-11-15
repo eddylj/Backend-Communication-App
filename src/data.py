@@ -2,6 +2,7 @@
 Database for all users, channels, tokens and messages, stored in the global variable
 'data'
 """
+import bisect
 from error import InputError
 class User:
     """
@@ -364,8 +365,47 @@ class Message:
     def set_time(self, timestamp):
         self.__time_created = timestamp
 
-    def get_reacts(self):
-        return self.__reacts
+    def get_reacts(self, react_id):
+        return self.__reacts[react_id]
+    def add_react(self, user_id, react_id):
+        if react_id not in self.__reacts:
+            self.__reacts[react_id] = {
+                'react_id': react_id,
+                'u_ids': [],
+                'is_the_user_reacted': False
+            }
+        bisect.insort(self.__reacts[react_id]['u_ids'], user_id)
+        if user_id == self.__u_id:
+            self.__reacts[react_id]['is_the_user_reacted'] = True
+    def already_reacted(self, user_id, react_id):
+        def b_search(start, end, user_id):
+            if start >= end:
+                return None
+            mid = (start + end) // 2
+            u_id = self.__reacts[react_id]['u_ids'][mid]
+
+            if u_id == user_id:
+                return mid
+
+            if u_id < user_id:
+                return b_search(start, mid - 1, user_id)
+            return b_search(mid + 1, end, user_id)
+
+        try:
+            return b_search(0, len(self.__reacts[react_id]['u_ids']), user_id)
+        except KeyError:
+            raise InputError
+
+    def remove_react(self, user_id, react_id):
+        index = self.already_reacted(user_id, react_id)
+        if index is None:
+            raise InputError
+        if len(self.__reacts[react_id]['u_ids']) == 1:
+            del self.__reacts[react_id]
+            return
+        self.__reacts[react_id]['u_ids'].pop(index)
+        if user_id == self.__u_id:
+            self.__reacts[react_id]['is_the_user_reacted'] = False
 
     def is_pinned(self):
         return self.__is_pinned
@@ -379,7 +419,7 @@ class Message:
             'u_id': self.__u_id,
             'message': self.__message,
             'time_created': self.__time_created,
-            'reacts': self.__reacts,
+            'reacts': list(self.__reacts.values()),
             'is_pinned': self.__is_pinned,
         }
 
@@ -423,6 +463,8 @@ class Messages:
             return b_search(mid + 1, end, message_id)
 
         index = b_search(0, len(self.__messages_list), message_id)
+        if index is None:
+            raise InputError
         self.__messages_list.pop(index)
         self.__messages_dict[message_id] = None
 
