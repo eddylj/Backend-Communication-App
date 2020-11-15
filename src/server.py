@@ -85,7 +85,7 @@ def logout():
     )
 
 @APP.route("/auth/passwordreset/request", methods=['POST'])
-def request():
+def pw_request():
     """
     Route to flask server to request a password reset
     """
@@ -94,7 +94,7 @@ def request():
     return dumps(auth.auth_passwordreset_request(data['email']))
 
 @APP.route("/auth/passwordreset/reset", methods=['POST'])
-def request():
+def pw_reset():
     """
     Route to flask server to reset a password
     """
@@ -375,7 +375,7 @@ def standup_start():
     token = data['token']
     channel_id = data['channel_id']
     length = data['length']
-    return dumps(standup.standup_start(token, channel_id, length)
+    return dumps(standup.standup_start(token, channel_id, length))
 
 @APP.route("/standup/active", methods=['GET'])
 def standup_active():
@@ -389,7 +389,7 @@ def standup_send():
     token = data['token']
     channel_id = data['channel_id']
     message = data['message']
-    return dumps(standup.standup_send(token, channel_id, message)
+    return dumps(standup.standup_send(token, channel_id, message))
 
 if __name__ == "__main__":
     APP.run(port=0) # Do not edit this port
