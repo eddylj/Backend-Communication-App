@@ -28,7 +28,7 @@ def default_handler(err):
     response.content_type = 'application/json'
     return response
 
-APP = Flask(__name__, static_url_path='/static/')
+APP = Flask(__name__, static_url_path='/src/static/')
 CORS(APP)
 
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
@@ -55,9 +55,11 @@ def register():
     Route to flask server to register a user to the flockr
     """
     data = request.get_json()
-    return dumps(
-        auth.auth_register(data['email'], data['password'], data['name_first'], data['name_last'])
-    )
+    email = data['email']
+    password = data['password']
+    first_name = data['name_first']
+    last_name = data['name_last']
+    return dumps(auth.auth_register(email, password, first_name, last_name))
 
 @APP.route("/auth/login", methods=['POST'])
 def login():
@@ -101,23 +103,19 @@ def details():
     the channel and all the members of the channel
     """
     token = request.args.get('token')
-    channel_id = request.args.get('channel_id')
+    channel_id = int(request.args.get('channel_id'))
 
-    output = channel.channel_details(token, int(channel_id), request.url_root)
+    return dumps(channel.channel_details(token, channel_id, request.url_root))
 
 @APP.route("/channel/messages", methods=['GET'])
 def messages():
     """
     Route to flask server to get all the messages in the channel
     """
-    # token = request.args.get('token')
-    # channel_id = request.args.get('channel_id')
-    # start = request.args.get('start')
-
-    return dumps(
-        channel.channel_messages(request.args.get('token'), int(request.args.get('channel_id')), \
-            int(request.args.get('start')))
-    )
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    start = int(request.args.get('start'))
+    return dumps(channel.channel_messages(token, channel_id, start))
 
 
 @APP.route("/channel/leave", methods=['POST'])
@@ -159,18 +157,17 @@ def removeowner():
     Route to flask server to remove an owner from a channel
     """
     data = request.get_json()
-
-    return dumps(
-        channel.channel_removeowner(data['token'], data['channel_id'], data['u_id'])
-    )
-
+    token = data['token']
+    channel_id = data['channel_id']
+    u_id = data['u_id']
+    return dumps(channel.channel_removeowner(token, channel_id, u_id))
 
 # CHANNELS FUNCTIONS
 @APP.route("/channels/list", methods=['GET'])
 def clist():
     """
-    Route to flask server to list all the channels in the flockr that the user is
-    a part of
+    Route to flask server to list all the channels in the flockr that the user
+    is a part of.
     """
     # token = request.args.get('token')
 
@@ -244,28 +241,26 @@ def profile():
     """
     token = request.args.get('token')
     u_id = request.args.get('u_id')
-    output = user.user_profile(token, int(u_id), request.url_root)
-    # output = user.user_profile(token, int(u_id))
-    # img_url = output['user']['profile_img_url']
-    # output['user']['profile_img_url'] = str(request.url_root) + img_url
-    return dumps(output)
+    return dumps(user.user_profile(token, int(u_id), request.url_root))
 
 
 @APP.route("/user/profile/setname", methods=['PUT'])
 def setname():
     """
-    Route to flask server to allow a user to change their name in their profile on flockr
+    Route to flask server to allow a user to change their name in their profile
+    on flockr.
     """
     data = request.get_json()
-
-    return dumps(
-        user.user_profile_setname(data['token'], data['name_first'], data['name_last'])
-    )
+    token = data['token']
+    first_name = data['name_first']
+    last_name = data['name_last']
+    return dumps(user.user_profile_setname(token, first_name, last_name))
 
 @APP.route("/user/profile/setemail", methods=['PUT'])
 def setemail():
     """
-    Route to flask server to allow a user to change their email in their profile on flockr
+    Route to flask server to allow a user to change their email in their profile
+    on flockr.
     """
     data = request.get_json()
 
@@ -276,7 +271,8 @@ def setemail():
 @APP.route("/user/profile/sethandle", methods=['PUT'])
 def sethandle():
     """
-    Route to flask server to allow a user to change their handle in their profile on flockr
+    Route to flask server to allow a user to change their handle in their
+    profile on flockr.
     """
     data = request.get_json()
 
@@ -287,16 +283,14 @@ def sethandle():
 @APP.route("/users/all", methods=['GET'])
 def usersall():
     """
-    Route to flask server to list out all the users in the flockr and their associated
-    details
+    Route to flask server to list out all the users in the flockr and their
+    associated details.
     """
-    # token = request.args.get('token')
-
-    output = other.users_all(request.args.get('token'), request.url_root)
-    return dumps(output)
+    return dumps(other.users_all(request.args.get('token'), request.url_root))
 
 @APP.route("/user/profile/uploadphoto", methods=['POST'])
 def upload_photo():
+    """  """
     data = request.get_json()
     token = data['token']
     img_url = data['img_url']
@@ -306,11 +300,11 @@ def upload_photo():
     y_end = data['y_end']
     return dumps(user.user_profile_uploadphoto(
         token, img_url, x_start, y_start, x_end, y_end
-        ))
+    ))
 
 @APP.route("/static/<path:filename>")
 def serve_image(filename):
     return send_from_directory('', filename)
 
 if __name__ == "__main__":
-    APP.run(port=0, debug=True) # Do not edit this port
+    APP.run(port=0) # Do not edit this port

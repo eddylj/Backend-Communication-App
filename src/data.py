@@ -2,7 +2,6 @@
 Database for all users, channels, tokens and messages, stored in the global variable
 'data'
 """
-import threading
 import time
 import re
 import bisect

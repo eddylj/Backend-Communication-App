@@ -194,6 +194,12 @@ def message_send_later(caller_id, channel_id, message, time_sent):
     return {'message_id': message_id}
 
 def send_later_resolve(sender_id, message_id, channel, message):
+    """
+    Function which sends a message with a predetermined message_id. Works
+    similar to message_send(), just without any checks since the only time this
+    function is expected to be used is in message_send_later(), which has error
+    handling.
+    """
     timestamp = round(time.time())
 
     new_message = Message(message_id, channel, sender_id, message, timestamp)
