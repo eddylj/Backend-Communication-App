@@ -83,6 +83,27 @@ def logout():
         auth.auth_logout(data['token'])
     )
 
+# @APP.route("/auth/passwordreset/request", methods=['POST'])
+# def request():
+#     """
+#     Route to flask server to request a password reset
+#     """
+#     data = request.get_json()
+
+#     return dumps(
+#         auth.auth_passwordreset_request(data['email'])
+#     )
+
+# @APP.route("/auth/passwordreset/reset", methods=['POST'])
+# def request():
+#     """
+#     Route to flask server to reset a password
+#     """
+#     data = request.get_json()
+
+#     return dumps(
+#         auth.auth_passwordreset_reset(data['reset_code'], data['new_password'])
+#     )
 
 # CHANNEL FUNCTIONS
 @APP.route("/channel/invite", methods=['POST'])
@@ -231,6 +252,46 @@ def edit():
 
     return dumps(
         message.message_edit(data['token'], data['message_id'], data['message'])
+    )
+
+@APP.route("/message/react", methods=['POST'])
+def react():
+    """
+    Route to flask server to allow a user to react to a message in a channel
+    """
+    data = request.get_json()
+    return dumps(
+        message.message_react(data['token'], data['message_id'], data['react_id'])
+    )
+
+@APP.route("/message/unreact", methods=['POST'])
+def unreact():
+    """
+    Route to flask server to allow a user to unreact a message in a channel
+    """
+    data = request.get_json()
+    return dumps(
+        message.message_unreact(data['token'], data['message_id'], data['react_id'])
+    )
+
+@APP.route("/message/pin", methods=['POST'])
+def pin():
+    """
+    Route to flask server to allow a user to pin a message in a channel
+    """
+    data = request.get_json()
+    return dumps(
+        message.message_pin(data['token'], data['message_id'])
+    )
+
+@APP.route("/message/unpin", methods=['POST'])
+def unpin():
+    """
+    Route to flask server to allow a user to unpin a message in a channel
+    """
+    data = request.get_json()
+    return dumps(
+        message.message_unpin(data['token'], data['message_id'])
     )
 
 # USER FUNCTIONS

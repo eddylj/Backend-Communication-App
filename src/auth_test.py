@@ -9,6 +9,7 @@ from error import InputError
 from other import clear, SECRET
 from user import user_profile
 
+
 user = ('validemail@gmail.com', '123abc!@#', 'Hayden', 'Everest')
 
 ############################### AUTH_LOGIN TESTS ###############################

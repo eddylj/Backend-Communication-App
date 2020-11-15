@@ -11,6 +11,7 @@ from data import data, User
 from error import InputError
 from other import is_valid, SECRET
 
+
 def auth_login(email, password):
     """
     Given a registered user's email and password and generates a valid token for
