@@ -12,6 +12,7 @@ import channels
 import message
 import user
 import other
+import standup
 
 
 def default_handler(err):
@@ -83,27 +84,25 @@ def logout():
         auth.auth_logout(data['token'])
     )
 
-# @APP.route("/auth/passwordreset/request", methods=['POST'])
-# def request():
-#     """
-#     Route to flask server to request a password reset
-#     """
-#     data = request.get_json()
+@APP.route("/auth/passwordreset/request", methods=['POST'])
+def request():
+    """
+    Route to flask server to request a password reset
+    """
+    data = request.get_json()
 
-#     return dumps(
-#         auth.auth_passwordreset_request(data['email'])
-#     )
+    return dumps(auth.auth_passwordreset_request(data['email']))
 
-# @APP.route("/auth/passwordreset/reset", methods=['POST'])
-# def request():
-#     """
-#     Route to flask server to reset a password
-#     """
-#     data = request.get_json()
+@APP.route("/auth/passwordreset/reset", methods=['POST'])
+def request():
+    """
+    Route to flask server to reset a password
+    """
+    data = request.get_json()
 
-#     return dumps(
-#         auth.auth_passwordreset_reset(data['reset_code'], data['new_password'])
-#     )
+    return dumps(
+        auth.auth_passwordreset_reset(data['reset_code'], data['new_password'])
+    )
 
 # CHANNEL FUNCTIONS
 @APP.route("/channel/invite", methods=['POST'])
@@ -351,7 +350,10 @@ def usersall():
 
 @APP.route("/user/profile/uploadphoto", methods=['POST'])
 def upload_photo():
-    """  """
+    """
+    Route to set a user's display photo, given a valid URL to an image and
+    valid dimensions to crop.
+    """
     data = request.get_json()
     token = data['token']
     img_url = data['img_url']
@@ -366,6 +368,28 @@ def upload_photo():
 @APP.route("/static/<path:filename>")
 def serve_image(filename):
     return send_from_directory('', filename)
+
+@APP.route("/standup/start", methods=['POST'])
+def standup_start():
+    data = request.get_json()
+    token = data['token']
+    channel_id = data['channel_id']
+    length = data['length']
+    return dumps(standup.standup_start(token, channel_id, length)
+
+@APP.route("/standup/active", methods=['GET'])
+def standup_active():
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    return dumps(standup.standup_active(token, channel_id))
+
+@APP.route("/standup/send", methods=['POST'])
+def standup_send():
+    data = request.get_json()
+    token = data['token']
+    channel_id = data['channel_id']
+    message = data['message']
+    return dumps(standup.standup_send(token, channel_id, message)
 
 if __name__ == "__main__":
     APP.run(port=0) # Do not edit this port

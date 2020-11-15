@@ -45,7 +45,7 @@ def auth_login(email, password):
     try:
         token = data['tokens'][u_id]
     except KeyError:
-        payload = {'u_id': u_id, 'session': time()}
+        payload = {'u_id': u_id, 'iat': time()}
         token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
         data['tokens'][u_id] = token
 
@@ -161,7 +161,7 @@ def auth_register(email, password, name_first, name_last):
 
     data['users'].add_user(new_user)
 
-    payload = {'u_id': u_id, 'session': time()}
+    payload = {'u_id': u_id, 'iat': time()}
     token = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
     data['tokens'][u_id] = token
 
@@ -222,7 +222,7 @@ def auth_passwordreset_request(email):
 
         payload = {
             'u_id': user.get_id(),
-            'exp': time() + 600
+            'iat': time()
         }
         code = jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
         message = ("Subject: Flockr password reset\n\n"
