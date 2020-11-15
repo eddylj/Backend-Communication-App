@@ -10,6 +10,11 @@
 ### auth_register()
 - If a handle is already taken (multiple people with same name), a number is added at the end to differentiate individual accounts.
     - If the number puts the handle over the 20 character limit, the number would replace characters at the end of the handle string instead.
+### auth_passwordreset_request()
+- If an email is given which does not refer to a registered account, then raise InputError
+- Reset codes will expire after 10 minutes.
+### auth_passwordreset_request()
+- If the new password is the same as the existing one, raise InputError.
 
 ## Channel
 ### channel_invite()
@@ -46,6 +51,21 @@
 - Edit updates the timestamp of the message
 - Edit raises InputError if passed message is the same as the existing message.
 - Edit does not change the original sender's ID if edited by a different user.
+### message_pin()
+- the owner of the flockr can also pin messages despite not being the owner of the channel, however, they must be in the channel
+- only owners in the channel can pin
+### message_unpin()
+- the owner of the flockr can also unpin messages despite not being the owner of the channel, however, they must be in the channel
+- only owners in the channel can unpin
+### message_react()
+- The user reacting has to be in the channel where the message was sent. raise AccessError otherwise.
+- If no message with the passed message_id exists, raise InputError.
+^I think this makes more sense^
+### message_unreact()
+- The user unreacting has to be in the channel where the message was sent. raise AccessError otherwise.
+- If no message with the passed message_id exists, raise InputError.
+^I think this makes more sense^
+- If the user hasn't reacted with an ID of react_id, raise InputError
 
 ## User
 ### user_profile_setname()
@@ -60,8 +80,21 @@
 
 ## Other
 ### search()
+- Query_str cannot be blank/empty. Raise InputError if it is.
 - Searches for messages which contain the query_str, not limited to an exact match.
 - Case insensitive.
 ## Server
 ### /message
 - Some black-box HTTP message tests which need to call /channel/messages for comparison cannot be done because of the latency affecting the accuracy of the timestamp.
+
+## Standup
+- Caller must be in the specified channel to use standup functions. If the caller isn't in the channel, AccessError gets raised.
+### standup_start()
+- Length inputs less than 1 are treated as InputErrors. Float inputs greater than 1 are rounded down to it's floor (largest integer not greater than it).
+- If the caller/user that started the standup leaves or logs out before it finishes, the final composite message still gets sent under their name.
+- If nothing was sent during the standup through standup_send, no message gets sent into the channel at the end.
+- On the other hand, if the composite message is longer than 1000 characters, it still gets sent at the conclusion of the standup.
+- The message sent at the end of standup is treated as a regular message that ignores the length limit. It can still be editted.
+### standup_send()
+- If a sender of a message leaves the channel before the standup finishes, their message still gets sent.
+- A user can join a channel mid-standup and send messages into it.

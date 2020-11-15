@@ -2,7 +2,6 @@
 This module contains tests for auth routes in server.py.
 """
 import requests
-from echo_http_test import url
 
 user = {
     'email': 'validemail@gmail.com',

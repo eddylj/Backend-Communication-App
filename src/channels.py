@@ -1,17 +1,18 @@
 '''
 List, listall and create functions
 '''
-from data import data
-from error import InputError, AccessError
-from other import get_active
+from data import data, Users, Channel
+from error import InputError
+from other import validate_token
 
-def channels_list(token):
+@validate_token
+def channels_list(caller_id):
     """
     Provide a list of all channels (and their associated details) that the
     caller is part of.
 
     Parameters:
-        token (str) : Caller's authorisation hash.
+        token   (str)   : Caller's authorisation hash.
 
     Returns:
         {
@@ -23,31 +24,18 @@ def channels_list(token):
     Raises:
         AccessError: if token is invalid.
     """
-    u_id = get_active(token)
-    if u_id is None:
-        raise AccessError
+    user = data['users'].get_user(u_id=caller_id)
 
-    channel_list = []
+    return {'channels': user.get_channels().list_all_details()}
 
-    for channel in data['channels']:
-        for member in channel['members']:
-            if member == u_id:
-                details = {
-                    'channel_id': channel['channel_id'],
-                    'name': channel['name']
-                }
-                channel_list.append(details)
-                break
-
-    return {'channels': channel_list}
-
-def channels_listall(token):
+@validate_token
+def channels_listall(*_):
     """
     Provide a list of all channels (and their associated details) in the entire
     flockr server.
 
     Parameters:
-        token (str) : Caller's authorisation hash.
+        token (str): Caller's authorisation hash.
 
     Returns:
         {
@@ -59,29 +47,18 @@ def channels_listall(token):
     Raises:
         AccessError: if token is invalid.
     """
-    if get_active(token) is None:
-        raise AccessError
+    return {'channels': data['channels'].list_all_details()}
 
-    channel_list = []
-
-    for channel in data['channels']:
-        details = {
-            'channel_id': channel['channel_id'],
-            'name': channel['name']
-        }
-        channel_list.append(details)
-
-    return {'channels': channel_list}
-
-def channels_create(token, name, is_public):
+@validate_token
+def channels_create(caller_id, name, is_public):
     """
     Creates a new channel with a specified name that is either a public or
     private.
 
     Parameters:
-        token (str)     : Caller's authorisation hash.
-        name (str)      : What the channel will be called.
-        is_public (bool): Whether or not the channel will be public.
+        token       (str) : Caller's authorisation hash.
+        name        (str) : What the channel will be called.
+        is_public   (bool): Whether or not the channel will be public.
 
     Returns:
         {channel_id}: A channel_id corresponding to the newly created channel.
@@ -93,20 +70,10 @@ def channels_create(token, name, is_public):
     if len(name) > 20:
         raise InputError
 
-    u_id = get_active(token)
-    if u_id is None:
-        raise AccessError
+    channel_id = data['channels'].num_channels()
+    caller = data['users'].get_user(u_id=caller_id)
+    new_channel = Channel(caller, channel_id, name, is_public)
 
-    channel_id = len(data['channels'])
-    new_channel = {
-        'channel_id' : channel_id,
-        'name' : name,
-        'owners' : [u_id],
-        'members' : [u_id],
-        'is_public' : is_public,
-        'messages': [],
-    }
-
-    data['channels'].append(new_channel)
+    data['channels'].add_channel(new_channel)
 
     return {'channel_id': channel_id}

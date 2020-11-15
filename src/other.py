@@ -1,6 +1,8 @@
 """
 Different Functions used throughout the program
 """
+import os
+import glob
 import re
 import time
 import hashlib
@@ -19,21 +21,40 @@ def clear():
     data['tokens'].clear()
     data['messages'].clear()
 
-def get_active(token):
+    images = glob.glob("/src/static/*.jpg")
+    for image in images:
+        os.remove(image)
+
+# Wrapper.validated attribute to skip validate_token taken from:
+# https://stackoverflow.com/questions/41206565/bypassing-a-decorator-for-unit-testing
+# EAFP style
+def validate_token(function):
     """
-    Checks if a token is active. Returns the corresponding u_id if it is active,
-    None otherwise.
+    Decorator function to check if a token is valid. Passes the caller_id back
+    to the function in place of the token if it is.
 
     Parameters:
         token (str) : Caller's authorisation hash.
-
-    Returns:
-        u_id (int)  : The corresponding u_id if token is active.
-        None        : If token isn't active.
     """
-    if token in data['tokens']:
-        return jwt.decode(token, SECRET, algorithms='HS256')['u_id']
-    return None
+    def wrapper(*args):
+        token = args[0]
+        # Checking if token is signed properly.
+        try:
+            caller_id = jwt.decode(token, SECRET, algorithms='HS256')['u_id']
+        except jwt.exceptions.DecodeError:
+            raise AccessError
+
+        # Checking if token is active.
+        try:
+            if token != data['tokens'][caller_id]:
+                raise AccessError
+        except KeyError:
+            raise AccessError
+
+        return function(caller_id, *args[1:])
+
+    wrapper.validated = function
+    return wrapper
 
 def is_valid(email):
     """
@@ -51,68 +72,49 @@ def is_valid(email):
     regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
     return re.search(regex, email)
 
-def users_all(token):
+@validate_token
+def users_all(_, url=None):
     """
     Function for returning all the information of the users
     """
-    if get_active(token) is None:
-        raise AccessError
+    return {'users': data['users'].list_all_details(url=url)}
 
-    users = []
-    for info in data['users']:
-        users.append(info)
-
-    for user in users:
-        del user['password']
-        del user['permission_id']
-
-    return {'users': users}
-
-def admin_userpermission_change(token, u_id, permission_id):
+@validate_token
+def admin_userpermission_change(caller_id, u_id, permission_id):
     """
     Function for changing admin user permission
     """
-
-    # If token is invalid
-    owner_id = get_active(token)
-    if owner_id is None:
-        raise AccessError
+    caller = data['users'].get_user(caller_id)
 
     # Not an owner of flockr
-    if data['users'][owner_id]['permission_id'] == 2:
+    if caller.get_permissions() != 1:
         raise AccessError
-
-    # Invalid u_id
-    if not -1 < u_id < len(data['users']):
-        raise InputError
 
     # Invalid permission_id
     if permission_id not in (1, 2):
         raise InputError
 
+    # Get target user. Also checks if they exist.
+    target = data['users'].get_user(u_id)
+
     # Change permission_id of u_id
-    data['users'][u_id]['permission_id'] = permission_id
+    target.set_permissions(permission_id)
 
     return {}
 
-def search(token, query_str):
+@validate_token
+def search(caller_id, query_str):
     """
     Function to find messages similar to query_str in all channels the caller is
     in. Case insensitive.
     """
-    u_id = get_active(token)
-    if u_id is None:
-        raise AccessError
+    if query_str == "":
+        raise InputError
 
-    result = []
+    results = []
+    channels = data['users'].get_user(caller_id).get_channels()
+    for _, channel in channels.list_all().items():
+        messages = channel.get_messages()
+        results.extend(messages.search_for(query_str))
 
-    for channel in data['channels']:
-        # All channels user is in
-        if u_id in channel['members']:
-            # Check through all messages
-            for message in channel['messages']:
-                # Check if current message matches query_str
-                if re.search(query_str, message['message'], re.IGNORECASE):
-                    result.append(message)
-
-    return {'messages': result}
+    return {'messages': results}
