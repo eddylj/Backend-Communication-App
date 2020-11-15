@@ -2,8 +2,11 @@
 Database for all users, channels, tokens and messages, stored in the global variable
 'data'
 """
+import re
 import bisect
+import os.path
 from error import InputError
+
 class User:
     """
     User class which holds the necessary identifiers of a user, as well as
@@ -101,7 +104,12 @@ class User:
         in a dictionary. An additional profile_img_url (where the User's display
         picture is stored) is also returned.
         """
-        path = f"{url}/static/{self.__u_id}.jpg" if url is not None else None
+        if url is not None:
+            path = f"{url}/static/{self.__u_id}.jpg"
+            if not os.path.isfile(path):
+                path = None
+        else:
+            path = None
         return {
             'u_id': self.__u_id,
             'email': self.__email,
@@ -276,9 +284,15 @@ class Channel:
 
     def get_messages(self):
         """
-        Returns the list of messages stored in this channel.
+        Returns the Messages object stored in this channel.
         """
         return self.__messages
+    
+    def output(self):
+        return {
+            'channel_id': self.__channel_id,
+            'name': self.__name
+        }
 
 class Channels:
     """
@@ -314,6 +328,9 @@ class Channels:
             raise InputError
 
     def list_all(self):
+        return self.__channels
+
+    def list_all_details(self):
         """
         Returns a list of dictionaries containing two keys:
             - channel_id (int): The unique identifier of the channel.
@@ -322,10 +339,7 @@ class Channels:
         """
         output = []
         for _, channel in self.__channels.items():
-            output.append({
-                'channel_id': channel.get_id(),
-                'name': channel.get_name()
-            })
+            output.append(channel.output())
         return output
 
     def num_channels(self):
@@ -468,6 +482,13 @@ class Messages:
         if end < 0:
             end = len(self.__messages_list)
         return [self.__messages_list[i].output() for i in range(start, end)]
+
+    def search_for(self, query_str):
+        results = []
+        for message in self.__messages_list:
+            if re.search(query_str, message.get_message(), re.IGNORECASE):
+                results.append(message.output())
+        return results
 
     def num_messages(self, sent=None):
         if sent is not None:

@@ -80,7 +80,11 @@ def user_profile_uploadphoto(user_id, img_url, x_start, y_start, x_end, y_end):
 
 def save_image(user_id, img_url):
     filename = f"src/static/{user_id}.jpg"
+
     image = requests.get(img_url)
+    if image.status_code != 200:
+        raise InputError
+
     file = open(filename, "wb")
     file.write(image.content)
     file.close()
@@ -88,5 +92,8 @@ def save_image(user_id, img_url):
 
 def crop_image(filename, x_start, y_start, x_end, y_end):
     image = Image.open(filename)
-    cropped = image.crop((x_start, y_start, x_end, y_end))
+    try:
+        cropped = image.crop((x_start, y_start, x_end, y_end))
+    except IndexError:
+        raise InputError
     cropped.save(filename)

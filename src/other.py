@@ -19,37 +19,17 @@ def clear():
     data['tokens'].clear()
     data['messages'].clear()
 
-# To be replaced
-def get_active(token):
-    """
-    Checks if a token is active. Returns the corresponding u_id if it is active,
-    None otherwise.
-
-    Parameters:
-        token (str) : Caller's authorisation hash.
-
-    Returns:
-        u_id (int)  : The corresponding u_id if token is active.
-        None        : If token isn't active.
-    """
-    try:
-        caller_id = jwt.decode(token, SECRET, algorithms='HS256')['u_id']
-    except jwt.exceptions.DecodeError:
-        return None
-
-    # Checking if token is active.
-    try:
-        if token != data['tokens'][caller_id]:
-            raise AccessError
-    except KeyError:
-        return None
-
-    return caller_id
-
 # Wrapper.validated attribute to skip validate_token taken from:
 # https://stackoverflow.com/questions/41206565/bypassing-a-decorator-for-unit-testing
 # EAFP style
 def validate_token(function):
+    """
+    Decorator function to check if a token is valid. Passes the caller_id back
+    to the function in place of the token if it is.
+
+    Parameters:
+        token (str) : Caller's authorisation hash.
+    """
     def wrapper(*args):
         token = args[0]
         # Checking if token is signed properly.
@@ -70,19 +50,6 @@ def validate_token(function):
     wrapper.validated = function
     return wrapper
 
-def is_valid_channel(channel_id):
-    """
-    Checks if the channel_id corresponds to an existing channel stored in the
-    database.
-
-    Parameters:
-        channel_id (int): Target channel's ID.
-
-    Returns:
-        (bool): Whether or not channel_id corresponds to an existing channel.
-    """
-    return -1 < channel_id < len(data['channels'])
-
 def is_valid(email):
     """
     Code provided in project specs, from:
@@ -99,69 +66,49 @@ def is_valid(email):
     regex = '^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$'
     return re.search(regex, email)
 
-def users_all(token):
+@validate_token
+def users_all(_, url=None):
     """
     Function for returning all the information of the users
     """
-    if get_active(token) is None:
-        raise AccessError
+    return {'users': data['users'].list_all_details(url=url)}
 
-    users = []
-    for info in data['users']:
-        users.append(dict(info))
-
-    for user in users:
-        user['profile_img_url'] = f"{user['u_id']}.jpg"
-        del user['password']
-        del user['permission_id']
-
-    return {'users': users}
-
-def admin_userpermission_change(token, u_id, permission_id):
+@validate_token
+def admin_userpermission_change(caller_id, u_id, permission_id):
     """
     Function for changing admin user permission
     """
-
-    # If token is invalid
-    owner_id = get_active(token)
-    if owner_id is None:
-        raise AccessError
+    caller = data['users'].get_user(caller_id)
 
     # Not an owner of flockr
-    if data['users'][owner_id]['permission_id'] == 2:
+    if caller.get_permissions() != 1:
         raise AccessError
-
-    # Invalid u_id
-    if not -1 < u_id < len(data['users']):
-        raise InputError
 
     # Invalid permission_id
     if permission_id not in (1, 2):
         raise InputError
 
+    # Get target user. Also checks if they exist.
+    target = data['users'].get_user(u_id)
+
     # Change permission_id of u_id
-    data['users'][u_id]['permission_id'] = permission_id
+    target.set_permissions(permission_id)
 
     return {}
 
-def search(token, query_str):
+@validate_token
+def search(caller_id, query_str):
     """
     Function to find messages similar to query_str in all channels the caller is
     in. Case insensitive.
     """
-    u_id = get_active(token)
-    if u_id is None:
-        raise AccessError
+    if query_str == "":
+        raise InputError
 
-    result = []
+    results = []
+    channels = data['users'].get_user(caller_id).get_channels()
+    for _, channel in channels.list_all().items():
+        messages = channel.get_messages()
+        results.extend(messages.search_for(query_str))
 
-    for channel in data['channels']:
-        # All channels user is in
-        if u_id in channel['members']:
-            # Check through all messages
-            for message in channel['messages']:
-                # Check if current message matches query_str
-                if re.search(query_str, message['message'], re.IGNORECASE):
-                    result.append(message)
-
-    return {'messages': result}
+    return {'messages': results}

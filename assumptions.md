@@ -80,6 +80,7 @@
 
 ## Other
 ### search()
+- Query_str cannot be blank/empty. Raise InputError if it is.
 - Searches for messages which contain the query_str, not limited to an exact match.
 - Case insensitive.
 ## Server

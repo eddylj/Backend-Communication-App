@@ -26,7 +26,7 @@ def channels_list(caller_id):
     """
     user = data['users'].get_user(u_id=caller_id)
 
-    return {'channels': user.get_channels()}
+    return {'channels': user.get_channels().list_all_details()}
 
 @validate_token
 def channels_listall(*_):
@@ -47,7 +47,7 @@ def channels_listall(*_):
     Raises:
         AccessError: if token is invalid.
     """
-    return {'channels': data['channels'].list_all()}
+    return {'channels': data['channels'].list_all_details()}
 
 @validate_token
 def channels_create(caller_id, name, is_public):
