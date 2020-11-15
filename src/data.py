@@ -390,12 +390,10 @@ class Message:
             if u_id < user_id:
                 return b_search(start, mid - 1, user_id)
             return b_search(mid + 1, end, user_id)
-
         try:
             return b_search(0, len(self.__reacts[react_id]['u_ids']), user_id)
         except KeyError:
             raise InputError
-
     def remove_react(self, user_id, react_id):
         index = self.already_reacted(user_id, react_id)
         if index is None:
@@ -409,6 +407,10 @@ class Message:
 
     def is_pinned(self):
         return self.__is_pinned
+    def pin(self):
+        self.__is_pinned = True
+    def unpin(self):
+        self.__is_pinned = False
 
     def compare(self, message):
         return self.__message == message
@@ -427,12 +429,6 @@ class Messages:
     def __init__(self):
         self.__messages_list = []
         self.__messages_dict = {}
-
-    def is_message(self, message_id):
-        return (
-            -1 < message_id < self.num_messages() and
-            self.__messages_dict[message_id] is not None
-        )
 
     def get_message(self, message_id):
         try:

@@ -2,7 +2,6 @@
 Functions to send, remove and edit messages
 """
 import threading
-import bisect
 import time
 from data import data, Message
 from error import InputError, AccessError
@@ -76,10 +75,6 @@ def message_remove(caller_id, message_id):
         InputError:
             - When the message doesn't exist (never sent/already deleted).
     """
-    # If message doesn't exist already
-    if not data['messages'].is_message(message_id):
-        raise InputError
-
     message = data['messages'].get_message(message_id)
     channel = message.get_channel()
 
@@ -271,92 +266,43 @@ def message_unreact(caller_id, message_id, react_id):
 
     message.remove_react(caller_id, react_id)
 
-def message_pin(token, message_id):
+@validate_token
+def message_pin(caller_id, message_id):
     """
     Function to pin a message in a channel
     """
+    # Also checks if the message exists
+    message = data['messages'].get_message(message_id)
+    channel = message.get_channel()
 
-    # Check if token is valid
-    caller_id = get_active(token)
-    if caller_id is None:
+    # User is not an owner in the channel where message was sent
+    if not channel.is_owner(caller_id):
         raise AccessError
 
-    # Not a message
-    if not is_message(message_id):
+    if message.is_pinned():
         raise InputError
-
-    # Find channel_id and data
-    channel_id = data['messages'][message_id]['channel_id']
-    channel_data = data['channels'][channel_id]
-
-    # User is a flockr owner and not part of channel
-    if is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['members']:
-        raise AccessError
-
-    # If not an owner of the channel
-    if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
-        raise AccessError
-
-    for msg in channel_data['messages']:
-        # Find the message in the channels database
-        if msg['message_id'] == message_id:
-            # Already pinned
-            if msg['is_pinned']:
-                raise InputError
-            # Change is_pinned
-            msg['is_pinned'] = True
-            break
+    message.pin()
 
     return {}
 
-def message_unpin(token, message_id):
+@validate_token
+def message_unpin(caller_id, message_id):
     """
     Function to unpin a message in a channel
     """
+    # Also checks if the message exists
+    message = data['messages'].get_message(message_id)
+    channel = message.get_channel()
 
-    # Check if token is valid
-    caller_id = get_active(token)
-    if caller_id is None:
+    # User is not an owner in the channel where message was sent
+    if not channel.is_owner(caller_id):
         raise AccessError
 
-    # Not a message
-    if not is_message(message_id):
+    if not message.is_pinned():
         raise InputError
-
-    # Find channel_id and data
-    channel_id = data['messages'][message_id]['channel_id']
-    channel_data = data['channels'][channel_id]
-
-    # User is a flockr owner and not part of channel
-    if is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['members']:
-        raise AccessError
-
-    # If not an owner of the channel
-    if not is_flockr_owner(caller_id) and caller_id not in data['channels'][channel_id]['owners']:
-        raise AccessError
-
-    # for (index, msg) in enumerate(channel_data['messages']):
-    for msg in channel_data['messages']:
-        # Find the message in the channels database
-        if msg['message_id'] == message_id:
-            # Already unpinned
-            if not msg['is_pinned']:
-                raise InputError
-            # Change is_pinned
-            msg['is_pinned'] = False
-            break
+    message.unpin()
 
     return {}
-
-def is_message(message_id):
-    """
-    Checks if message_id corresponds to a sent message. Also checks if the
-    message has already been deleted.
-    """
-    return (
-        -1 < message_id < len(data['messages']) and
-        data['messages'][message_id] != {}
-    )
 
 def is_valid_message(message):
     """ Checks if a message is between 1 and 1000, raise InputError if not. """

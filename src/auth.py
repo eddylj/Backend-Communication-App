@@ -7,7 +7,6 @@ import hashlib
 import smtplib
 import ssl
 import jwt
-# from data import *
 from data import data, User
 from error import InputError
 from other import is_valid, SECRET
