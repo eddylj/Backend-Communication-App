@@ -2,6 +2,7 @@
 Conftest file which holds a pytest fixture which registers two users and creates
 a channel for each of them.
 """
+import requests
 import pytest
 import auth
 import channels
@@ -48,6 +49,76 @@ def test_data():
     chans = []
     chans.append(channels.channels_create(token0, "Chan1", True)['channel_id'])
     chans.append(channels.channels_create(token1, "Chan2", True)['channel_id'])
+
+    return Data(users, chans)
+
+# Use this fixture to get the URL of the server. It starts the server for you,
+# so you don't need to.
+@pytest.fixture
+def url():
+    '''
+    Fixture for creating a server
+    '''
+    url_re = re.compile(r' \* Running on ([^ ]*)')
+    server = Popen(["python3", "src/server.py"], stderr=PIPE, stdout=PIPE)
+    line = server.stderr.readline()
+    local_url = url_re.match(line.decode())
+    if local_url:
+        yield local_url.group(1)
+        # Terminate the server
+        server.send_signal(signal.SIGINT)
+        waited = 0
+        while server.poll() is None and waited < 5:
+            sleep(0.1)
+            waited += 0.1
+        if server.poll() is None:
+            server.kill()
+    else:
+        server.kill()
+        raise Exception("Couldn't get URL from local server")
+
+@pytest.fixture
+def http_test_data(url):
+    user0 = {
+        'email': 'validemail@gmail.com',
+        'password': '123abc!@#',
+        'name_first': 'Hayden',
+        'name_last': 'Everest',
+    }
+    user1 = {
+        'email': 'alsovalid@gmail.com',
+        'password': 'aW5Me@l!',
+        'name_first': 'Andras',
+        'name_last': 'Arato',
+    }
+    test_channel = {
+        'token': '',
+        'name': 'Test Channel',
+        'is_public': True
+    }
+
+    users = []
+    # Create 2 users
+    r = requests.post(f"{url}/auth/register", json=user0)
+    account0 = r.json()
+    users.append(account0)
+
+    r = requests.post(f"{url}/auth/register", json=user1)
+    account1 = r.json()
+    users.append(account1)
+
+    chans = []
+    # Create channel
+    print(account0)
+    test_channel['token'] = account0['token']
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel_id = r.json()['channel_id']
+    chans.append(channel_id)
+
+    test_channel['token'] = account1['token']
+    r = requests.post(f"{url}/channels/create", json=test_channel)
+    channel_id = r.json()['channel_id']
+    chans.append(channel_id)
 
     return Data(users, chans)
 
