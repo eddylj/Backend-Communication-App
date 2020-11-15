@@ -27,65 +27,40 @@ test_channel = {
     'is_public': True
 }
 
-def test_message_send_valid_http(url):
+def test_message_send_valid_http(url, http_test_data):
     """
     Base case for message_send(). Can't actually compare against
     url/channel/messages since latency makes the timestamp inaccurate, so this
     test only checks that send doesn't raise any errors.
     """
 
-    # Create 2 users
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
-
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account = r.json()
-    token2 = account['token']
-    u_id2 = account['u_id']
-
-    # Create channel
-    test_channel['token'] = token1
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
     # Invite user 2 into the channel
     invite_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
-        'u_id': u_id2
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
+        'u_id': http_test_data.u_id(1),
     }
     requests.post(f"{url}/channel/invite", json=invite_payload)
 
     # Send messages
     send_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
         'message': "Hello"
     }
     response = requests.post(f"{url}/message/send", json=send_payload)
     assert response.status_code == 200
 
-    send_payload['token'] = token2
+    send_payload['token'] = http_test_data.token(1)
     send_payload['message'] = "Goodbye"
     response = requests.post(f"{url}/message/send", json=send_payload)
     assert response.status_code == 200
 
-def test_message_send_too_long_http(url):
+def test_message_send_too_long_http(url, http_test_data):
     """
     Test case for message_send(), where the passed message exceeds the 1000
     character limit.
     """
-
-    # Create a user
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
-    token = account['token']
-
-    # Create channel
-    test_channel['token'] = token
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
 
     # 1008-character string
     long_message = (
@@ -107,36 +82,22 @@ def test_message_send_too_long_http(url):
     )
 
     payload = {
-        'token': token,
-        'channel_id': channel['channel_id'],
-        'message': long_message
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
+        'message': long_message,
     }
     response = requests.post(f"{url}/message/send", json=payload)
     assert response.status_code == 400
 
-def test_message_send_not_member_http(url):
+def test_message_send_not_member_http(url, http_test_data):
     """
     Test case for message_send(), where the caller is trying to send a message
     to a channel they're not part of.
     """
 
-    # Create 2 users
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
-
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account = r.json()
-    token2 = account['token']
-
-    # Create channel
-    test_channel['token'] = token1
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
     payload = {
-        'token': token2,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(1),
+        'channel_id': http_test_data.channel(0),
         'message': "Hello"
     }
     response = requests.post(f"{url}/message/send", json=payload)
@@ -144,36 +105,26 @@ def test_message_send_not_member_http(url):
 
 ############################# MESSAGE_REMOVE TESTS #############################
 
-def test_message_remove_valid_http(url):
+def test_message_remove_valid_http(url, http_test_data):
     """ Base case for message_remove() """
 
-    # Create a user
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
-    token = account['token']
-
-    # Create channel
-    test_channel['token'] = token
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
     send_payload = {
-        'token': token,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
         'message': "Hello"
     }
     r = requests.post(f"{url}/message/send", json=send_payload)
     message = r.json()
 
     remove_payload = {
-        'token': token,
-        'message_id': message['message_id']
+        'token': http_test_data.token(0),
+        'message_id': message['message_id'],
     }
     requests.delete(f"{url}/message/remove", json=remove_payload)
 
     get_payload = {
-        'token': token,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
         'start': 0
     }
     r = requests.get(f"{url}/channel/messages", params=get_payload)
@@ -184,25 +135,15 @@ def test_message_remove_valid_http(url):
         'end': -1
     }
 
-def test_message_remove_nonexistent_http(url):
+def test_message_remove_nonexistent_http(url, http_test_data):
     """
     Test case for message_remove(), where the message corresponding to the ID
     passed into message_remove() does not exist. e.g. Never been sent or already
     deleted.
     """
 
-    # Create a user
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
-    token = account['token']
-
-    # Create channel
-    test_channel['token'] = token
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
     remove_payload = {
-        'token': token,
+        'token': http_test_data.token(0),
         'message_id': 12345
     }
     response = requests.delete(f"{url}/message/remove", json=remove_payload)
@@ -210,8 +151,8 @@ def test_message_remove_nonexistent_http(url):
 
     # Sending a message, removing it then trying to remove it again.
     payload = {
-        'token': token,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
         'message': "Hello"
     }
     r = requests.post(f"{url}/message/send", json=payload)
@@ -223,39 +164,25 @@ def test_message_remove_nonexistent_http(url):
     response = requests.delete(f"{url}/message/remove", json=remove_payload)
     assert response.status_code == 400
 
-def test_message_remove_not_owner_http(url):
+def test_message_remove_not_owner_http(url, http_test_data):
     """
     Test case for message_remove(), where the caller isn't the user who sent the
     message, or an owner of the channel.
     """
 
-    # Create 2 users
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
-
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account = r.json()
-    token2 = account['token']
-    u_id2 = account['u_id']
-
-    # Create channel
-    test_channel['token'] = token1
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
 
     # Invite user 2 into the channel
     invite_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
-        'u_id': u_id2
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
+        'u_id': http_test_data.u_id(1),
     }
     requests.post(f"{url}/channel/invite", json=invite_payload)
 
     # User 1 sends a message
     send_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
         'message': "Hello"
     }
     r = requests.post(f"{url}/message/send", json=send_payload)
@@ -263,58 +190,43 @@ def test_message_remove_not_owner_http(url):
 
     # User 2 tries to remove it
     remove_payload = {
-        'token': token2,
-        'message_id': message['message_id']
+        'token': http_test_data.token(1),
+        'message_id': message['message_id'],
     }
     response = requests.delete(f"{url}/message/remove", json=remove_payload)
     assert response.status_code == 400
 
-def test_message_remove_as_owner_http(url):
+def test_message_remove_as_owner_http(url, http_test_data):
     """
     Testing if an owner of the flockr or channel can freely remove messages.
     """
 
-    # Create 2 users
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
-
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account = r.json()
-    token2 = account['token']
-    u_id2 = account['u_id']
-
-    # Create channel
-    test_channel['token'] = token1
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
     # Invite user 2 into the channel
     invite_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
-        'u_id': u_id2
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
+        'u_id': http_test_data.u_id(1),
     }
     requests.post(f"{url}/channel/invite", json=invite_payload)
 
     # User 2 sends a message, then user 1 removes it.
     send_payload = {
-        'token': token2,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(1),
+        'channel_id': http_test_data.channel(0),
         'message': "Goodbye"
     }
     r = requests.post(f"{url}/message/send", json=send_payload)
     message = r.json()
 
     remove_payload = {
-        'token': token1,
+        'token': http_test_data.token(0),
         'message_id': message['message_id']
     }
     requests.delete(f"{url}/message/remove", json=remove_payload)
 
     get_payload = {
-        'token': token2,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(1),
+        'channel_id': http_test_data.channel(0),
         'start': 0
     }
     r = requests.get(f"{url}/channel/messages", params=get_payload)
@@ -325,30 +237,21 @@ def test_message_remove_as_owner_http(url):
         'end': -1
     }
 
-def test_message_remove_not_member_http(url):
+def test_message_remove_not_member_http(url, http_test_data):
     """
     Edge case for message_remove(), where the caller isn't even in the channel
     where the message is sent. This includes the Flockr owner.
     """
 
-    # Create 2 users
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
-
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account = r.json()
-    token2 = account['token']
-
-    # User 2 creates a channel
-    test_channel['token'] = token2
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
+    # # User 2 creates a channel
+    # test_channel['token'] = token2
+    # r = requests.post(f"{url}/channels/create", json=test_channel)
+    # channel = r.json()
 
     # User 2 sends a message
     payload = {
-        'token': token2,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(1),
+        'channel_id': http_test_data.channel(1),
         'message': "Goodbye"
     }
     r = requests.post(f"{url}/message/send", json=payload)
@@ -356,7 +259,7 @@ def test_message_remove_not_member_http(url):
 
     # User 1 tries to remove it. Fails despite being Flockr owner.
     remove_payload = {
-        'token': token1,
+        'token': http_test_data.token(0),
         'message_id': message['message_id']
     }
     response = requests.delete(f"{url}/message/remove", json=remove_payload)
@@ -364,7 +267,7 @@ def test_message_remove_not_member_http(url):
 
 ############################## MESSAGE_EDIT TESTS ##############################
 
-def test_message_edit_valid_http(url):
+def test_message_edit_valid_http(url, http_test_data):
     """
     Base case for message_edit(). Editing a message normally and checking
     against channel_messages(). Can't actually compare against
@@ -372,66 +275,46 @@ def test_message_edit_valid_http(url):
     test only checks that edit doesn't raise any errors.
     """
 
-    # Create a user
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
-    token = account['token']
-
-    # Create channel
-    test_channel['token'] = token
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
     payload = {
-        'token': token,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
         'message': "Hello"
     }
     r = requests.post(f"{url}/message/send", json=payload)
     message = r.json()
 
     edit_payload = {
-        'token': token,
+        'token': http_test_data.token(0),
         'message_id': message['message_id'],
         'message': "Goodbye"
     }
     response = requests.put(f"{url}/message/edit", json=edit_payload)
     assert response.status_code == 200
 
-def test_message_edit_empty_http(url):
+def test_message_edit_empty_http(url, http_test_data):
     """
     Test case for message_edit(), where the passed string is empty. Should
     delete the message as per specification.
     """
 
-    # Create a user
-    r = requests.post(f"{url}/auth/register", json=user)
-    account = r.json()
-    token = account['token']
-
-    # Create channel
-    test_channel['token'] = token
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
     payload = {
-        'token': token,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
         'message': "Hello"
     }
     r = requests.post(f"{url}/message/send", json=payload)
     message = r.json()
 
     edit_payload = {
-        'token': token,
+        'token': http_test_data.token(0),
         'message_id': message['message_id'],
         'message': ""
     }
     requests.put(f"{url}/message/edit", json=edit_payload)
 
     get_payload = {
-        'token': token,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
         'start': 0
     }
     r = requests.get(f"{url}/channel/messages", params=get_payload)
@@ -442,39 +325,24 @@ def test_message_edit_empty_http(url):
         'end': -1
     }
 
-def test_message_edit_not_owner_http(url):
+def test_message_edit_not_owner_http(url, http_test_data):
     """
     Test case for message_edit(), where the caller isn't the user who sent the
     message, or an owner of the channel/Flockr.
     """
 
-    # Create 2 users
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
-
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account = r.json()
-    token2 = account['token']
-    u_id2 = account['u_id']
-
-    # Create channel
-    test_channel['token'] = token1
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
     # Invite user 2 into the channel
     invite_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
-        'u_id': u_id2
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
+        'u_id': http_test_data.u_id(1),
     }
     requests.post(f"{url}/channel/invite", json=invite_payload)
 
     # User 1 sends a message
     send_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
         'message': "Hello"
     }
     r = requests.post(f"{url}/message/send", json=send_payload)
@@ -482,52 +350,37 @@ def test_message_edit_not_owner_http(url):
 
     # User 2 tries to edit it
     edit_payload = {
-        'token': token2,
+        'token': http_test_data.token(1),
         'message_id': message['message_id'],
         'message': "Goodbye"
     }
     response = requests.put(f"{url}/message/edit", json=edit_payload)
     assert response.status_code == 400
 
-def test_message_edit_as_owner_http(url):
+def test_message_edit_as_owner_http(url, http_test_data):
     """
     Testing if an owner of the flockr or channel can freely edit messages.
     """
 
-    # Create 2 users
-    r = requests.post(f"{url}/auth/register", json=user1)
-    account = r.json()
-    token1 = account['token']
-
-    r = requests.post(f"{url}/auth/register", json=user2)
-    account = r.json()
-    token2 = account['token']
-    u_id2 = account['u_id']
-
-    # Create channel
-    test_channel['token'] = token1
-    r = requests.post(f"{url}/channels/create", json=test_channel)
-    channel = r.json()
-
     # Invite user 2 into the channel
     invite_payload = {
-        'token': token1,
-        'channel_id': channel['channel_id'],
-        'u_id': u_id2
+        'token': http_test_data.token(0),
+        'channel_id': http_test_data.channel(0),
+        'u_id': http_test_data.u_id(1)
     }
     requests.post(f"{url}/channel/invite", json=invite_payload)
 
     # User 2 sends a message, then user 1 edits it.
     send_payload = {
-        'token': token2,
-        'channel_id': channel['channel_id'],
+        'token': http_test_data.token(1),
+        'channel_id': http_test_data.channel(0),
         'message': "Hello"
     }
     r = requests.post(f"{url}/message/send", json=send_payload)
     message = r.json()
 
     edit_payload = {
-        'token': token1,
+        'token': http_test_data.token(0),
         'message_id': message['message_id'],
         'message': "Goodbye"
     }
